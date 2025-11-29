@@ -155,6 +155,12 @@ document.addEventListener('DOMContentLoaded', () => {
     
     document.getElementById('coop-mode-btn').addEventListener('click', () => {
         showScreen('coop');
+        // Initialize co-op mode when screen is shown to ensure DOM elements exist
+        if (!game.coopMode) {
+            setTimeout(() => {
+                game.coopMode = new CoopMode(game);
+            }, 50);
+        }
     });
     
     document.getElementById('timed-mode-btn').addEventListener('click', () => {
@@ -915,10 +921,16 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Co-op mode handlers
     document.getElementById('coop-start-btn').addEventListener('click', () => {
+        console.log('🎮 Starting co-op mode...');
         if (!game.coopMode) {
+            console.log('Creating new CoopMode instance...');
             game.coopMode = new CoopMode(game);
         }
-        game.coopMode.start();
+        if (game.coopMode) {
+            game.coopMode.start();
+        } else {
+            console.error('❌ Failed to create CoopMode instance');
+        }
     });
     
     document.getElementById('coop-back-btn').addEventListener('click', () => {

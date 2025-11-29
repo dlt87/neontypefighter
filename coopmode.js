@@ -41,6 +41,20 @@ class CoopMode {
             bossName: document.getElementById('coop-boss-name'),
             bossStatus: document.getElementById('coop-boss-status')
         };
+        
+        // Verify all elements exist
+        const missingElements = [];
+        for (const [key, element] of Object.entries(this.elements)) {
+            if (!element) {
+                missingElements.push(key);
+            }
+        }
+        if (missingElements.length > 0) {
+            console.error('❌ Co-op mode missing elements:', missingElements);
+        }
+        
+        // Setup input handlers once
+        this.setupInputHandlers();
     }
     
     start() {
@@ -75,9 +89,6 @@ class CoopMode {
             this.elements.player1Input.focus();
         }, 100);
         
-        // Setup input handlers
-        this.setupInputHandlers();
-        
         // Start boss attack cycle
         this.scheduleBossAttack();
         
@@ -85,17 +96,22 @@ class CoopMode {
     }
     
     setupInputHandlers() {
+        if (!this.elements.player1Input || !this.elements.player2Input) {
+            console.error('❌ Co-op input elements not found');
+            return;
+        }
+        
         // Player 1 input
-        this.elements.player1Input.oninput = (e) => {
+        this.elements.player1Input.addEventListener('input', (e) => {
             this.player1Input = e.target.value.toLowerCase();
             this.checkPlayer1Word();
-        };
+        });
         
         // Player 2 input
-        this.elements.player2Input.oninput = (e) => {
+        this.elements.player2Input.addEventListener('input', (e) => {
             this.player2Input = e.target.value.toLowerCase();
             this.checkPlayer2Word();
-        };
+        });
     }
     
     assignNewWords() {
