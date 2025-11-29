@@ -22,12 +22,19 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
 }
 
 body {
     font-family: 'Rajdhani', sans-serif;
     background: linear-gradient(135deg, #0a0a0f 0%, #1a0a2e 50%, #0a0a0f 100%);
     color: var(--neon-cyan);
+    touch-action: manipulation;
+    -ms-touch-action: manipulation;
     overflow-x: hidden;
     overflow-y: auto;
     min-height: 100vh;
@@ -411,6 +418,10 @@ body::before {
     border-radius: 5px;
     box-sizing: border-box;
     transition: all 0.3s;
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
 }
 
 .form-group input:focus {
@@ -762,6 +773,10 @@ body::before {
     outline: none;
     transition: all 0.3s ease;
     box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
 }
 
 .neon-input:focus {
