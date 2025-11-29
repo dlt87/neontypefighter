@@ -33,6 +33,38 @@ async function initDatabase() {
             CREATE INDEX IF NOT EXISTS idx_username ON users(LOWER(username));
             CREATE INDEX IF NOT EXISTS idx_email ON users(LOWER(email));
         `);
+        
+        // Add new columns to existing users table (migration)
+        await client.query(`
+            DO $$ 
+            BEGIN
+                BEGIN
+                    ALTER TABLE users ADD COLUMN IF NOT EXISTS email_verified BOOLEAN DEFAULT FALSE;
+                EXCEPTION
+                    WHEN duplicate_column THEN NULL;
+                END;
+                BEGIN
+                    ALTER TABLE users ADD COLUMN IF NOT EXISTS verification_token VARCHAR(255);
+                EXCEPTION
+                    WHEN duplicate_column THEN NULL;
+                END;
+                BEGIN
+                    ALTER TABLE users ADD COLUMN IF NOT EXISTS verification_token_expires TIMESTAMP;
+                EXCEPTION
+                    WHEN duplicate_column THEN NULL;
+                END;
+                BEGIN
+                    ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token VARCHAR(255);
+                EXCEPTION
+                    WHEN duplicate_column THEN NULL;
+                END;
+                BEGIN
+                    ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token_expires TIMESTAMP;
+                EXCEPTION
+                    WHEN duplicate_column THEN NULL;
+                END;
+            END $$;
+        `);
 
         // Create high_scores table
         await client.query(`
