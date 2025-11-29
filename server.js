@@ -277,7 +277,7 @@ async function authenticateWebSocket(ws, token) {
         
         // Get username from database
         try {
-            const result = await db.query('SELECT username FROM users WHERE user_id = $1', [userId]);
+            const result = await pool.query('SELECT username FROM users WHERE user_id = $1', [userId]);
             if (result.rows.length > 0) {
                 ws.username = result.rows[0].username;
             }
