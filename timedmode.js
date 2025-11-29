@@ -68,6 +68,13 @@ class TimedMode {
         // Update UI
         this.updateUI();
         
+        // Auto-focus input so player can start typing immediately
+        setTimeout(() => {
+            if (this.elements.typingInput) {
+                this.elements.typingInput.focus();
+            }
+        }, 100);
+        
         // Play round start sound
         this.game.soundManager.play('roundStart');
         

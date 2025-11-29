@@ -21,6 +21,7 @@
                 <div class="main-menu-left">
                     <div class="menu-buttons">
                         <button class="neon-button" id="solo-mode-btn">SOLO MODE</button>
+                        <button class="neon-button" id="coop-mode-btn">CO-OP MODE</button>
                         <button class="neon-button" id="timed-mode-btn">TIMED MODE</button>
                         <button class="neon-button" id="multiplayer-mode-btn">MULTIPLAYER</button>
                         <button class="neon-button" id="achievements-btn">ACHIEVEMENTS</button>
@@ -367,6 +368,84 @@
                 <button class="neon-button secondary" id="back-from-achievements-btn">BACK</button>
             </div>
         </div>
+
+        <!-- Co-op Mode Screen -->
+        <div id="coop-mode-screen" class="menu-screen hidden">
+            <div class="coop-header">
+                <h2 class="neon-text">CO-OP MODE</h2>
+                <div class="coop-subtitle">TEAM VS BOSS</div>
+            </div>
+            
+            <div class="coop-game-area">
+                <!-- Boss Section -->
+                <div class="boss-section">
+                    <div class="boss-info">
+                        <h3 class="boss-name" id="coop-boss-name">MEGA BOSS</h3>
+                        <div class="boss-status" id="coop-boss-status">WAITING</div>
+                    </div>
+                    <div class="health-bar-container boss-health-container">
+                        <div class="health-bar boss-health-bar" id="coop-boss-health"></div>
+                        <div class="health-text" id="coop-boss-health-text">300 / 300</div>
+                    </div>
+                </div>
+
+                <!-- Team Section -->
+                <div class="team-section">
+                    <div class="team-info">
+                        <h3 class="neon-text">TEAM HEALTH</h3>
+                    </div>
+                    <div class="health-bar-container team-health-container">
+                        <div class="health-bar team-health-bar" id="coop-team-health"></div>
+                        <div class="health-text" id="coop-team-health-text">200 / 200</div>
+                    </div>
+                </div>
+
+                <!-- Player Areas -->
+                <div class="coop-players">
+                    <!-- Player 1 -->
+                    <div class="coop-player">
+                        <h4 class="player-label">PLAYER 1</h4>
+                        <div class="word-display">
+                            <div class="current-word" id="coop-player1-word">cyber</div>
+                        </div>
+                        <div class="typing-area">
+                            <input type="text" 
+                                   class="neon-input" 
+                                   id="coop-player1-input" 
+                                   placeholder="Type here..."
+                                   autocomplete="off"
+                                   spellcheck="false"
+                                   disabled>
+                            <div class="typing-feedback" id="coop-player1-feedback"></div>
+                        </div>
+                    </div>
+
+                    <!-- Player 2 -->
+                    <div class="coop-player">
+                        <h4 class="player-label">PLAYER 2</h4>
+                        <div class="word-display">
+                            <div class="current-word" id="coop-player2-word">neon</div>
+                        </div>
+                        <div class="typing-area">
+                            <input type="text" 
+                                   class="neon-input" 
+                                   id="coop-player2-input" 
+                                   placeholder="Type here..."
+                                   autocomplete="off"
+                                   spellcheck="false"
+                                   disabled>
+                            <div class="typing-feedback" id="coop-player2-feedback"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Control Buttons -->
+                <div class="coop-controls">
+                    <button class="neon-button" id="coop-start-btn">START BATTLE</button>
+                    <button class="neon-button secondary" id="coop-back-btn">BACK TO MENU</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Achievement Unlock Toast -->
@@ -391,6 +470,7 @@
     <script src="websocket.js"></script>
     <script src="game.js"></script>
     <script src="timedmode.js"></script>
+    <script src="coopmode.js"></script>
     <script src="main.js"></script>
 </body>
 </html>

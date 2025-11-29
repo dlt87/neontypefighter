@@ -8,6 +8,12 @@ const CONFIG = {
     CRITICAL_MULTIPLIER: 1.5,
     PLAYER_MAX_HEALTH: 100,
     
+    // Co-op Mode
+    BOSS_MAX_HEALTH: 300,
+    COOP_TEAM_MAX_HEALTH: 200,
+    BOSS_DAMAGE: 20,
+    BOSS_ATTACK_DELAY: 5000, // Boss attacks every 5 seconds
+    
     // Timing
     WORD_DISPLAY_DELAY: 500, // ms before new word appears
     AI_TYPING_SPEED: {

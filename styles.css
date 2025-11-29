@@ -1998,4 +1998,237 @@ body::before {
     }
 }
 
+/* ========================================
+   CO-OP MODE STYLES
+   ======================================== */
+
+#coop-mode-screen {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.coop-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.coop-subtitle {
+    color: var(--neon-magenta);
+    font-size: 1.2rem;
+    text-shadow: 0 0 10px var(--neon-magenta);
+    margin-top: 10px;
+}
+
+.coop-game-area {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+/* Boss Section */
+.boss-section {
+    background: rgba(255, 0, 0, 0.1);
+    border: 3px solid #ff0000;
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 0 30px rgba(255, 0, 0, 0.5);
+}
+
+.boss-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.boss-name {
+    font-size: 2.5rem;
+    color: #ff0000;
+    text-shadow: 0 0 20px #ff0000;
+    font-weight: 900;
+    letter-spacing: 3px;
+}
+
+.boss-status {
+    font-size: 1.2rem;
+    color: #ffaa00;
+    text-shadow: 0 0 10px #ffaa00;
+    padding: 5px 15px;
+    background: rgba(255, 170, 0, 0.2);
+    border-radius: 5px;
+}
+
+.boss-health-container {
+    background: rgba(0, 0, 0, 0.7);
+    border: 2px solid #ff0000;
+}
+
+.boss-health-bar {
+    background: linear-gradient(90deg, #ff0000, #ff6600);
+    box-shadow: 0 0 20px #ff0000;
+}
+
+/* Team Section */
+.team-section {
+    background: rgba(0, 255, 255, 0.05);
+    border: 2px solid var(--neon-cyan);
+    border-radius: 10px;
+    padding: 15px;
+}
+
+.team-info {
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.team-health-container {
+    background: rgba(0, 0, 0, 0.7);
+    border: 2px solid var(--neon-cyan);
+}
+
+.team-health-bar {
+    background: linear-gradient(90deg, #00ff00, #00ffff);
+    box-shadow: 0 0 20px var(--neon-cyan);
+}
+
+/* Player Areas */
+.coop-players {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+}
+
+.coop-player {
+    background: rgba(10, 10, 30, 0.8);
+    border: 2px solid var(--neon-cyan);
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+}
+
+.player-label {
+    text-align: center;
+    color: var(--neon-magenta);
+    font-size: 1.3rem;
+    margin-bottom: 20px;
+    text-shadow: 0 0 10px var(--neon-magenta);
+}
+
+.coop-player .word-display {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.coop-player .current-word {
+    font-size: 2.5rem;
+    color: var(--neon-cyan);
+    text-shadow: 0 0 15px var(--neon-cyan);
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 10px;
+}
+
+.coop-player .typing-area {
+    position: relative;
+}
+
+.coop-player .typing-feedback {
+    position: absolute;
+    top: -30px;
+    right: 10px;
+    font-size: 1rem;
+    font-weight: bold;
+    color: var(--neon-green);
+    text-shadow: 0 0 10px var(--neon-green);
+}
+
+/* Controls */
+.coop-controls {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+/* Results Overlay */
+.coop-results-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.95);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+}
+
+.coop-results {
+    background: rgba(10, 10, 30, 0.95);
+    border: 3px solid var(--neon-cyan);
+    border-radius: 15px;
+    padding: 40px;
+    max-width: 500px;
+    box-shadow: 0 0 50px rgba(0, 255, 255, 0.5);
+    text-align: center;
+}
+
+.coop-results h2 {
+    font-size: 2.5rem;
+    margin-bottom: 30px;
+}
+
+.coop-stats {
+    margin: 30px 0;
+    text-align: left;
+}
+
+.coop-stats p {
+    display: flex;
+    justify-content: space-between;
+    margin: 15px 0;
+    font-size: 1.2rem;
+}
+
+.stat-label {
+    color: var(--neon-cyan);
+}
+
+.stat-value {
+    color: var(--neon-magenta);
+    font-weight: bold;
+    text-shadow: 0 0 10px var(--neon-magenta);
+}
+
+.coop-results .neon-button {
+    margin: 10px;
+}
+
+/* Pulse animation for health bars */
+@keyframes pulse {
+    0%, 100% { 
+        box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+    }
+    50% { 
+        box-shadow: 0 0 30px rgba(255, 0, 0, 1);
+    }
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+    .coop-players {
+        grid-template-columns: 1fr;
+    }
+    
+    .boss-name {
+        font-size: 1.8rem;
+    }
+    
+    .coop-player .current-word {
+        font-size: 1.8rem;
+    }
+}
+
 /* Touch-specific improvements */

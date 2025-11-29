@@ -139,9 +139,11 @@ class Game {
         // Display first word
         this.displayNextWord();
         
-        // Focus input
+        // Focus input - auto-focus so player can start typing immediately
         this.elements.typingInput.value = '';
-        this.elements.typingInput.focus();
+        setTimeout(() => {
+            this.elements.typingInput.focus();
+        }, 100);
         this.elements.typingFeedback.textContent = '';
         
         this.addCombatLog('system', 'FIGHT START!');

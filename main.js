@@ -153,6 +153,10 @@ document.addEventListener('DOMContentLoaded', () => {
         game.startSoloGame();
     });
     
+    document.getElementById('coop-mode-btn').addEventListener('click', () => {
+        showScreen('coop');
+    });
+    
     document.getElementById('timed-mode-btn').addEventListener('click', () => {
         showScreen('timed');
         setupTimedMode();
@@ -269,6 +273,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function showScreen(screen) {
         const settingsMenu = document.getElementById('settings-menu');
         const achievementsScreen = document.getElementById('achievements-screen');
+        const coopModeScreen = document.getElementById('coop-mode-screen');
         
         mainMenu.classList.remove('active');
         mainMenu.classList.add('hidden');
@@ -281,6 +286,8 @@ document.addEventListener('DOMContentLoaded', () => {
         settingsMenu.classList.remove('active');
         achievementsScreen.classList.add('hidden');
         achievementsScreen.classList.remove('active');
+        coopModeScreen.classList.add('hidden');
+        coopModeScreen.classList.remove('active');
         
         if (screen === 'menu') {
             mainMenu.classList.add('active');
@@ -301,6 +308,9 @@ document.addEventListener('DOMContentLoaded', () => {
         } else if (screen === 'achievements') {
             achievementsScreen.classList.remove('hidden');
             achievementsScreen.classList.add('active');
+        } else if (screen === 'coop') {
+            coopModeScreen.classList.remove('hidden');
+            coopModeScreen.classList.add('active');
         }
     }
     
@@ -901,6 +911,25 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('back-from-achievements-btn').addEventListener('click', () => {
         showScreen('menu');
         loadMainMenuLeaderboard();
+    });
+    
+    // Co-op mode handlers
+    document.getElementById('coop-start-btn').addEventListener('click', () => {
+        if (!game.coopMode) {
+            game.coopMode = new CoopMode(game);
+        }
+        game.coopMode.start();
+    });
+    
+    document.getElementById('coop-back-btn').addEventListener('click', () => {
+        if (game.coopMode && game.coopMode.isActive) {
+            if (confirm('Are you sure you want to quit the co-op battle?')) {
+                game.coopMode.stop();
+                showScreen('menu');
+            }
+        } else {
+            showScreen('menu');
+        }
     });
     
     // Add keyboard shortcut to return to menu (ESC key)
