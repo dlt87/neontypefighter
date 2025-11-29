@@ -23,6 +23,11 @@ async function initDatabase() {
                 email VARCHAR(255) UNIQUE NOT NULL,
                 password_hash VARCHAR(255) NOT NULL,
                 password_salt VARCHAR(255) NOT NULL,
+                email_verified BOOLEAN DEFAULT FALSE,
+                verification_token VARCHAR(255),
+                verification_token_expires TIMESTAMP,
+                reset_token VARCHAR(255),
+                reset_token_expires TIMESTAMP,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
             CREATE INDEX IF NOT EXISTS idx_username ON users(LOWER(username));
@@ -92,6 +97,52 @@ const userDb = {
              VALUES ($1, $2, $3, $4, $5)
              RETURNING *`,
             [userId, username, email.toLowerCase(), passwordHash, passwordSalt]
+        );
+        return result.rows[0];
+    },
+
+    // Set email verification token
+    async setVerificationToken(userId, token, expires) {
+        await pool.query(
+            `UPDATE users 
+             SET verification_token = $1, verification_token_expires = $2
+             WHERE user_id = $3`,
+            [token, expires, userId]
+        );
+    },
+
+    // Verify email with token
+    async verifyEmail(token) {
+        const result = await pool.query(
+            `UPDATE users 
+             SET email_verified = TRUE, verification_token = NULL, verification_token_expires = NULL
+             WHERE verification_token = $1 AND verification_token_expires > NOW()
+             RETURNING *`,
+            [token]
+        );
+        return result.rows[0];
+    },
+
+    // Set password reset token
+    async setResetToken(email, token, expires) {
+        const result = await pool.query(
+            `UPDATE users 
+             SET reset_token = $1, reset_token_expires = $2
+             WHERE LOWER(email) = LOWER($3)
+             RETURNING *`,
+            [token, expires, email]
+        );
+        return result.rows[0];
+    },
+
+    // Verify reset token and update password
+    async resetPassword(token, passwordHash, passwordSalt) {
+        const result = await pool.query(
+            `UPDATE users 
+             SET password_hash = $1, password_salt = $2, reset_token = NULL, reset_token_expires = NULL
+             WHERE reset_token = $3 AND reset_token_expires > NOW()
+             RETURNING *`,
+            [passwordHash, passwordSalt, token]
         );
         return result.rows[0];
     }

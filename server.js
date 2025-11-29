@@ -10,6 +10,7 @@ const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
 const { initDatabase, userDb, scoreDb, pool } = require('./database');
+const emailService = require('./email-service');
 
 const PORT = process.env.PORT || 8080;
 
@@ -106,6 +107,14 @@ const server = http.createServer((req, res) => {
         handleRegister(req, res);
     } else if (pathname === '/api/auth/login' && req.method === 'POST') {
         handleLogin(req, res);
+    } else if (pathname === '/api/auth/verify-email' && req.method === 'POST') {
+        handleVerifyEmail(req, res);
+    } else if (pathname === '/api/auth/resend-verification' && req.method === 'POST') {
+        handleResendVerification(req, res);
+    } else if (pathname === '/api/auth/forgot-password' && req.method === 'POST') {
+        handleForgotPassword(req, res);
+    } else if (pathname === '/api/auth/reset-password' && req.method === 'POST') {
+        handleResetPassword(req, res);
     } else if (pathname === '/api/scores' && req.method === 'POST') {
         handleSubmitScore(req, res);
     } else if (pathname === '/api/leaderboard' && req.method === 'GET') {
@@ -386,7 +395,17 @@ function handleRegister(req, res) {
             
             await userDb.create(userId, username, email, hash, salt);
             
-            // Generate token
+            // Generate verification token
+            const verificationToken = crypto.randomBytes(32).toString('hex');
+            const expires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+            
+            await userDb.setVerificationToken(userId, verificationToken, expires);
+            
+            // Send verification email (don't wait for it)
+            emailService.sendVerificationEmail(email, username, verificationToken)
+                .catch(err => console.error('Failed to send verification email:', err));
+            
+            // Generate auth token
             const token = generateToken(userId);
             
             console.log(`✅ New user registered: ${username}`);
@@ -397,7 +416,8 @@ function handleRegister(req, res) {
                 userId,
                 username,
                 email,
-                token
+                token,
+                message: 'Registration successful! Please check your email to verify your account.'
             }));
         } catch (error) {
             console.error('Registration error:', error);
@@ -459,6 +479,195 @@ function handleLogin(req, res) {
             }));
         } catch (error) {
             console.error('Login error:', error);
+            res.writeHead(500, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'Internal server error' }));
+        }
+    });
+}
+
+function handleVerifyEmail(req, res) {
+    let body = '';
+    req.on('data', chunk => {
+        body += chunk.toString();
+    });
+    
+    req.on('end', async () => {
+        try {
+            const { token } = JSON.parse(body);
+            
+            if (!token) {
+                res.writeHead(400, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ error: 'Verification token required' }));
+                return;
+            }
+            
+            const user = await userDb.verifyEmail(token);
+            
+            if (!user) {
+                res.writeHead(400, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ error: 'Invalid or expired verification token' }));
+                return;
+            }
+            
+            console.log(`✅ Email verified for user: ${user.username}`);
+            
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({
+                success: true,
+                message: 'Email verified successfully!'
+            }));
+        } catch (error) {
+            console.error('Email verification error:', error);
+            res.writeHead(500, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'Internal server error' }));
+        }
+    });
+}
+
+function handleResendVerification(req, res) {
+    let body = '';
+    req.on('data', chunk => {
+        body += chunk.toString();
+    });
+    
+    req.on('end', async () => {
+        try {
+            const { email } = JSON.parse(body);
+            
+            if (!email) {
+                res.writeHead(400, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ error: 'Email required' }));
+                return;
+            }
+            
+            const user = await userDb.findByEmail(email);
+            
+            if (!user) {
+                res.writeHead(404, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ error: 'User not found' }));
+                return;
+            }
+            
+            if (user.email_verified) {
+                res.writeHead(400, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ error: 'Email already verified' }));
+                return;
+            }
+            
+            // Generate new verification token
+            const token = crypto.randomBytes(32).toString('hex');
+            const expires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+            
+            await userDb.setVerificationToken(user.user_id, token, expires);
+            await emailService.sendVerificationEmail(user.email, user.username, token);
+            
+            console.log(`✅ Verification email resent to: ${user.email}`);
+            
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({
+                success: true,
+                message: 'Verification email sent!'
+            }));
+        } catch (error) {
+            console.error('Resend verification error:', error);
+            res.writeHead(500, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'Internal server error' }));
+        }
+    });
+}
+
+function handleForgotPassword(req, res) {
+    let body = '';
+    req.on('data', chunk => {
+        body += chunk.toString();
+    });
+    
+    req.on('end', async () => {
+        try {
+            const { email } = JSON.parse(body);
+            
+            if (!email) {
+                res.writeHead(400, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ error: 'Email required' }));
+                return;
+            }
+            
+            const user = await userDb.findByEmail(email);
+            
+            // Always return success to prevent email enumeration
+            if (!user) {
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({
+                    success: true,
+                    message: 'If that email exists, a password reset link has been sent'
+                }));
+                return;
+            }
+            
+            // Generate reset token
+            const token = crypto.randomBytes(32).toString('hex');
+            const expires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+            
+            await userDb.setResetToken(email, token, expires);
+            await emailService.sendPasswordResetEmail(user.email, user.username, token);
+            
+            console.log(`✅ Password reset email sent to: ${user.email}`);
+            
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({
+                success: true,
+                message: 'If that email exists, a password reset link has been sent'
+            }));
+        } catch (error) {
+            console.error('Forgot password error:', error);
+            res.writeHead(500, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'Internal server error' }));
+        }
+    });
+}
+
+function handleResetPassword(req, res) {
+    let body = '';
+    req.on('data', chunk => {
+        body += chunk.toString();
+    });
+    
+    req.on('end', async () => {
+        try {
+            const { token, password } = JSON.parse(body);
+            
+            if (!token || !password) {
+                res.writeHead(400, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ error: 'Token and password required' }));
+                return;
+            }
+            
+            if (password.length < 6) {
+                res.writeHead(400, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ error: 'Password must be at least 6 characters' }));
+                return;
+            }
+            
+            // Hash new password
+            const { salt, hash } = hashPassword(password);
+            
+            const user = await userDb.resetPassword(token, hash, salt);
+            
+            if (!user) {
+                res.writeHead(400, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ error: 'Invalid or expired reset token' }));
+                return;
+            }
+            
+            console.log(`✅ Password reset for user: ${user.username}`);
+            
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({
+                success: true,
+                message: 'Password reset successfully!'
+            }));
+        } catch (error) {
+            console.error('Reset password error:', error);
             res.writeHead(500, { 'Content-Type': 'application/json' });
             res.end(JSON.stringify({ error: 'Internal server error' }));
         }

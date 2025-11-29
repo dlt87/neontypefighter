@@ -46,9 +46,12 @@ class TimedMode {
         this.game.currentInput = '';
         this.game.isCritical = true;
         
-        // Clear input box
+        // Clear input box and typing feedback
         if (this.game.elements.typingInput) {
             this.game.elements.typingInput.value = '';
+        }
+        if (this.game.elements.typingFeedback) {
+            this.game.elements.typingFeedback.textContent = '';
         }
         
         // Start timer
