@@ -903,6 +903,67 @@ document.addEventListener('DOMContentLoaded', () => {
         loadMainMenuLeaderboard();
     });
     
+    // Mobile Detection and Virtual Keyboard Setup
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768;
+    
+    if (isMobile) {
+        console.log('📱 Mobile device detected - enabling virtual keyboard');
+        setupVirtualKeyboard();
+    }
+    
+    function setupVirtualKeyboard() {
+        const keyboard = document.getElementById('virtual-keyboard');
+        const keys = keyboard.querySelectorAll('.key');
+        
+        // Show keyboard when game starts
+        const observer = new MutationObserver(() => {
+            const gameScreen = document.getElementById('game-screen');
+            const timedScreen = document.getElementById('timed-mode-screen');
+            
+            if (!gameScreen.classList.contains('hidden') || !timedScreen.classList.contains('hidden')) {
+                keyboard.classList.remove('hidden');
+            } else {
+                keyboard.classList.add('hidden');
+            }
+        });
+        
+        observer.observe(document.getElementById('game-screen'), { attributes: true, attributeFilter: ['class'] });
+        observer.observe(document.getElementById('timed-mode-screen'), { attributes: true, attributeFilter: ['class'] });
+        
+        // Handle key presses
+        keys.forEach(key => {
+            key.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                const letter = key.textContent.trim().toLowerCase();
+                
+                if (key.id === 'backspace-key') {
+                    simulateKeyPress('Backspace');
+                } else {
+                    simulateKeyPress(letter);
+                }
+                
+                // Visual feedback
+                key.classList.add('pressed');
+                setTimeout(() => key.classList.remove('pressed'), 100);
+            });
+        });
+    }
+    
+    function simulateKeyPress(key) {
+        const activeInput = document.querySelector('#typing-input, #timed-typing-input');
+        if (!activeInput) return;
+        
+        if (key === 'Backspace') {
+            activeInput.value = activeInput.value.slice(0, -1);
+        } else {
+            activeInput.value += key;
+        }
+        
+        // Trigger input event
+        const event = new Event('input', { bubbles: true });
+        activeInput.dispatchEvent(event);
+    }
+    
     // Add keyboard shortcut to return to menu (ESC key)
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape' && game.isActive && !game.gameOver) {
@@ -915,4 +976,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     console.log('🎮 Neon Typing Fighter initialized!');
     console.log('💡 Press ESC during a game to return to menu');
+    if (isMobile) {
+        console.log('📱 Mobile mode enabled with virtual keyboard');
+    }
 });
