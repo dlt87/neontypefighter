@@ -227,6 +227,7 @@ document.addEventListener('DOMContentLoaded', () => {
         mainMenu.classList.add('hidden');
         gameScreen.classList.add('hidden');
         multiplayerLobby.classList.add('hidden');
+        multiplayerLobby.classList.remove('active');
         themeSelector.classList.add('hidden');
         timedModeScreen.classList.add('hidden');
         
@@ -237,6 +238,7 @@ document.addEventListener('DOMContentLoaded', () => {
             gameScreen.classList.remove('hidden');
         } else if (screen === 'multiplayer') {
             multiplayerLobby.classList.remove('hidden');
+            multiplayerLobby.classList.add('active');
         } else if (screen === 'themes') {
             themeSelector.classList.remove('hidden');
             themeSelector.style.display = 'flex';
