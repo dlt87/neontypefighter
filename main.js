@@ -156,7 +156,9 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('timed-mode-btn').addEventListener('click', () => {
         showScreen('timed');
         setupTimedMode();
-        game.startTimedMode();
+        showTimedCountdown(() => {
+            game.startTimedMode();
+        });
     });
     
     document.getElementById('multiplayer-mode-btn').addEventListener('click', () => {
@@ -209,7 +211,9 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('play-again-btn').addEventListener('click', () => {
         game.reset();
         document.getElementById('game-over-overlay').classList.add('hidden');
-        game.startTimedMode();
+        showTimedCountdown(() => {
+            game.startTimedMode();
+        });
     });
     
     document.getElementById('back-to-menu-btn').addEventListener('click', () => {
@@ -226,7 +230,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // Timed mode buttons
     document.getElementById('replay-timed-btn').addEventListener('click', () => {
         document.getElementById('timed-results-overlay').classList.add('hidden');
-        game.startTimedMode();
+        showTimedCountdown(() => {
+            game.startTimedMode();
+        });
     });
     
     document.getElementById('timed-menu-btn').addEventListener('click', () => {
@@ -533,6 +539,34 @@ document.addEventListener('DOMContentLoaded', () => {
         const countdownNumber = document.getElementById('countdown-number');
         
         opponentDisplay.textContent = opponentName;
+        overlay.classList.remove('hidden');
+        
+        let count = 3;
+        countdownNumber.textContent = count;
+        
+        const countdownInterval = setInterval(() => {
+            count--;
+            if (count > 0) {
+                countdownNumber.textContent = count;
+                // Restart animation
+                countdownNumber.style.animation = 'none';
+                setTimeout(() => {
+                    countdownNumber.style.animation = 'countdownPulse 1s ease-in-out';
+                }, 10);
+            } else {
+                clearInterval(countdownInterval);
+                overlay.classList.add('hidden');
+                onComplete();
+            }
+        }, 1000);
+    }
+    
+    function showTimedCountdown(onComplete) {
+        const overlay = document.getElementById('match-countdown-overlay');
+        const opponentDisplay = document.getElementById('opponent-name-display');
+        const countdownNumber = document.getElementById('countdown-number');
+        
+        opponentDisplay.textContent = 'GET READY!';
         overlay.classList.remove('hidden');
         
         let count = 3;
