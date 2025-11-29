@@ -303,6 +303,7 @@ async function authenticateWebSocket(ws, token) {
 function findMatch(ws, playerName) {
     // Use authenticated username if available, otherwise use provided name
     ws.playerName = ws.username || playerName;
+    console.log(`🎮 Finding match for ${ws.playerName} (ws.username: ${ws.username}, provided: ${playerName})`);
     
     // Remove from queue first if already in it (prevents duplicates)
     const existingIndex = waitingPlayers.indexOf(ws);
@@ -340,11 +341,15 @@ function findMatch(ws, playerName) {
             opponentName: opponent.playerName
         }));
         
+        console.log(`📤 Sending matchFound to ${ws.playerName}: opponent is ${opponent.playerName}`);
+        
         opponent.send(JSON.stringify({
             type: 'matchFound',
             matchId: matchId,
             opponentName: ws.playerName
         }));
+        
+        console.log(`📤 Sending matchFound to ${opponent.playerName}: opponent is ${ws.playerName}`);
         
         console.log(`Match created: ${ws.playerName} vs ${opponent.playerName}`);
         

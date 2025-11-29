@@ -455,11 +455,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.getElementById('find-match-btn').style.display = '';
                 document.getElementById('cancel-match-btn').style.display = 'none';
                 
+                // Use authenticated username or fallback to account username
+                const playerName = multiplayerClient.playerName || (authClient.currentUser ? authClient.currentUser.username : 'Player');
+                console.log('🎮 Match found - Player:', playerName, 'Opponent:', data.opponentName);
+                
                 // Show countdown overlay
                 showMatchCountdown(data.opponentName, () => {
                     showScreen('game');
                     game.startMultiplayerGame(
-                        multiplayerClient.playerName,
+                        playerName,
                         data.opponentName
                     );
                 });
