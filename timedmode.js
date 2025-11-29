@@ -174,8 +174,8 @@ class TimedMode {
             
             const user = window.authClient.currentUser;
             const result = await window.highScoreAPI.submitScore(
-                user.userId,
-                user.username,
+                user.id,
+                user.name,
                 this.score,
                 stats,
                 user.token
