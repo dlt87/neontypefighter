@@ -12,7 +12,7 @@ const WORD_POOL = [
     'fracture', 'spire', 'blaze', 'quantum', 'phantom', 'cipher', 'reactor',
     'voltage', 'gravity', 'impulse', 'crimson', 'velvet', 'shadow', 'nexus',
     'matrix', 'vector', 'plasma', 'vortex', 'prism', 'chrome', 'signal',
-    'neural', 'binary', 'fusion', 'photon', 'laser', 'cyber', 'turbo',
+    'neural', 'binary', 'fusion', 'photon', 'laser', 'cyber', 'turbo', 'michael',
     
     // Long words (9+ letters)
     'cybernetic', 'hologram', 'algorithm', 'firewall', 'bandwidth', 'protocol',
