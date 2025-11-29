@@ -7,7 +7,7 @@ class AuthClient {
         this.currentUser = null;
         this.onLogin = null;
         this.onLogout = null;
-        this.apiUrl = 'https://neon-fighter-production.up.railway.app/api/auth';
+        this.apiUrl = 'https://neontypefighter-production.up.railway.app/api/auth';
         
         // Load saved session
         this.loadFromStorage();

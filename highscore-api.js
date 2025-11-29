@@ -3,7 +3,7 @@
 // ========================================
 
 class HighScoreAPI {
-    constructor(serverUrl = 'https://neon-fighter-production.up.railway.app') {
+    constructor(serverUrl = 'https://neontypefighter-production.up.railway.app') {
         this.serverUrl = serverUrl;
     }
     
