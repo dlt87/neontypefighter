@@ -18,6 +18,10 @@ class SoundManager {
         this.music = null;
         this.currentMusicSource = null;
         
+        // Custom background music (HTML5 Audio)
+        this.customMusic = null;
+        this.useCustomMusic = false;
+        
         this.init();
     }
     
@@ -239,8 +243,18 @@ class SoundManager {
     
     // Background synthwave music loop
     startBackgroundMusic() {
-        if (!this.musicEnabled || !this.musicAudioContext) return;
+        if (!this.musicEnabled) return;
         
+        // Use custom music if available
+        if (this.useCustomMusic && this.customMusic) {
+            this.customMusic.volume = this.musicVolume;
+            this.customMusic.loop = true;
+            this.customMusic.play().catch(err => console.log('Music autoplay blocked:', err));
+            return;
+        }
+        
+        // Otherwise use procedural music
+        if (!this.musicAudioContext) return;
         this.stopBackgroundMusic();
         
         const ctx = this.musicAudioContext;
@@ -300,11 +314,32 @@ class SoundManager {
     }
     
     stopBackgroundMusic() {
+        // Stop custom music if playing
+        if (this.customMusic) {
+            this.customMusic.pause();
+            this.customMusic.currentTime = 0;
+        }
+        
+        // Stop procedural music
         if (this.currentMusicSource && this.musicAudioContext) {
             this.currentMusicSource = null;
             // Create new context to stop all scheduled sounds
             this.musicAudioContext.close();
             this.musicAudioContext = new (window.AudioContext || window.webkitAudioContext)();
+        }
+    }
+    
+    // Load custom background music from file
+    loadCustomMusic(audioFilePath) {
+        this.customMusic = new Audio(audioFilePath);
+        this.customMusic.volume = this.musicVolume;
+        this.customMusic.loop = true;
+        this.useCustomMusic = true;
+        console.log('🎵 Custom music loaded:', audioFilePath);
+        
+        // Start playing if music is enabled
+        if (this.musicEnabled) {
+            this.startBackgroundMusic();
         }
     }
     
@@ -336,5 +371,9 @@ class SoundManager {
     
     setMusicVolume(value) {
         this.musicVolume = Math.max(0, Math.min(1, value));
+        // Update custom music volume if loaded
+        if (this.customMusic) {
+            this.customMusic.volume = this.musicVolume;
+        }
     }
 }
