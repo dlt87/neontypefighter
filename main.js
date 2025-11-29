@@ -565,12 +565,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function applySettings() {
         const soundVolume = parseInt(document.getElementById('sound-volume').value);
+        const musicVolume = parseInt(document.getElementById('music-volume').value);
         const muteSounds = document.getElementById('mute-sounds').checked;
         const difficulty = document.getElementById('difficulty').value;
         
         // Apply sound volume
         if (game && game.soundManager) {
             game.soundManager.setVolume(muteSounds ? 0 : soundVolume / 100);
+            game.soundManager.setMusicVolume(muteSounds ? 0 : musicVolume / 100);
         }
 
         // Apply AI difficulty
@@ -578,7 +580,7 @@ document.addEventListener('DOMContentLoaded', () => {
             game.aiDifficulty = difficulty;
         }
 
-        console.log('⚙️ Settings applied:', { soundVolume, muteSounds, difficulty });
+        console.log('⚙️ Settings applied:', { soundVolume, musicVolume, muteSounds, difficulty });
     }
 
     // Settings event listeners

@@ -1259,24 +1259,26 @@ body::before {
 .settings-content {
     background: var(--panel-bg);
     border: 2px solid var(--neon-cyan);
-    padding: 3rem;
+    padding: 2rem;
     border-radius: 10px;
     box-shadow: 0 0 30px rgba(0, 255, 255, 0.3);
-    max-width: 800px;
+    max-width: 700px;
     margin: 0 auto;
+    max-height: 80vh;
+    overflow-y: auto;
 }
 
 .settings-section {
-    margin-bottom: 2.5rem;
+    margin-bottom: 1.5rem;
     text-align: left;
 }
 
 .setting-category {
     font-family: 'Orbitron', sans-serif;
-    font-size: 1.5rem;
+    font-size: 1.3rem;
     color: var(--neon-magenta);
     text-shadow: 0 0 10px var(--neon-magenta);
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
     text-transform: uppercase;
     letter-spacing: 0.1rem;
 }
@@ -1285,8 +1287,8 @@ body::before {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 1.5rem;
-    padding: 1rem;
+    margin-bottom: 1rem;
+    padding: 0.75rem;
     background: rgba(0, 0, 0, 0.3);
     border-radius: 5px;
 }
@@ -1370,16 +1372,19 @@ body::before {
    SCROLLBAR STYLING
    ======================================== */
 
-.combat-log::-webkit-scrollbar {
+.combat-log::-webkit-scrollbar,
+.settings-content::-webkit-scrollbar {
     width: 8px;
 }
 
-.combat-log::-webkit-scrollbar-track {
+.combat-log::-webkit-scrollbar-track,
+.settings-content::-webkit-scrollbar-track {
     background: rgba(0, 0, 0, 0.3);
     border-radius: 10px;
 }
 
-.combat-log::-webkit-scrollbar-thumb {
+.combat-log::-webkit-scrollbar-thumb,
+.settings-content::-webkit-scrollbar-thumb {
     background: var(--neon-cyan);
     border-radius: 10px;
     box-shadow: 0 0 10px var(--neon-cyan);
