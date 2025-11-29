@@ -57,6 +57,12 @@ class Game {
     }
     
     startTimedMode() {
+        // Stop any existing timed mode instance
+        if (this.timedMode && this.timedMode.isActive) {
+            this.timedMode.stopTimer();
+            this.timedMode.isActive = false;
+        }
+        
         this.mode = 'timed';
         this.timedMode = new TimedMode(this);
         this.isActive = true;

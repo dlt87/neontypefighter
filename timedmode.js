@@ -30,6 +30,9 @@ class TimedMode {
     }
     
     start() {
+        // Stop any existing timer first
+        this.stopTimer();
+        
         this.isActive = true;
         this.timeRemaining = this.timeLimit;
         this.score = 0;
