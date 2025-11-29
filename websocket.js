@@ -22,7 +22,8 @@ class MultiplayerClient {
             onOpponentAction: null,
             onGameOver: null,
             onLobbyStats: null,
-            onQueuePosition: null
+            onQueuePosition: null,
+            onEloUpdate: null
         };
     }
     
@@ -35,6 +36,15 @@ class MultiplayerClient {
                 console.log('✅ Connected to multiplayer server');
                 this.connected = true;
                 this.reconnectAttempts = 0;
+                
+                // Authenticate if token available
+                if (window.authClient && window.authClient.token) {
+                    this.send({
+                        type: 'authenticate',
+                        token: window.authClient.token
+                    });
+                }
+                
                 if (this.callbacks.onConnect) {
                     this.callbacks.onConnect();
                 }
@@ -137,6 +147,21 @@ class MultiplayerClient {
                     this.callbacks.onGameOver(data);
                 }
                 break;
+                
+            case 'eloUpdate':
+                console.log(`ELO Update: ${data.eloChange > 0 ? '+' : ''}${data.eloChange} (New: ${data.newElo})`);
+                if (this.callbacks.onEloUpdate) {
+                    this.callbacks.onEloUpdate(data);
+                }
+                break;
+                
+            case 'authenticated':
+                console.log('WebSocket authenticated');
+                break;
+                
+            case 'authError':
+                console.error('WebSocket auth error:', data.error);
+                break;
         }
     }
     
@@ -172,10 +197,11 @@ class MultiplayerClient {
         });
     }
     
-    sendGameOver(won) {
+    sendGameOver(won, matchDuration = null) {
         this.send({
             type: 'gameOver',
-            won: won
+            won: won,
+            matchDuration: matchDuration
         });
     }
     

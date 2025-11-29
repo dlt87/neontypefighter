@@ -28,10 +28,15 @@ async function initDatabase() {
                 verification_token_expires TIMESTAMP,
                 reset_token VARCHAR(255),
                 reset_token_expires TIMESTAMP,
+                elo_rating INTEGER DEFAULT 1200,
+                multiplayer_wins INTEGER DEFAULT 0,
+                multiplayer_losses INTEGER DEFAULT 0,
+                multiplayer_games INTEGER DEFAULT 0,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
             CREATE INDEX IF NOT EXISTS idx_username ON users(LOWER(username));
             CREATE INDEX IF NOT EXISTS idx_email ON users(LOWER(email));
+            CREATE INDEX IF NOT EXISTS idx_elo ON users(elo_rating DESC);
         `);
         
         // Add new columns to existing users table (migration)
@@ -63,6 +68,26 @@ async function initDatabase() {
                 EXCEPTION
                     WHEN duplicate_column THEN NULL;
                 END;
+                BEGIN
+                    ALTER TABLE users ADD COLUMN IF NOT EXISTS elo_rating INTEGER DEFAULT 1200;
+                EXCEPTION
+                    WHEN duplicate_column THEN NULL;
+                END;
+                BEGIN
+                    ALTER TABLE users ADD COLUMN IF NOT EXISTS multiplayer_wins INTEGER DEFAULT 0;
+                EXCEPTION
+                    WHEN duplicate_column THEN NULL;
+                END;
+                BEGIN
+                    ALTER TABLE users ADD COLUMN IF NOT EXISTS multiplayer_losses INTEGER DEFAULT 0;
+                EXCEPTION
+                    WHEN duplicate_column THEN NULL;
+                END;
+                BEGIN
+                    ALTER TABLE users ADD COLUMN IF NOT EXISTS multiplayer_games INTEGER DEFAULT 0;
+                EXCEPTION
+                    WHEN duplicate_column THEN NULL;
+                END;
             END $$;
         `);
 
@@ -82,6 +107,29 @@ async function initDatabase() {
             );
             CREATE INDEX IF NOT EXISTS idx_score ON high_scores(score DESC);
             CREATE INDEX IF NOT EXISTS idx_user_scores ON high_scores(user_id, score DESC);
+        `);
+        
+        // Create multiplayer_matches table
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS multiplayer_matches (
+                match_id SERIAL PRIMARY KEY,
+                winner_id VARCHAR(255) NOT NULL,
+                loser_id VARCHAR(255) NOT NULL,
+                winner_name VARCHAR(50) NOT NULL,
+                loser_name VARCHAR(50) NOT NULL,
+                winner_elo_before INTEGER NOT NULL,
+                loser_elo_before INTEGER NOT NULL,
+                winner_elo_after INTEGER NOT NULL,
+                loser_elo_after INTEGER NOT NULL,
+                elo_change INTEGER NOT NULL,
+                match_duration INTEGER,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (winner_id) REFERENCES users(user_id) ON DELETE CASCADE,
+                FOREIGN KEY (loser_id) REFERENCES users(user_id) ON DELETE CASCADE
+            );
+            CREATE INDEX IF NOT EXISTS idx_match_winner ON multiplayer_matches(winner_id);
+            CREATE INDEX IF NOT EXISTS idx_match_loser ON multiplayer_matches(loser_id);
+            CREATE INDEX IF NOT EXISTS idx_match_date ON multiplayer_matches(created_at DESC);
         `);
 
         // Create achievements table
@@ -424,10 +472,202 @@ const achievementDb = {
     }
 };
 
+// ELO Rating System
+const eloDb = {
+    // Calculate ELO change based on match result
+    calculateEloChange(winnerRating, loserRating, kFactor = 32) {
+        const expectedWinner = 1 / (1 + Math.pow(10, (loserRating - winnerRating) / 400));
+        const expectedLoser = 1 / (1 + Math.pow(10, (winnerRating - loserRating) / 400));
+        
+        const winnerChange = Math.round(kFactor * (1 - expectedWinner));
+        const loserChange = Math.round(kFactor * (0 - expectedLoser));
+        
+        return { winnerChange, loserChange };
+    },
+    
+    // Record match result and update ELO ratings
+    async recordMatch(winnerId, loserId, matchDuration = null) {
+        const client = await pool.connect();
+        try {
+            await client.query('BEGIN');
+            
+            // Get current ratings and names
+            const winnerResult = await client.query(
+                'SELECT username, elo_rating FROM users WHERE user_id = $1',
+                [winnerId]
+            );
+            const loserResult = await client.query(
+                'SELECT username, elo_rating FROM users WHERE user_id = $1',
+                [loserId]
+            );
+            
+            if (!winnerResult.rows[0] || !loserResult.rows[0]) {
+                throw new Error('User not found');
+            }
+            
+            const winner = winnerResult.rows[0];
+            const loser = loserResult.rows[0];
+            
+            const winnerEloBefore = winner.elo_rating || 1200;
+            const loserEloBefore = loser.elo_rating || 1200;
+            
+            // Calculate ELO changes
+            const { winnerChange, loserChange } = this.calculateEloChange(winnerEloBefore, loserEloBefore);
+            
+            const winnerEloAfter = winnerEloBefore + winnerChange;
+            const loserEloAfter = Math.max(100, loserEloBefore + loserChange); // Min ELO of 100
+            
+            // Update winner stats
+            await client.query(
+                `UPDATE users 
+                 SET elo_rating = $1, 
+                     multiplayer_wins = multiplayer_wins + 1,
+                     multiplayer_games = multiplayer_games + 1
+                 WHERE user_id = $2`,
+                [winnerEloAfter, winnerId]
+            );
+            
+            // Update loser stats
+            await client.query(
+                `UPDATE users 
+                 SET elo_rating = $1,
+                     multiplayer_losses = multiplayer_losses + 1,
+                     multiplayer_games = multiplayer_games + 1
+                 WHERE user_id = $2`,
+                [loserEloAfter, loserId]
+            );
+            
+            // Record match in history
+            const matchResult = await client.query(
+                `INSERT INTO multiplayer_matches 
+                 (winner_id, loser_id, winner_name, loser_name, 
+                  winner_elo_before, loser_elo_before, winner_elo_after, loser_elo_after,
+                  elo_change, match_duration)
+                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+                 RETURNING match_id`,
+                [winnerId, loserId, winner.username, loser.username,
+                 winnerEloBefore, loserEloBefore, winnerEloAfter, loserEloAfter,
+                 winnerChange, matchDuration]
+            );
+            
+            await client.query('COMMIT');
+            
+            return {
+                matchId: matchResult.rows[0].match_id,
+                winner: {
+                    id: winnerId,
+                    name: winner.username,
+                    eloBefore: winnerEloBefore,
+                    eloAfter: winnerEloAfter,
+                    eloChange: winnerChange
+                },
+                loser: {
+                    id: loserId,
+                    name: loser.username,
+                    eloBefore: loserEloBefore,
+                    eloAfter: loserEloAfter,
+                    eloChange: loserChange
+                }
+            };
+        } catch (error) {
+            await client.query('ROLLBACK');
+            throw error;
+        } finally {
+            client.release();
+        }
+    },
+    
+    // Get user's ELO and multiplayer stats
+    async getUserEloStats(userId) {
+        const result = await pool.query(
+            `SELECT elo_rating, multiplayer_wins, multiplayer_losses, multiplayer_games
+             FROM users WHERE user_id = $1`,
+            [userId]
+        );
+        
+        if (result.rows.length === 0) return null;
+        
+        const stats = result.rows[0];
+        const winRate = stats.multiplayer_games > 0 
+            ? Math.round((stats.multiplayer_wins / stats.multiplayer_games) * 100)
+            : 0;
+            
+        return {
+            eloRating: stats.elo_rating || 1200,
+            wins: stats.multiplayer_wins || 0,
+            losses: stats.multiplayer_losses || 0,
+            games: stats.multiplayer_games || 0,
+            winRate
+        };
+    },
+    
+    // Get ELO leaderboard
+    async getEloLeaderboard(limit = 50) {
+        const result = await pool.query(
+            `SELECT user_id, username, elo_rating, multiplayer_wins, multiplayer_losses, multiplayer_games
+             FROM users
+             WHERE multiplayer_games > 0
+             ORDER BY elo_rating DESC, multiplayer_wins DESC
+             LIMIT $1`,
+            [limit]
+        );
+        
+        return result.rows.map((row, index) => ({
+            rank: index + 1,
+            userId: row.user_id,
+            username: row.username,
+            eloRating: row.elo_rating || 1200,
+            wins: row.multiplayer_wins || 0,
+            losses: row.multiplayer_losses || 0,
+            games: row.multiplayer_games || 0,
+            winRate: row.multiplayer_games > 0 
+                ? Math.round((row.multiplayer_wins / row.multiplayer_games) * 100)
+                : 0
+        }));
+    },
+    
+    // Get user's match history
+    async getMatchHistory(userId, limit = 10) {
+        const result = await pool.query(
+            `SELECT 
+                match_id,
+                winner_id,
+                loser_id,
+                winner_name,
+                loser_name,
+                winner_elo_before,
+                loser_elo_before,
+                winner_elo_after,
+                loser_elo_after,
+                elo_change,
+                match_duration,
+                created_at,
+                CASE WHEN winner_id = $1 THEN true ELSE false END as won
+             FROM multiplayer_matches
+             WHERE winner_id = $1 OR loser_id = $1
+             ORDER BY created_at DESC
+             LIMIT $2`,
+            [userId, limit]
+        );
+        
+        return result.rows.map(match => ({
+            matchId: match.match_id,
+            won: match.won,
+            opponent: match.won ? match.loser_name : match.winner_name,
+            myEloBefore: match.won ? match.winner_elo_before : match.loser_elo_before,
+            myEloAfter: match.won ? match.winner_elo_after : match.loser_elo_after,
+            eloChange: match.won ? match.elo_change : -Math.abs(match.elo_change),
+            duration: match.match_duration,
+            playedAt: match.created_at
+        }));
+    }
+};
+
 module.exports = {
     initDatabase,
     userDb,
     scoreDb,
     achievementDb,
+    eloDb,
     pool
 };

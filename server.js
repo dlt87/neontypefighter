@@ -12,7 +12,7 @@ const url = require('url');
 const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
-const { initDatabase, userDb, scoreDb, achievementDb, pool } = require('./database');
+const { initDatabase, userDb, scoreDb, achievementDb, eloDb, pool } = require('./database');
 const emailService = require('./email-service');
 
 const PORT = process.env.PORT || 8080;
@@ -156,6 +156,14 @@ const server = http.createServer((req, res) => {
         handleGetAchievements(req, res);
     } else if (pathname === '/api/achievements/user' && req.method === 'GET') {
         handleGetUserAchievements(req, res);
+    } else if (pathname === '/api/elo/leaderboard' && req.method === 'GET') {
+        handleGetEloLeaderboard(req, res);
+    } else if (pathname === '/api/elo/stats' && req.method === 'GET') {
+        handleGetEloStats(req, res);
+    } else if (pathname === '/api/elo/history' && req.method === 'GET') {
+        handleGetMatchHistory(req, res);
+    } else if (pathname === '/api/match/result' && req.method === 'POST') {
+        handleMatchResult(req, res);
     } else {
         res.writeHead(404, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: 'Not found' }));
@@ -230,6 +238,10 @@ wss.on('close', () => {
 
 function handleMessage(ws, data) {
     switch (data.type) {
+        case 'authenticate':
+            authenticateWebSocket(ws, data.token);
+            break;
+            
         case 'findMatch':
             findMatch(ws, data.playerName);
             break;
@@ -245,6 +257,23 @@ function handleMessage(ws, data) {
         case 'gameOver':
             handleGameOver(ws, data);
             break;
+    }
+}
+
+function authenticateWebSocket(ws, token) {
+    const tokenData = verifyToken(token);
+    if (tokenData) {
+        ws.userId = tokenData.userId;
+        ws.send(JSON.stringify({
+            type: 'authenticated',
+            userId: tokenData.userId
+        }));
+        console.log(`WebSocket authenticated for user: ${tokenData.userId}`);
+    } else {
+        ws.send(JSON.stringify({
+            type: 'authError',
+            error: 'Invalid token'
+        }));
     }
 }
 
@@ -348,6 +377,34 @@ function handleGameOver(ws, data) {
             type: 'gameOver',
             opponentWon: data.won
         }));
+        
+        // Record ELO change if both players are authenticated
+        if (data.won && ws.userId && opponent.userId) {
+            const winnerId = ws.userId;
+            const loserId = opponent.userId;
+            const matchDuration = data.matchDuration || null;
+            
+            eloDb.recordMatch(winnerId, loserId, matchDuration)
+                .then(result => {
+                    console.log(`ELO updated: ${result.winner.name} (+${result.winner.eloChange}) vs ${result.loser.name} (${result.loser.eloChange})`);
+                    
+                    // Send ELO update to both players
+                    ws.send(JSON.stringify({
+                        type: 'eloUpdate',
+                        eloChange: result.winner.eloChange,
+                        newElo: result.winner.eloAfter
+                    }));
+                    
+                    opponent.send(JSON.stringify({
+                        type: 'eloUpdate',
+                        eloChange: result.loser.eloChange,
+                        newElo: result.loser.eloAfter
+                    }));
+                })
+                .catch(error => {
+                    console.error('Error recording match result:', error);
+                });
+        }
     }
     
     // Clean up match
@@ -927,6 +984,143 @@ async function handleGetUserAchievements(req, res) {
         res.end(JSON.stringify(achievements));
     } catch (error) {
         console.error('Error getting user achievements:', error);
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Internal server error' }));
+    }
+}
+
+// ELO Leaderboard Handler
+async function handleGetEloLeaderboard(req, res) {
+    try {
+        const leaderboard = await eloDb.getEloLeaderboard(50);
+        
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify(leaderboard));
+    } catch (error) {
+        console.error('Error getting ELO leaderboard:', error);
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Internal server error' }));
+    }
+}
+
+// ELO Stats Handler
+async function handleGetEloStats(req, res) {
+    try {
+        const authHeader = req.headers.authorization;
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            res.writeHead(401, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'Unauthorized' }));
+            return;
+        }
+
+        const token = authHeader.substring(7);
+        const tokenData = verifyToken(token);
+
+        if (!tokenData) {
+            res.writeHead(401, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'Invalid token' }));
+            return;
+        }
+
+        const userId = tokenData.userId;
+        const stats = await eloDb.getUserEloStats(userId);
+        
+        if (!stats) {
+            res.writeHead(404, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'User not found' }));
+            return;
+        }
+        
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify(stats));
+    } catch (error) {
+        console.error('Error getting ELO stats:', error);
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Internal server error' }));
+    }
+}
+
+// Match History Handler
+async function handleGetMatchHistory(req, res) {
+    try {
+        const authHeader = req.headers.authorization;
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            res.writeHead(401, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'Unauthorized' }));
+            return;
+        }
+
+        const token = authHeader.substring(7);
+        const tokenData = verifyToken(token);
+
+        if (!tokenData) {
+            res.writeHead(401, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'Invalid token' }));
+            return;
+        }
+
+        const userId = tokenData.userId;
+        const history = await eloDb.getMatchHistory(userId, 20);
+        
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify(history));
+    } catch (error) {
+        console.error('Error getting match history:', error);
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Internal server error' }));
+    }
+}
+
+// Match Result Handler
+async function handleMatchResult(req, res) {
+    try {
+        const authHeader = req.headers.authorization;
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            res.writeHead(401, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'Unauthorized' }));
+            return;
+        }
+
+        const token = authHeader.substring(7);
+        const tokenData = verifyToken(token);
+
+        if (!tokenData) {
+            res.writeHead(401, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'Invalid token' }));
+            return;
+        }
+
+        let body = '';
+        req.on('data', chunk => body += chunk.toString());
+        req.on('end', async () => {
+            try {
+                const { winnerId, loserId, matchDuration } = JSON.parse(body);
+                
+                if (!winnerId || !loserId) {
+                    res.writeHead(400, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({ error: 'Missing winnerId or loserId' }));
+                    return;
+                }
+                
+                // Verify the requester is one of the players
+                if (tokenData.userId !== winnerId && tokenData.userId !== loserId) {
+                    res.writeHead(403, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({ error: 'Forbidden' }));
+                    return;
+                }
+                
+                const result = await eloDb.recordMatch(winnerId, loserId, matchDuration);
+                
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify(result));
+            } catch (error) {
+                console.error('Error recording match result:', error);
+                res.writeHead(500, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ error: 'Internal server error' }));
+            }
+        });
+    } catch (error) {
+        console.error('Error handling match result:', error);
         res.writeHead(500, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: 'Internal server error' }));
     }

@@ -355,18 +355,32 @@ class Game {
         this.elements.gameOverTitle.textContent = playerWon ? 'VICTORY' : 'DEFEAT';
         this.elements.gameOverTitle.className = playerWon ? 'victory' : 'defeat';
         
-        this.elements.gameOverStats.innerHTML = `
+        let statsHTML = `
             <div>Words Typed: ${this.wordsTyped}</div>
             <div>Critical Hits: ${this.criticalHits}</div>
             <div>Accuracy: ${accuracy}%</div>
             <div>Duration: ${duration}s</div>
         `;
         
+        // Add ELO change for multiplayer matches
+        if (this.mode === 'multiplayer' && this.lastEloChange !== undefined) {
+            const eloChangeText = this.lastEloChange > 0 ? `+${this.lastEloChange}` : this.lastEloChange;
+            const eloColor = this.lastEloChange > 0 ? 'var(--neon-green)' : 'var(--neon-orange)';
+            statsHTML += `
+                <div style="margin-top: 15px; padding-top: 15px; border-top: 2px solid rgba(255,255,255,0.2);">
+                    <div style="font-size: 1.3em; color: ${eloColor};">ELO: ${eloChangeText}</div>
+                    <div style="font-size: 0.9em; opacity: 0.8;">New Rating: ${this.lastElo}</div>
+                </div>
+            `;
+        }
+        
+        this.elements.gameOverStats.innerHTML = statsHTML;
+        
         this.elements.gameOverOverlay.classList.remove('hidden');
         
         // Send to multiplayer if needed
         if (this.mode === 'multiplayer' && this.multiplayerClient) {
-            this.multiplayerClient.sendGameOver(playerWon);
+            this.multiplayerClient.sendGameOver(playerWon, duration);
         }
     }
     

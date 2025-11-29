@@ -34,6 +34,18 @@ document.addEventListener('DOMContentLoaded', () => {
     // Load main menu leaderboard
     loadMainMenuLeaderboard();
     
+    // Leaderboard tab switching
+    document.querySelectorAll('.leaderboard-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            // Update active tab
+            document.querySelectorAll('.leaderboard-tab').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            
+            // Reload leaderboard
+            loadMainMenuLeaderboard();
+        });
+    });
+    
     // Menu navigation
     const mainMenu = document.getElementById('main-menu');
     const gameScreen = document.getElementById('game-screen');
@@ -469,6 +481,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     game.endGame(!data.opponentWon);
                 }
             });
+            
+            multiplayerClient.on('onEloUpdate', (data) => {
+                // Store ELO change for display in game over screen
+                game.lastEloChange = data.eloChange;
+                game.lastElo = data.newElo;
+            });
         }
         
         multiplayerClient.connect();
@@ -573,6 +591,25 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         
+        // Check which tab is active
+        const activeTab = document.querySelector('.leaderboard-tab.active');
+        const tabType = activeTab ? activeTab.dataset.tab : 'timed';
+        
+        try {
+            if (tabType === 'elo') {
+                await loadEloLeaderboard();
+            } else {
+                await loadTimedLeaderboard();
+            }
+        } catch (error) {
+            console.error('Failed to load leaderboard:', error);
+            leaderboardList.innerHTML = '<div class="loading-message">Server offline.<br>Play to set scores!</div>';
+        }
+    }
+    
+    async function loadTimedLeaderboard() {
+        const leaderboardList = document.getElementById('main-menu-leaderboard-list');
+        
         try {
             const leaderboard = await highScoreAPI.getLeaderboard(10);
             
@@ -597,7 +634,44 @@ document.addEventListener('DOMContentLoaded', () => {
                 `;
             }).join('');
         } catch (error) {
-            console.error('Failed to load main menu leaderboard:', error);
+            console.error('Failed to load timed leaderboard:', error);
+            throw error;
+        }
+    }
+    
+    async function loadEloLeaderboard() {
+        const leaderboardList = document.getElementById('main-menu-leaderboard-list');
+        
+        try {
+            const response = await fetch('https://neontypefighter-production.up.railway.app/api/elo/leaderboard');
+            if (!response.ok) {
+                throw new Error('Failed to fetch ELO leaderboard');
+            }
+            
+            const leaderboard = await response.json();
+            
+            if (!leaderboard || leaderboard.length === 0) {
+                leaderboardList.innerHTML = '<div class="loading-message">No ranked matches yet.<br>Play multiplayer!</div>';
+                return;
+            }
+            
+            const currentUserId = authClient.currentUser?.sub;
+            
+            leaderboardList.innerHTML = leaderboard.map((entry, index) => {
+                const rank = index + 1;
+                const isCurrentUser = entry.userId === currentUserId;
+                const rankClass = rank === 1 ? 'top-1' : rank === 2 ? 'top-2' : rank === 3 ? 'top-3' : '';
+                
+                return `
+                    <div class="leaderboard-entry ${isCurrentUser ? 'current-user' : ''}">
+                        <div class="leaderboard-rank ${rankClass}">#${rank}</div>
+                        <div class="leaderboard-user">${entry.username}</div>
+                        <div class="leaderboard-score">${entry.eloRating} <span style="font-size:0.8em;opacity:0.7">(${entry.wins}W/${entry.losses}L)</span></div>
+                    </div>
+                `;
+            }).join('');
+        } catch (error) {
+            console.error('Failed to load ELO leaderboard:', error);
             leaderboardList.innerHTML = '<div class="loading-message">Server offline.<br>Play to set scores!</div>';
         }
     }
