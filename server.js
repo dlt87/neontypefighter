@@ -7,6 +7,8 @@ const WebSocket = require('ws');
 const http = require('http');
 const url = require('url');
 const crypto = require('crypto');
+const fs = require('fs');
+const path = require('path');
 const { initDatabase, userDb, scoreDb, pool } = require('./database');
 
 const PORT = process.env.PORT || 8080;
@@ -53,6 +55,20 @@ function verifyToken(token) {
     }
 }
 
+// Helper function to serve static files
+function serveFile(res, filePath, contentType) {
+    const fullPath = path.join(__dirname, filePath);
+    fs.readFile(fullPath, (err, data) => {
+        if (err) {
+            res.writeHead(404, { 'Content-Type': 'text/plain' });
+            res.end('File not found');
+            return;
+        }
+        res.writeHead(200, { 'Content-Type': contentType });
+        res.end(data);
+    });
+}
+
 // Create HTTP server
 const server = http.createServer((req, res) => {
     // Set CORS headers
@@ -68,6 +84,22 @@ const server = http.createServer((req, res) => {
     
     const parsedUrl = url.parse(req.url, true);
     const pathname = parsedUrl.pathname;
+    
+    // Serve static files
+    if (pathname === '/' || pathname === '/index.html') {
+        serveFile(res, 'index.html', 'text/html');
+        return;
+    } else if (pathname.endsWith('.css')) {
+        serveFile(res, pathname.substring(1), 'text/css');
+        return;
+    } else if (pathname.endsWith('.js')) {
+        serveFile(res, pathname.substring(1), 'application/javascript');
+        return;
+    } else if (pathname.endsWith('.png') || pathname.endsWith('.jpg') || pathname.endsWith('.gif')) {
+        const ext = path.extname(pathname).substring(1);
+        serveFile(res, pathname.substring(1), `image/${ext}`);
+        return;
+    }
     
     // API Routes
     if (pathname === '/api/auth/register' && req.method === 'POST') {
