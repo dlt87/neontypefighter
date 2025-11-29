@@ -85,6 +85,11 @@ class Game {
     }
     
     startSoloGame() {
+        // Stop any existing AI opponent
+        if (this.aiOpponent) {
+            this.aiOpponent.stopTyping();
+        }
+        
         this.mode = 'solo';
         this.player2Name = 'AI OPPONENT';
         this.aiOpponent = new AIOpponent(this);

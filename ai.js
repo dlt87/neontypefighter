@@ -75,6 +75,10 @@ class AIOpponent {
         }
     }
     
+    stopTyping() {
+        this.stop();
+    }
+    
     reset() {
         this.stop();
     }
