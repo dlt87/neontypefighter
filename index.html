@@ -249,6 +249,68 @@
                 <button class="neon-button secondary" id="back-from-themes-btn">BACK</button>
             </div>
         </div>
+
+        <!-- Settings Menu -->
+        <div id="settings-menu" class="menu-screen hidden">
+            <h2 class="neon-text">SETTINGS</h2>
+            <div class="settings-content">
+                <div class="settings-section">
+                    <h3 class="setting-category">Audio</h3>
+                    <div class="setting-item">
+                        <label for="sound-volume">Sound Effects Volume</label>
+                        <input type="range" id="sound-volume" min="0" max="100" value="50">
+                        <span class="volume-value" id="sound-volume-value">50%</span>
+                    </div>
+                    <div class="setting-item">
+                        <label for="music-volume">Music Volume</label>
+                        <input type="range" id="music-volume" min="0" max="100" value="30">
+                        <span class="volume-value" id="music-volume-value">30%</span>
+                    </div>
+                    <div class="setting-item">
+                        <label>
+                            <input type="checkbox" id="mute-sounds">
+                            Mute All Sounds
+                        </label>
+                    </div>
+                </div>
+
+                <div class="settings-section">
+                    <h3 class="setting-category">Gameplay</h3>
+                    <div class="setting-item">
+                        <label for="difficulty">AI Difficulty</label>
+                        <select id="difficulty" class="neon-select">
+                            <option value="easy">Easy</option>
+                            <option value="medium" selected>Medium</option>
+                            <option value="hard">Hard</option>
+                        </select>
+                    </div>
+                    <div class="setting-item">
+                        <label>
+                            <input type="checkbox" id="show-fps">
+                            Show FPS Counter
+                        </label>
+                    </div>
+                </div>
+
+                <div class="settings-section">
+                    <h3 class="setting-category">Display</h3>
+                    <div class="setting-item">
+                        <label>
+                            <input type="checkbox" id="reduce-particles">
+                            Reduce Particle Effects
+                        </label>
+                    </div>
+                    <div class="setting-item">
+                        <label>
+                            <input type="checkbox" id="screen-shake">
+                            Enable Screen Shake
+                        </label>
+                    </div>
+                </div>
+
+                <button class="neon-button secondary" id="back-from-settings-btn">BACK</button>
+            </div>
+        </div>
     </div>
 
     <script src="config.js"></script>

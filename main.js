@@ -158,7 +158,8 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     
     document.getElementById('settings-btn').addEventListener('click', () => {
-        alert('Settings coming soon! AI Difficulty and customization options will be added here.');
+        showScreen('settings');
+        loadSettings();
     });
     
     // Audio control buttons
@@ -223,6 +224,8 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     
     function showScreen(screen) {
+        const settingsMenu = document.getElementById('settings-menu');
+        
         mainMenu.classList.remove('active');
         mainMenu.classList.add('hidden');
         gameScreen.classList.add('hidden');
@@ -230,6 +233,8 @@ document.addEventListener('DOMContentLoaded', () => {
         multiplayerLobby.classList.remove('active');
         themeSelector.classList.add('hidden');
         timedModeScreen.classList.add('hidden');
+        settingsMenu.classList.add('hidden');
+        settingsMenu.classList.remove('active');
         
         if (screen === 'menu') {
             mainMenu.classList.add('active');
@@ -244,6 +249,9 @@ document.addEventListener('DOMContentLoaded', () => {
             themeSelector.style.display = 'flex';
         } else if (screen === 'timed') {
             timedModeScreen.classList.remove('hidden');
+        } else if (screen === 'settings') {
+            settingsMenu.classList.remove('hidden');
+            settingsMenu.classList.add('active');
         }
     }
     
@@ -520,6 +528,80 @@ document.addEventListener('DOMContentLoaded', () => {
             leaderboardList.innerHTML = '<div class="loading-message">Server offline.<br>Play to set scores!</div>';
         }
     }
+
+    // Settings Management
+    function loadSettings() {
+        const soundVolume = localStorage.getItem('soundVolume') || '50';
+        const musicVolume = localStorage.getItem('musicVolume') || '30';
+        const muteSounds = localStorage.getItem('muteSounds') === 'true';
+        const difficulty = localStorage.getItem('difficulty') || 'medium';
+        const showFps = localStorage.getItem('showFps') === 'true';
+        const reduceParticles = localStorage.getItem('reduceParticles') === 'true';
+        const screenShake = localStorage.getItem('screenShake') === 'true';
+
+        document.getElementById('sound-volume').value = soundVolume;
+        document.getElementById('sound-volume-value').textContent = soundVolume + '%';
+        document.getElementById('music-volume').value = musicVolume;
+        document.getElementById('music-volume-value').textContent = musicVolume + '%';
+        document.getElementById('mute-sounds').checked = muteSounds;
+        document.getElementById('difficulty').value = difficulty;
+        document.getElementById('show-fps').checked = showFps;
+        document.getElementById('reduce-particles').checked = reduceParticles;
+        document.getElementById('screen-shake').checked = screenShake;
+
+        applySettings();
+    }
+
+    function saveSettings() {
+        localStorage.setItem('soundVolume', document.getElementById('sound-volume').value);
+        localStorage.setItem('musicVolume', document.getElementById('music-volume').value);
+        localStorage.setItem('muteSounds', document.getElementById('mute-sounds').checked);
+        localStorage.setItem('difficulty', document.getElementById('difficulty').value);
+        localStorage.setItem('showFps', document.getElementById('show-fps').checked);
+        localStorage.setItem('reduceParticles', document.getElementById('reduce-particles').checked);
+        localStorage.setItem('screenShake', document.getElementById('screen-shake').checked);
+        applySettings();
+    }
+
+    function applySettings() {
+        const soundVolume = parseInt(document.getElementById('sound-volume').value);
+        const muteSounds = document.getElementById('mute-sounds').checked;
+        const difficulty = document.getElementById('difficulty').value;
+        
+        // Apply sound volume
+        if (game && game.soundManager) {
+            game.soundManager.setVolume(muteSounds ? 0 : soundVolume / 100);
+        }
+
+        // Apply AI difficulty
+        if (game && difficulty) {
+            game.aiDifficulty = difficulty;
+        }
+
+        console.log('⚙️ Settings applied:', { soundVolume, muteSounds, difficulty });
+    }
+
+    // Settings event listeners
+    document.getElementById('sound-volume').addEventListener('input', (e) => {
+        document.getElementById('sound-volume-value').textContent = e.target.value + '%';
+        saveSettings();
+    });
+
+    document.getElementById('music-volume').addEventListener('input', (e) => {
+        document.getElementById('music-volume-value').textContent = e.target.value + '%';
+        saveSettings();
+    });
+
+    document.getElementById('mute-sounds').addEventListener('change', saveSettings);
+    document.getElementById('difficulty').addEventListener('change', saveSettings);
+    document.getElementById('show-fps').addEventListener('change', saveSettings);
+    document.getElementById('reduce-particles').addEventListener('change', saveSettings);
+    document.getElementById('screen-shake').addEventListener('change', saveSettings);
+
+    document.getElementById('back-from-settings-btn').addEventListener('click', () => {
+        showScreen('menu');
+        loadMainMenuLeaderboard();
+    });
     
     // Add keyboard shortcut to return to menu (ESC key)
     document.addEventListener('keydown', (e) => {

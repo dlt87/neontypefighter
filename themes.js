@@ -29,6 +29,33 @@ const THEMES = {
         glow: '#ff4500',
         particleColor: '#ff6600',
         description: 'Blazing orange and fierce red'
+    },
+    toxicWaste: {
+        name: 'Toxic Waste',
+        primary: '#39ff14',       // Neon Green
+        secondary: '#ccff00',     // Lime
+        accent: '#7fff00',        // Chartreuse
+        glow: '#39ff14',
+        particleColor: '#39ff14',
+        description: 'Radioactive green glow'
+    },
+    deepSpace: {
+        name: 'Deep Space',
+        primary: '#9d00ff',       // Purple
+        secondary: '#0099ff',     // Electric Blue
+        accent: '#cc00ff',        // Violet
+        glow: '#9d00ff',
+        particleColor: '#9d00ff',
+        description: 'Cosmic purple and stellar blue'
+    },
+    sunset: {
+        name: 'Sunset',
+        primary: '#ff1493',       // Deep Pink
+        secondary: '#ffd700',     // Gold
+        accent: '#ff69b4',        // Hot Pink
+        glow: '#ff1493',
+        particleColor: '#ff1493',
+        description: 'Warm sunset pinks and golds'
     }
 };
 
