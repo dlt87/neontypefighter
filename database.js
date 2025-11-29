@@ -36,7 +36,6 @@ async function initDatabase() {
             );
             CREATE INDEX IF NOT EXISTS idx_username ON users(LOWER(username));
             CREATE INDEX IF NOT EXISTS idx_email ON users(LOWER(email));
-            CREATE INDEX IF NOT EXISTS idx_elo ON users(elo_rating DESC);
         `);
         
         // Add new columns to existing users table (migration)
@@ -89,6 +88,11 @@ async function initDatabase() {
                     WHEN duplicate_column THEN NULL;
                 END;
             END $$;
+        `);
+        
+        // Create ELO index after columns are added
+        await client.query(`
+            CREATE INDEX IF NOT EXISTS idx_elo ON users(elo_rating DESC);
         `);
 
         // Create high_scores table
