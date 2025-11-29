@@ -9,11 +9,14 @@ const nodemailer = require('nodemailer');
 // For production, use environment variables for email credentials
 const transporter = nodemailer.createTransport({
     host: process.env.SMTP_HOST || 'smtp.gmail.com',
-    port: process.env.SMTP_PORT || 587,
+    port: parseInt(process.env.SMTP_PORT) || 587,
     secure: false, // true for 465, false for other ports
     auth: {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASS
+    },
+    tls: {
+        rejectUnauthorized: false // Accept self-signed certificates
     }
 });
 
@@ -52,11 +55,19 @@ const emailService = {
         };
 
         try {
-            await transporter.sendMail(mailOptions);
+            const info = await transporter.sendMail(mailOptions);
             console.log(`✅ Verification email sent to ${email}`);
+            console.log(`📧 Message ID: ${info.messageId}`);
+            console.log(`📧 Response: ${info.response}`);
             return true;
         } catch (error) {
             console.error('❌ Error sending verification email:', error);
+            console.error('❌ Error details:', {
+                code: error.code,
+                command: error.command,
+                response: error.response,
+                responseCode: error.responseCode
+            });
             return false;
         }
     },
