@@ -172,7 +172,14 @@ class TimedMode {
                 maxMultiplier: parseFloat(this.difficultyMultiplier.toFixed(1))
             };
             
-            const result = await window.highScoreAPI.submitScore(this.score, stats);
+            const user = window.authClient.currentUser;
+            const result = await window.highScoreAPI.submitScore(
+                user.userId,
+                user.username,
+                this.score,
+                stats,
+                user.token
+            );
             console.log('Score submitted to server:', result);
             
             // Load and display leaderboard
