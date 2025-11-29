@@ -384,6 +384,7 @@ document.addEventListener('DOMContentLoaded', () => {
             game.multiplayerClient = multiplayerClient;
             
             multiplayerClient.on('onConnect', () => {
+                console.log('📡 Multiplayer connected - enabling Find Match button');
                 updateConnectionStatus('Connected', true);
             });
             
@@ -420,9 +421,15 @@ document.addEventListener('DOMContentLoaded', () => {
     
     function updateConnectionStatus(message, connected) {
         const statusElement = document.getElementById('connection-status');
+        const findMatchBtn = document.getElementById('find-match-btn');
+        
+        console.log('🔄 Updating connection status:', message, 'Connected:', connected);
+        
         statusElement.textContent = message;
         statusElement.className = 'connection-status ' + (connected ? 'connected' : 'disconnected');
-        document.getElementById('find-match-btn').disabled = !connected;
+        findMatchBtn.disabled = !connected;
+        
+        console.log('🎮 Find Match button disabled state:', findMatchBtn.disabled);
     }
     
     function handleUserLogin(user) {
