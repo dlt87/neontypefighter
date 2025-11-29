@@ -491,6 +491,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 game.lastEloChange = data.eloChange;
                 game.lastElo = data.newElo;
                 console.log('✅ Stored ELO in game:', game.lastEloChange, game.lastElo);
+                
+                // Reload ELO leaderboard if we're viewing it
+                const currentTab = document.querySelector('.leaderboard-tab.active');
+                if (currentTab && currentTab.textContent === 'ELO') {
+                    loadEloLeaderboard();
+                }
             });
         }
         

@@ -166,6 +166,10 @@ class MultiplayerClient {
                 
             case 'authenticated':
                 console.log('WebSocket authenticated');
+                if (data.username) {
+                    this.playerName = data.username;
+                    console.log('✅ Username set from server:', this.playerName);
+                }
                 break;
                 
             case 'authError':
