@@ -23,10 +23,11 @@ class MultiplayerClient {
     
     connect() {
         try {
+            console.log('Attempting to connect to:', CONFIG.WEBSOCKET_URL);
             this.ws = new WebSocket(CONFIG.WEBSOCKET_URL);
             
             this.ws.onopen = () => {
-                console.log('Connected to multiplayer server');
+                console.log('✅ Connected to multiplayer server');
                 this.connected = true;
                 this.reconnectAttempts = 0;
                 if (this.callbacks.onConnect) {
@@ -35,15 +36,18 @@ class MultiplayerClient {
             };
             
             this.ws.onmessage = (event) => {
+                console.log('📨 Received message:', event.data);
                 this.handleMessage(JSON.parse(event.data));
             };
             
             this.ws.onerror = (error) => {
-                console.error('WebSocket error:', error);
+                console.error('❌ WebSocket error:', error);
+                console.error('WebSocket URL:', CONFIG.WEBSOCKET_URL);
+                console.error('ReadyState:', this.ws?.readyState);
             };
             
-            this.ws.onclose = () => {
-                console.log('Disconnected from server');
+            this.ws.onclose = (event) => {
+                console.log('🔌 Disconnected from server. Code:', event.code, 'Reason:', event.reason);
                 this.connected = false;
                 if (this.callbacks.onDisconnect) {
                     this.callbacks.onDisconnect();
@@ -51,7 +55,7 @@ class MultiplayerClient {
                 this.attemptReconnect();
             };
         } catch (error) {
-            console.error('Failed to connect:', error);
+            console.error('❌ Failed to connect:', error);
             this.connected = false;
             if (this.callbacks.onDisconnect) {
                 this.callbacks.onDisconnect();
