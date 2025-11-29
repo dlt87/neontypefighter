@@ -25,13 +25,17 @@ class HighScoreAPI {
             });
             
             if (!response.ok) {
-                throw new Error('Failed to submit score');
+                const errorData = await response.json();
+                if (response.status === 403 && errorData.error === 'Email verification required') {
+                    throw new Error('EMAIL_NOT_VERIFIED');
+                }
+                throw new Error(errorData.error || 'Failed to submit score');
             }
             
             return await response.json();
         } catch (error) {
             console.error('Error submitting score:', error);
-            return null;
+            throw error;
         }
     }
     

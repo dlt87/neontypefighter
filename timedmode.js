@@ -196,7 +196,12 @@ class TimedMode {
             // Load and display leaderboard
             await this.loadLeaderboard();
         } catch (error) {
-            console.error('Failed to submit score:', error);
+            if (error.message === 'EMAIL_NOT_VERIFIED') {
+                // Show verification required message
+                alert('⚠️ Email Verification Required\n\nPlease verify your email address before submitting scores.\n\nCheck your inbox for the verification link, or request a new one from your account settings.');
+            } else {
+                console.error('Failed to submit score:', error);
+            }
         }
     }
     

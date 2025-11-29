@@ -74,6 +74,7 @@ class AuthClient {
                 sub: data.userId,
                 name: data.username,
                 email: data.email,
+                emailVerified: data.emailVerified || false,
                 token: data.token
             };
             

@@ -478,6 +478,7 @@ function handleLogin(req, res) {
                 userId: user.user_id,
                 username: user.username,
                 email: user.email,
+                emailVerified: user.email_verified || false,
                 token
             }));
         } catch (error) {
@@ -695,6 +696,24 @@ function handleSubmitScore(req, res) {
             if (!userId || !userName || score === undefined) {
                 res.writeHead(400, { 'Content-Type': 'application/json' });
                 res.end(JSON.stringify({ error: 'Missing required fields' }));
+                return;
+            }
+            
+            // Check if user's email is verified
+            const user = await userDb.findById(userId);
+            
+            if (!user) {
+                res.writeHead(404, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ error: 'User not found' }));
+                return;
+            }
+            
+            if (!user.email_verified) {
+                res.writeHead(403, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ 
+                    error: 'Email verification required',
+                    message: 'Please verify your email before submitting scores. Check your inbox for the verification link.'
+                }));
                 return;
             }
             

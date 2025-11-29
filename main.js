@@ -54,6 +54,34 @@ document.addEventListener('DOMContentLoaded', () => {
         authClient.signOut();
     });
     
+    document.getElementById('resend-verification-btn').addEventListener('click', async () => {
+        const btn = document.getElementById('resend-verification-btn');
+        btn.disabled = true;
+        btn.textContent = 'Sending...';
+        
+        try {
+            const response = await fetch('https://neontypefighter-production.up.railway.app/api/auth/resend-verification', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: authClient.currentUser.email })
+            });
+            
+            const data = await response.json();
+            
+            if (response.ok) {
+                alert('✅ Verification email sent! Check your inbox.');
+            } else {
+                alert('❌ ' + (data.error || 'Failed to send verification email'));
+            }
+        } catch (error) {
+            console.error('Resend verification error:', error);
+            alert('❌ Failed to send verification email. Please try again.');
+        } finally {
+            btn.disabled = false;
+            btn.textContent = 'Resend Email';
+        }
+    });
+    
     // Login form
     document.getElementById('login-form').addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -422,8 +450,17 @@ document.addEventListener('DOMContentLoaded', () => {
         const userInfo = document.getElementById('user-info');
         const authButtons = document.getElementById('auth-buttons');
         const userName = document.getElementById('user-name-display');
+        const verificationStatus = document.getElementById('verification-status');
+        const unverifiedBadge = document.getElementById('unverified-badge');
         
         userName.textContent = user.name;
+        
+        // Show/hide verification badge
+        if (user.emailVerified === false) {
+            verificationStatus.classList.remove('hidden');
+        } else {
+            verificationStatus.classList.add('hidden');
+        }
         
         userInfo.classList.remove('hidden');
         authButtons.classList.add('hidden');
