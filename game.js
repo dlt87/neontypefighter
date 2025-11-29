@@ -389,6 +389,14 @@ class Game {
         
         this.elements.gameOverStats.innerHTML = statsHTML;
         
+        // Show Play Again button only for timed mode
+        const playAgainBtn = document.getElementById('play-again-btn');
+        if (this.mode === 'timed') {
+            playAgainBtn.style.display = '';
+        } else {
+            playAgainBtn.style.display = 'none';
+        }
+        
         this.elements.gameOverOverlay.classList.remove('hidden');
         
         // Send to multiplayer if needed

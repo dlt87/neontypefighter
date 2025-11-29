@@ -202,7 +202,14 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('return-menu-btn').addEventListener('click', () => {
         game.reset();
         document.getElementById('game-over-overlay').classList.add('hidden');
+        document.getElementById('play-again-btn').style.display = 'none';
         showScreen('menu');
+    });
+    
+    document.getElementById('play-again-btn').addEventListener('click', () => {
+        game.reset();
+        document.getElementById('game-over-overlay').classList.add('hidden');
+        game.startTimedMode();
     });
     
     document.getElementById('back-to-menu-btn').addEventListener('click', () => {
