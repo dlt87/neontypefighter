@@ -25,7 +25,9 @@ class TimedMode {
             score: document.getElementById('timed-score'),
             multiplier: document.getElementById('timed-multiplier'),
             currentWord: document.getElementById('timed-current-word'),
-            nextWordPreview: document.getElementById('timed-next-word-preview')
+            nextWordPreview: document.getElementById('timed-next-word-preview'),
+            typingInput: document.getElementById('timed-typing-input'),
+            typingFeedback: document.getElementById('timed-typing-feedback')
         };
     }
     
@@ -46,12 +48,12 @@ class TimedMode {
         this.game.currentInput = '';
         this.game.isCritical = true;
         
-        // Clear input box and typing feedback
-        if (this.game.elements.typingInput) {
-            this.game.elements.typingInput.value = '';
+        // Clear input box and typing feedback (use timed mode elements)
+        if (this.elements.typingInput) {
+            this.elements.typingInput.value = '';
         }
-        if (this.game.elements.typingFeedback) {
-            this.game.elements.typingFeedback.textContent = '';
+        if (this.elements.typingFeedback) {
+            this.elements.typingFeedback.textContent = '';
         }
         
         // Start timer
@@ -196,12 +198,7 @@ class TimedMode {
             // Load and display leaderboard
             await this.loadLeaderboard();
         } catch (error) {
-            if (error.message === 'EMAIL_NOT_VERIFIED') {
-                // Show verification required message
-                alert('⚠️ Email Verification Required\n\nPlease verify your email address before submitting scores.\n\nCheck your inbox for the verification link, or request a new one from your account settings.');
-            } else {
-                console.error('Failed to submit score:', error);
-            }
+            console.error('Failed to submit score:', error);
         }
     }
     

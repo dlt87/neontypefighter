@@ -25,10 +25,7 @@ class HighScoreAPI {
             });
             
             if (!response.ok) {
-                const errorData = await response.json();
-                if (response.status === 403 && errorData.error === 'Email verification required') {
-                    throw new Error('EMAIL_NOT_VERIFIED');
-                }
+                const errorData = await response.json().catch(() => ({}));
                 throw new Error(errorData.error || 'Failed to submit score');
             }
             

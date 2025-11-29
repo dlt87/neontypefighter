@@ -738,14 +738,7 @@ function handleSubmitScore(req, res) {
                 return;
             }
             
-            if (!user.email_verified) {
-                res.writeHead(403, { 'Content-Type': 'application/json' });
-                res.end(JSON.stringify({ 
-                    error: 'Email verification required',
-                    message: 'Please verify your email before submitting scores. Check your inbox for the verification link.'
-                }));
-                return;
-            }
+            // Email verification removed - users can submit scores without verification
             
             // Save score to database
             const scoreEntry = await scoreDb.submitScore(userId, userName, score, stats || {});
