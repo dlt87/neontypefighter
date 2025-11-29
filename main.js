@@ -173,6 +173,8 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('timed-results-overlay').classList.add('hidden');
         game.reset();
         showScreen('menu');
+        // Reload leaderboard when returning to menu
+        loadMainMenuLeaderboard();
     });
     
     // Multiplayer lobby
