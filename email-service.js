@@ -15,7 +15,7 @@ const emailService = {
         
         try {
             const { data, error } = await resend.emails.send({
-                from: 'Neon Type Fighter <onboarding@resend.dev>',
+                from: 'Neon Type Fighter <davidliganting@gmail.com>',
                 to: [email],
                 subject: '🎮 Verify Your Neon Type Fighter Account',
                 html: `
@@ -62,7 +62,7 @@ const emailService = {
         
         try {
             const { data, error } = await resend.emails.send({
-                from: 'Neon Type Fighter <onboarding@resend.dev>',
+                from: 'Neon Type Fighter <davidliganting@gmail.com>',
                 to: [email],
                 subject: '🔒 Reset Your Neon Type Fighter Password',
                 html: `
