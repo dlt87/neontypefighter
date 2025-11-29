@@ -106,7 +106,18 @@ const server = http.createServer((req, res) => {
     }
     
     // API Routes
-    if (pathname === '/api/auth/register' && req.method === 'POST') {
+    if (pathname === '/api/health' && req.method === 'GET') {
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({
+            status: 'ok',
+            smtp_configured: !!(process.env.SMTP_USER && process.env.SMTP_PASS),
+            smtp_host: process.env.SMTP_HOST || 'not set',
+            smtp_port: process.env.SMTP_PORT || 'not set',
+            smtp_user: process.env.SMTP_USER ? 'set' : 'not set',
+            smtp_pass: process.env.SMTP_PASS ? 'set' : 'not set',
+            app_url: process.env.APP_URL || 'not set'
+        }));
+    } else if (pathname === '/api/auth/register' && req.method === 'POST') {
         handleRegister(req, res);
     } else if (pathname === '/api/auth/login' && req.method === 'POST') {
         handleLogin(req, res);
@@ -405,8 +416,13 @@ function handleRegister(req, res) {
             await userDb.setVerificationToken(userId, verificationToken, expires);
             
             // Send verification email (don't wait for it)
-            emailService.sendVerificationEmail(email, username, verificationToken)
-                .catch(err => console.error('Failed to send verification email:', err));
+            if (process.env.SMTP_USER && process.env.SMTP_PASS) {
+                emailService.sendVerificationEmail(email, username, verificationToken)
+                    .catch(err => console.error('❌ Failed to send verification email:', err));
+                console.log(`📧 Verification email queued for: ${email}`);
+            } else {
+                console.warn('⚠️ SMTP not configured - verification email not sent');
+            }
             
             // Generate auth token
             const token = generateToken(userId);
