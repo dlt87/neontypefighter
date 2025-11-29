@@ -15,9 +15,9 @@ class TimedMode {
         this.difficultyLevel = 1;
         
         // Scoring
-        this.baseWordScore = 5;     // 5 points per word completed
-        this.pointsPerLetter = 1;    // 1 point per letter in the word
-        this.perfectMultiplier = 2;  // 2x bonus for perfect words
+        this.baseWordScore = 2;      // 2 points per word completed
+        this.pointsPerLetter = 0.5;  // 0.5 points per letter in the word
+        this.perfectMultiplier = 1.5; // 1.5x bonus for perfect words
         this.difficultyMultiplier = 1;
         
         // DOM elements
