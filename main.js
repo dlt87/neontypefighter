@@ -566,7 +566,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const opponentDisplay = document.getElementById('opponent-name-display');
         const countdownNumber = document.getElementById('countdown-number');
         
-        opponentDisplay.textContent = 'GET READY!';
+        opponentDisplay.textContent = 'MATCH STARTING!';
         overlay.classList.remove('hidden');
         
         let count = 3;
