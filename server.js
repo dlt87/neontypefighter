@@ -271,14 +271,14 @@ function authenticateWebSocket(ws, token) {
         return;
     }
     
-    const tokenData = verifyToken(token);
-    if (tokenData) {
-        ws.userId = tokenData.userId;
+    const userId = verifyToken(token);
+    if (userId) {
+        ws.userId = userId;
         ws.send(JSON.stringify({
             type: 'authenticated',
-            userId: tokenData.userId
+            userId: userId
         }));
-        console.log(`✅ WebSocket authenticated for user: ${tokenData.userId}`);
+        console.log(`✅ WebSocket authenticated for user: ${userId}`);
     } else {
         console.log('❌ Invalid token for WebSocket authentication');
         ws.send(JSON.stringify({
