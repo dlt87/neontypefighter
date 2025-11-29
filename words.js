@@ -22,7 +22,7 @@ const CYBERPUNK_WORDS = [
 ];
 
 const NAME_WORDS = [
-    'michael', 'reentika', 'david', 'george', 'krista', 'heidi', 'emma', 'alisha'
+    'michael', 'reentika', 'david', 'george', 'krista', 'heidi', 'emma', 'alisha', 'greenough', 'awasthi', 'ting', 'sleen', 'traboulay', 'leung', 'duong', 'siddiqui', 
 ];
 
 // Default word pool (can be switched)
