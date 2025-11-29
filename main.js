@@ -563,9 +563,11 @@ document.addEventListener('DOMContentLoaded', () => {
     
     function showTimedCountdown(onComplete) {
         const overlay = document.getElementById('match-countdown-overlay');
+        const opponentFoundText = document.querySelector('.opponent-found-text');
         const opponentDisplay = document.getElementById('opponent-name-display');
         const countdownNumber = document.getElementById('countdown-number');
         
+        opponentFoundText.textContent = 'GET READY!';
         opponentDisplay.textContent = 'MATCH STARTING!';
         overlay.classList.remove('hidden');
         
@@ -584,6 +586,8 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 clearInterval(countdownInterval);
                 overlay.classList.add('hidden');
+                // Reset text for multiplayer
+                opponentFoundText.textContent = 'OPPONENT FOUND!';
                 onComplete();
             }
         }, 1000);
