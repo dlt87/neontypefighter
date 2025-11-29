@@ -15,8 +15,9 @@ class TimedMode {
         this.difficultyLevel = 1;
         
         // Scoring
-        this.baseScore = 10;
-        this.perfectBonus = 15;
+        this.baseWordScore = 5;     // 5 points per word completed
+        this.pointsPerLetter = 1;    // 1 point per letter in the word
+        this.perfectMultiplier = 2;  // 2x bonus for perfect words
         this.difficultyMultiplier = 1;
         
         // DOM elements
@@ -101,15 +102,17 @@ class TimedMode {
         }
     }
     
-    onWordCompleted(isPerfect) {
+    onWordCompleted(isPerfect, word) {
         if (!this.isActive) return;
         
         this.wordsCompleted++;
         
-        // Calculate score
-        let wordScore = this.baseScore * this.difficultyMultiplier;
+        // Calculate score: 5 points per word + 1 point per letter
+        const letterPoints = word ? word.length * this.pointsPerLetter : 0;
+        let wordScore = (this.baseWordScore + letterPoints) * this.difficultyMultiplier;
+        
         if (isPerfect) {
-            wordScore += this.perfectBonus * this.difficultyMultiplier;
+            wordScore *= this.perfectMultiplier; // 2x multiplier for perfect words
             this.perfectWords++;
         }
         

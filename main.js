@@ -353,7 +353,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 
                 // Update timed mode score
-                game.timedMode.onWordCompleted(isPerfect);
+                game.timedMode.onWordCompleted(isPerfect, targetWord);
                 
                 // Show particle effect
                 const color = game.themeManager.getCurrentTheme().primary;
