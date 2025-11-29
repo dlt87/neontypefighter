@@ -162,6 +162,11 @@ document.addEventListener('DOMContentLoaded', () => {
         loadSettings();
     });
     
+    document.getElementById('achievements-btn').addEventListener('click', () => {
+        showScreen('achievements');
+        loadAchievements();
+    });
+    
     // Audio control buttons
     document.getElementById('sound-toggle').addEventListener('click', (e) => {
         const enabled = game.soundManager.toggleSound();
@@ -217,14 +222,25 @@ document.addEventListener('DOMContentLoaded', () => {
         if (multiplayerClient && multiplayerClient.connected) {
             multiplayerClient.findMatch(playerName);
             document.getElementById('waiting-message').classList.remove('hidden');
-            document.getElementById('find-match-btn').disabled = true;
+            document.getElementById('find-match-btn').style.display = 'none';
+            document.getElementById('cancel-match-btn').style.display = '';
         } else {
             alert('Not connected to server. Please check your connection.');
         }
     });
     
+    document.getElementById('cancel-match-btn').addEventListener('click', () => {
+        if (multiplayerClient) {
+            multiplayerClient.cancelMatch();
+            document.getElementById('waiting-message').classList.add('hidden');
+            document.getElementById('find-match-btn').style.display = '';
+            document.getElementById('cancel-match-btn').style.display = 'none';
+        }
+    });
+    
     function showScreen(screen) {
         const settingsMenu = document.getElementById('settings-menu');
+        const achievementsScreen = document.getElementById('achievements-screen');
         
         mainMenu.classList.remove('active');
         mainMenu.classList.add('hidden');
@@ -235,6 +251,8 @@ document.addEventListener('DOMContentLoaded', () => {
         timedModeScreen.classList.add('hidden');
         settingsMenu.classList.add('hidden');
         settingsMenu.classList.remove('active');
+        achievementsScreen.classList.add('hidden');
+        achievementsScreen.classList.remove('active');
         
         if (screen === 'menu') {
             mainMenu.classList.add('active');
@@ -252,6 +270,9 @@ document.addEventListener('DOMContentLoaded', () => {
         } else if (screen === 'settings') {
             settingsMenu.classList.remove('hidden');
             settingsMenu.classList.add('active');
+        } else if (screen === 'achievements') {
+            achievementsScreen.classList.remove('hidden');
+            achievementsScreen.classList.add('active');
         }
     }
     
@@ -396,26 +417,50 @@ document.addEventListener('DOMContentLoaded', () => {
             multiplayerClient.on('onConnect', () => {
                 console.log('📡 Multiplayer connected - enabling Find Match button');
                 updateConnectionStatus('Connected', true);
+                document.getElementById('lobby-stats').classList.remove('hidden');
             });
             
             multiplayerClient.on('onDisconnect', () => {
                 updateConnectionStatus('Disconnected - Retrying...', false);
                 document.getElementById('find-match-btn').disabled = true;
+                document.getElementById('lobby-stats').classList.add('hidden');
+            });
+            
+            multiplayerClient.on('onLobbyStats', (stats) => {
+                document.getElementById('players-online').textContent = stats.playersOnline;
+                document.getElementById('queue-position').textContent = stats.queueSize;
+            });
+            
+            multiplayerClient.on('onQueuePosition', (position) => {
+                console.log('Queue position:', position);
             });
             
             multiplayerClient.on('onMatchFound', (data) => {
                 document.getElementById('waiting-message').classList.add('hidden');
-                showScreen('game');
-                game.startMultiplayerGame(
-                    multiplayerClient.playerName,
-                    data.opponentName
-                );
+                document.getElementById('find-match-btn').style.display = '';
+                document.getElementById('cancel-match-btn').style.display = 'none';
+                
+                // Show countdown overlay
+                showMatchCountdown(data.opponentName, () => {
+                    showScreen('game');
+                    game.startMultiplayerGame(
+                        multiplayerClient.playerName,
+                        data.opponentName
+                    );
+                });
             });
             
             multiplayerClient.on('onOpponentAction', (data) => {
                 if (game.isActive && !game.gameOver) {
                     game.dealDamage(1, data.damage, data.isCritical);
                     game.addCombatLog('player2', data.word, data.isCritical);
+                }
+            });
+            
+            multiplayerClient.on('onOpponentDisconnected', () => {
+                if (game.isActive && !game.gameOver) {
+                    alert('Opponent disconnected! You win by default.');
+                    game.endGame(true);
                 }
             });
             
@@ -440,6 +485,34 @@ document.addEventListener('DOMContentLoaded', () => {
         findMatchBtn.disabled = !connected;
         
         console.log('🎮 Find Match button disabled state:', findMatchBtn.disabled);
+    }
+    
+    function showMatchCountdown(opponentName, onComplete) {
+        const overlay = document.getElementById('match-countdown-overlay');
+        const opponentDisplay = document.getElementById('opponent-name-display');
+        const countdownNumber = document.getElementById('countdown-number');
+        
+        opponentDisplay.textContent = opponentName;
+        overlay.classList.remove('hidden');
+        
+        let count = 3;
+        countdownNumber.textContent = count;
+        
+        const countdownInterval = setInterval(() => {
+            count--;
+            if (count > 0) {
+                countdownNumber.textContent = count;
+                // Restart animation
+                countdownNumber.style.animation = 'none';
+                setTimeout(() => {
+                    countdownNumber.style.animation = 'countdownPulse 1s ease-in-out';
+                }, 10);
+            } else {
+                clearInterval(countdownInterval);
+                overlay.classList.add('hidden');
+                onComplete();
+            }
+        }, 1000);
     }
     
     function handleUserLogin(user) {
@@ -543,6 +616,81 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('sound-volume-value').textContent = soundVolume + '%';
         document.getElementById('music-volume').value = musicVolume;
         document.getElementById('music-volume-value').textContent = musicVolume + '%';
+
+    // Achievements Management
+    async function loadAchievements() {
+        const achievementsGrid = document.getElementById('achievements-grid');
+        const unlockedCount = document.getElementById('unlocked-count');
+        const totalCount = document.getElementById('total-count');
+        
+        if (!authClient.currentUser) {
+            achievementsGrid.innerHTML = '<div class="loading-message">Please log in to view achievements</div>';
+            unlockedCount.textContent = '0';
+            totalCount.textContent = '0';
+            return;
+        }
+        
+        try {
+            achievementsGrid.innerHTML = '<div class="loading-message">Loading achievements...</div>';
+            
+            const token = authClient.token;
+            const response = await fetch('https://neontypefighter-production.up.railway.app/api/achievements/user', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            
+            if (!response.ok) {
+                throw new Error('Failed to fetch achievements');
+            }
+            
+            const achievements = await response.json();
+            
+            const unlocked = achievements.filter(a => a.unlocked).length;
+            unlockedCount.textContent = unlocked;
+            totalCount.textContent = achievements.length;
+            
+            achievementsGrid.innerHTML = achievements.map(achievement => {
+                const isUnlocked = achievement.unlocked;
+                const tierClass = `tier-${achievement.tier}`;
+                const lockedClass = isUnlocked ? 'unlocked' : 'locked';
+                
+                return `
+                    <div class="achievement-card ${tierClass} ${lockedClass}">
+                        <div class="achievement-icon">${achievement.icon}</div>
+                        <div class="achievement-name">${achievement.name}</div>
+                        <div class="achievement-description">${achievement.description}</div>
+                        ${isUnlocked 
+                            ? `<div class="achievement-unlocked-date">✓ Unlocked: ${new Date(achievement.unlocked_at).toLocaleDateString()}</div>`
+                            : `<div class="achievement-progress">🔒 ${achievement.requirement}</div>`
+                        }
+                    </div>
+                `;
+            }).join('');
+            
+        } catch (error) {
+            console.error('Failed to load achievements:', error);
+            achievementsGrid.innerHTML = '<div class="loading-message">Failed to load achievements</div>';
+            unlockedCount.textContent = '0';
+            totalCount.textContent = '0';
+        }
+    }
+    
+    // Achievement Toast Notification
+    window.showAchievementToast = function(achievement) {
+        const toast = document.getElementById('achievement-toast');
+        const icon = toast.querySelector('.achievement-toast-icon');
+        const name = toast.querySelector('.achievement-toast-name');
+        
+        icon.textContent = achievement.icon;
+        name.textContent = achievement.name;
+        
+        toast.classList.remove('hidden');
+        
+        // Auto-hide after 5 seconds
+        setTimeout(() => {
+            toast.classList.add('hidden');
+        }, 5000);
+    };
+
         document.getElementById('mute-sounds').checked = muteSounds;
         document.getElementById('difficulty').value = difficulty;
         document.getElementById('show-fps').checked = showFps;
@@ -601,6 +749,11 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('screen-shake').addEventListener('change', saveSettings);
 
     document.getElementById('back-from-settings-btn').addEventListener('click', () => {
+        showScreen('menu');
+        loadMainMenuLeaderboard();
+    });
+    
+    document.getElementById('back-from-achievements-btn').addEventListener('click', () => {
         showScreen('menu');
         loadMainMenuLeaderboard();
     });

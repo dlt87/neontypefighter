@@ -195,6 +195,17 @@ class TimedMode {
             );
             console.log('Score submitted to server:', result);
             
+            // Show achievement toasts if any were unlocked
+            if (result.newAchievements && result.newAchievements.length > 0) {
+                result.newAchievements.forEach((achievement, index) => {
+                    setTimeout(() => {
+                        if (window.showAchievementToast) {
+                            window.showAchievementToast(achievement);
+                        }
+                    }, index * 1000); // Stagger multiple achievement notifications
+                });
+            }
+            
             // Load and display leaderboard
             await this.loadLeaderboard();
         } catch (error) {

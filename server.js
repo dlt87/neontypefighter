@@ -12,7 +12,7 @@ const url = require('url');
 const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
-const { initDatabase, userDb, scoreDb, pool } = require('./database');
+const { initDatabase, userDb, scoreDb, achievementDb, pool } = require('./database');
 const emailService = require('./email-service');
 
 const PORT = process.env.PORT || 8080;
@@ -152,6 +152,10 @@ const server = http.createServer((req, res) => {
         handleGetUserScore(req, res, userId);
     } else if (pathname === '/api/stats' && req.method === 'GET') {
         handleGetStats(req, res);
+    } else if (pathname === '/api/achievements' && req.method === 'GET') {
+        handleGetAchievements(req, res);
+    } else if (pathname === '/api/achievements/user' && req.method === 'GET') {
+        handleGetUserAchievements(req, res);
     } else {
         res.writeHead(404, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: 'Not found' }));
@@ -178,11 +182,16 @@ wss.on('connection', (ws) => {
     ws.playerId = playerId;
     ws.isAlive = true;
     
-    // Send connection confirmation
+    // Send connection confirmation with lobby stats
     ws.send(JSON.stringify({
         type: 'connected',
-        playerId: playerId
+        playerId: playerId,
+        playersOnline: wss.clients.size,
+        queueSize: waitingPlayers.length
     }));
+    
+    // Broadcast updated stats to all clients
+    broadcastLobbyStats();
     
     ws.on('message', (message) => {
         try {
@@ -267,10 +276,22 @@ function findMatch(ws, playerName) {
         }));
         
         console.log(`Match created: ${ws.playerName} vs ${opponent.playerName}`);
+        
+        // Broadcast updated stats
+        broadcastLobbyStats();
     } else {
         // Add to waiting queue
         waitingPlayers.push(ws);
         console.log(`${playerName} added to waiting queue`);
+        
+        // Send queue position
+        ws.send(JSON.stringify({
+            type: 'queuePosition',
+            position: waitingPlayers.length
+        }));
+        
+        // Broadcast updated stats
+        broadcastLobbyStats();
     }
 }
 
@@ -322,6 +343,23 @@ function handleDisconnect(ws) {
     }
     
     cleanupMatch(ws);
+    
+    // Broadcast updated lobby stats
+    broadcastLobbyStats();
+}
+
+function broadcastLobbyStats() {
+    const stats = JSON.stringify({
+        type: 'lobbyStats',
+        playersOnline: wss.clients.size,
+        queueSize: waitingPlayers.length
+    });
+    
+    wss.clients.forEach(client => {
+        if (client.readyState === 1) { // WebSocket.OPEN
+            client.send(stats);
+        }
+    });
 }
 
 function findOpponent(ws) {
@@ -743,6 +781,9 @@ function handleSubmitScore(req, res) {
             // Save score to database
             const scoreEntry = await scoreDb.submitScore(userId, userName, score, stats || {});
             
+            // Check and unlock achievements
+            const newAchievements = await achievementDb.checkAndUnlock(userId);
+            
             // Get user's best score
             const userBest = await scoreDb.getUserBestScore(userId);
             const isNewBest = userBest && userBest.score === score;
@@ -755,9 +796,13 @@ function handleSubmitScore(req, res) {
             res.end(JSON.stringify({
                 success: true,
                 rank: rank || 0,
-                isNewBest
+                isNewBest,
+                newAchievements: newAchievements || []
             }));
             
+            if (newAchievements && newAchievements.length > 0) {
+                console.log(`🏆 ${userName} unlocked ${newAchievements.length} achievement(s)!`);
+            }
             console.log(`📊 Score submitted: ${userName} - ${score} points (Rank #${rank || 'N/A'})`);
         } catch (error) {
             console.error('Error handling score submission:', error);
@@ -811,6 +856,50 @@ async function handleGetStats(req, res) {
         res.end(JSON.stringify(stats));
     } catch (error) {
         console.error('Error getting stats:', error);
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Internal server error' }));
+    }
+}
+
+// Get all achievements
+async function handleGetAchievements(req, res) {
+    try {
+        const achievements = await achievementDb.getAllAchievements();
+        
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify(achievements));
+    } catch (error) {
+        console.error('Error getting achievements:', error);
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Internal server error' }));
+    }
+}
+
+// Get user's achievements with progress
+async function handleGetUserAchievements(req, res) {
+    try {
+        const authHeader = req.headers['authorization'];
+        if (!authHeader) {
+            res.writeHead(401, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'Authorization required' }));
+            return;
+        }
+
+        const token = authHeader.replace('Bearer ', '');
+        const userId = verifyToken(token);
+
+        if (!userId) {
+            res.writeHead(401, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'Invalid token' }));
+            return;
+        }
+
+        const achievements = await achievementDb.getUserAchievements(userId);
+        
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify(achievements));
+    } catch (error) {
+        console.error('Error getting user achievements:', error);
         res.writeHead(500, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: 'Internal server error' }));
     }

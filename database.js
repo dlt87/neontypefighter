@@ -84,6 +84,49 @@ async function initDatabase() {
             CREATE INDEX IF NOT EXISTS idx_user_scores ON high_scores(user_id, score DESC);
         `);
 
+        // Create achievements table
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS achievements (
+                achievement_id VARCHAR(50) PRIMARY KEY,
+                name VARCHAR(100) NOT NULL,
+                description TEXT NOT NULL,
+                icon VARCHAR(10) NOT NULL,
+                tier VARCHAR(20) NOT NULL,
+                requirement INTEGER NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+
+        // Create user_achievements table
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS user_achievements (
+                user_id VARCHAR(255) NOT NULL,
+                achievement_id VARCHAR(50) NOT NULL,
+                unlocked_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                progress INTEGER DEFAULT 0,
+                PRIMARY KEY (user_id, achievement_id),
+                FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+                FOREIGN KEY (achievement_id) REFERENCES achievements(achievement_id) ON DELETE CASCADE
+            );
+            CREATE INDEX IF NOT EXISTS idx_user_achievements ON user_achievements(user_id);
+        `);
+
+        // Insert default achievements if not exist
+        await client.query(`
+            INSERT INTO achievements (achievement_id, name, description, icon, tier, requirement) VALUES
+            ('first_blood', 'First Blood', 'Win your first game', '⚔️', 'bronze', 1),
+            ('speed_demon', 'Speed Demon', 'Complete 50 words in timed mode', '⚡', 'bronze', 50),
+            ('perfectionist', 'Perfectionist', 'Type 10 perfect words in a row', '💎', 'silver', 10),
+            ('combo_master', 'Combo Master', 'Achieve a 5x multiplier', '🔥', 'silver', 5),
+            ('word_warrior', 'Word Warrior', 'Complete 500 total words', '🗡️', 'gold', 500),
+            ('untouchable', 'Untouchable', 'Win without taking damage', '🛡️', 'gold', 1),
+            ('speed_runner', 'Speed Runner', 'Score 200+ in timed mode', '🏃', 'gold', 200),
+            ('marathon', 'Marathon', 'Play 100 games', '🎮', 'platinum', 100),
+            ('legend', 'Legend', 'Reach top 10 on global leaderboard', '👑', 'platinum', 10),
+            ('flawless', 'Flawless Victory', 'Win 10 games with 100% accuracy', '✨', 'platinum', 10)
+            ON CONFLICT (achievement_id) DO NOTHING;
+        `);
+
         console.log('✅ Database tables initialized');
     } catch (error) {
         console.error('❌ Database initialization error:', error);
@@ -260,6 +303,124 @@ const scoreDb = {
              FROM high_scores`
         );
         return result.rows[0];
+    },
+
+    // Get user's total stats
+    async getUserStats(userId) {
+        const result = await pool.query(
+            `SELECT 
+                COUNT(*) as games_played,
+                SUM(words_completed) as total_words,
+                SUM(perfect_words) as total_perfect_words,
+                MAX(score) as best_score,
+                MAX(max_multiplier) as best_multiplier
+             FROM high_scores
+             WHERE user_id = $1`,
+            [userId]
+        );
+        return result.rows[0];
+    }
+};
+
+// Achievement Database Functions
+const achievementDb = {
+    // Get all achievements
+    async getAllAchievements() {
+        const result = await pool.query(
+            `SELECT achievement_id as "achievementId", name, description, icon, tier, requirement
+             FROM achievements
+             ORDER BY 
+                CASE tier 
+                    WHEN 'bronze' THEN 1 
+                    WHEN 'silver' THEN 2 
+                    WHEN 'gold' THEN 3 
+                    WHEN 'platinum' THEN 4 
+                END,
+                requirement ASC`
+        );
+        return result.rows;
+    },
+
+    // Get user's achievements
+    async getUserAchievements(userId) {
+        const result = await pool.query(
+            `SELECT 
+                a.achievement_id as "achievementId",
+                a.name,
+                a.description,
+                a.icon,
+                a.tier,
+                a.requirement,
+                ua.unlocked_at as "unlockedAt",
+                ua.progress
+             FROM achievements a
+             LEFT JOIN user_achievements ua ON a.achievement_id = ua.achievement_id AND ua.user_id = $1
+             ORDER BY 
+                CASE a.tier 
+                    WHEN 'bronze' THEN 1 
+                    WHEN 'silver' THEN 2 
+                    WHEN 'gold' THEN 3 
+                    WHEN 'platinum' THEN 4 
+                END,
+                a.requirement ASC`,
+            [userId]
+        );
+        return result.rows;
+    },
+
+    // Unlock achievement for user
+    async unlockAchievement(userId, achievementId) {
+        const result = await pool.query(
+            `INSERT INTO user_achievements (user_id, achievement_id, progress)
+             VALUES ($1, $2, (SELECT requirement FROM achievements WHERE achievement_id = $2))
+             ON CONFLICT (user_id, achievement_id) DO NOTHING
+             RETURNING *`,
+            [userId, achievementId]
+        );
+        return result.rows[0];
+    },
+
+    // Update achievement progress
+    async updateProgress(userId, achievementId, progress) {
+        const result = await pool.query(
+            `INSERT INTO user_achievements (user_id, achievement_id, progress)
+             VALUES ($1, $2, $3)
+             ON CONFLICT (user_id, achievement_id) 
+             DO UPDATE SET progress = $3
+             RETURNING *`,
+            [userId, achievementId, progress]
+        );
+        return result.rows[0];
+    },
+
+    // Check and unlock achievements based on stats
+    async checkAndUnlock(userId) {
+        const stats = await scoreDb.getUserStats(userId);
+        const userAchievements = await this.getUserAchievements(userId);
+        const newUnlocks = [];
+
+        // Check each achievement condition
+        const checks = [
+            { id: 'first_blood', condition: parseInt(stats.games_played) >= 1 },
+            { id: 'speed_demon', condition: parseInt(stats.total_words) >= 50 },
+            { id: 'word_warrior', condition: parseInt(stats.total_words) >= 500 },
+            { id: 'marathon', condition: parseInt(stats.games_played) >= 100 },
+            { id: 'speed_runner', condition: parseInt(stats.best_score) >= 200 },
+            { id: 'combo_master', condition: parseFloat(stats.best_multiplier) >= 5.0 }
+        ];
+
+        for (const check of checks) {
+            const existing = userAchievements.find(a => a.achievementId === check.id);
+            if (check.condition && !existing?.unlockedAt) {
+                const unlocked = await this.unlockAchievement(userId, check.id);
+                if (unlocked) {
+                    const achievement = userAchievements.find(a => a.achievementId === check.id);
+                    newUnlocks.push(achievement);
+                }
+            }
+        }
+
+        return newUnlocks;
     }
 };
 
@@ -267,5 +428,6 @@ module.exports = {
     initDatabase,
     userDb,
     scoreDb,
+    achievementDb,
     pool
 };

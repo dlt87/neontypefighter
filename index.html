@@ -21,6 +21,7 @@
                         <button class="neon-button" id="solo-mode-btn">SOLO MODE</button>
                         <button class="neon-button" id="timed-mode-btn">TIMED MODE</button>
                         <button class="neon-button" id="multiplayer-mode-btn">MULTIPLAYER</button>
+                        <button class="neon-button" id="achievements-btn">ACHIEVEMENTS</button>
                         <button class="neon-button" id="themes-btn">THEMES</button>
                         <button class="neon-button" id="settings-btn">SETTINGS</button>
                     </div>
@@ -216,6 +217,16 @@
 
             <!-- Particle Effects Container -->
             <div id="particles-container"></div>
+            
+            <!-- Match Start Countdown -->
+            <div id="match-countdown-overlay" class="hidden">
+                <div class="countdown-content">
+                    <div class="opponent-found-text">OPPONENT FOUND!</div>
+                    <div class="opponent-name-display" id="opponent-name-display"></div>
+                    <div class="countdown-number" id="countdown-number">3</div>
+                    <div class="countdown-text">GET READY!</div>
+                </div>
+            </div>
 
             <!-- Game Over Overlay -->
             <div id="game-over-overlay" class="hidden">
@@ -232,10 +243,28 @@
             <h2 class="neon-text">MULTIPLAYER LOBBY</h2>
             <div class="lobby-content">
                 <div class="connection-status" id="connection-status">Connecting...</div>
+                <div class="lobby-stats hidden" id="lobby-stats">
+                    <div class="stat-item">
+                        <span class="stat-label">Players Online:</span>
+                        <span class="stat-value" id="players-online">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">In Queue:</span>
+                        <span class="stat-value" id="queue-position">0</span>
+                    </div>
+                </div>
                 <input type="text" id="player-name-input" class="neon-input" placeholder="Enter your name" maxlength="12">
                 <button class="neon-button" id="find-match-btn">FIND MATCH</button>
+                <button class="neon-button secondary" id="cancel-match-btn" style="display:none;">CANCEL</button>
                 <button class="neon-button secondary" id="back-to-menu-btn">BACK</button>
-                <div class="waiting-message hidden" id="waiting-message">Waiting for opponent...</div>
+                <div class="waiting-message hidden" id="waiting-message">
+                    <div class="searching-animation">
+                        <div class="searching-dots">
+                            <span></span><span></span><span></span>
+                        </div>
+                        <div class="searching-text">Searching for opponent...</div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -309,6 +338,38 @@
                 </div>
 
                 <button class="neon-button secondary" id="back-from-settings-btn">BACK</button>
+            </div>
+        </div>
+
+        <!-- Achievements Screen -->
+        <div id="achievements-screen" class="menu-screen hidden">
+            <h2 class="neon-text">ACHIEVEMENTS</h2>
+            <div class="achievements-content">
+                <div class="achievements-stats">
+                    <div class="stat-card">
+                        <div class="stat-value" id="achievements-unlocked">0</div>
+                        <div class="stat-label">Unlocked</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="achievements-total">10</div>
+                        <div class="stat-label">Total</div>
+                    </div>
+                </div>
+                <div class="achievements-grid" id="achievements-grid">
+                    <!-- Achievement cards will be inserted here -->
+                </div>
+                <button class="neon-button secondary" id="back-from-achievements-btn">BACK</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Achievement Unlock Toast -->
+    <div id="achievement-toast" class="achievement-toast hidden">
+        <div class="achievement-toast-content">
+            <div class="achievement-toast-icon"></div>
+            <div class="achievement-toast-text">
+                <div class="achievement-toast-title">Achievement Unlocked!</div>
+                <div class="achievement-toast-name"></div>
             </div>
         </div>
     </div>

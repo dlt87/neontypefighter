@@ -899,6 +899,90 @@ body::before {
     color: var(--neon-cyan);
 }
 
+/* Match Start Countdown */
+#match-countdown-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+#match-countdown-overlay.hidden {
+    display: none;
+}
+
+.countdown-content {
+    text-align: center;
+    animation: countdownAppear 0.5s ease;
+}
+
+@keyframes countdownAppear {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.opponent-found-text {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 2rem;
+    color: var(--neon-green);
+    text-shadow: 0 0 30px var(--neon-green);
+    margin-bottom: 1rem;
+    animation: pulse 1s ease-in-out infinite;
+}
+
+.opponent-name-display {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 2.5rem;
+    color: var(--neon-magenta);
+    text-shadow: 0 0 20px var(--neon-magenta);
+    margin-bottom: 2rem;
+}
+
+.countdown-number {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 8rem;
+    font-weight: 700;
+    color: var(--neon-cyan);
+    text-shadow: 0 0 50px var(--neon-cyan);
+    margin-bottom: 1rem;
+    animation: countdownPulse 1s ease-in-out;
+}
+
+@keyframes countdownPulse {
+    0% {
+        transform: scale(0.5);
+        opacity: 0;
+    }
+    50% {
+        transform: scale(1.2);
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.countdown-text {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.5rem;
+    color: var(--neon-yellow);
+    text-shadow: 0 0 20px var(--neon-yellow);
+    text-transform: uppercase;
+    letter-spacing: 0.2rem;
+}
+
 /* ========================================
    MULTIPLAYER LOBBY
    ======================================== */
@@ -939,6 +1023,38 @@ body::before {
     color: var(--neon-orange);
 }
 
+.lobby-stats {
+    display: flex;
+    gap: 2rem;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 5px;
+}
+
+.stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.stat-item .stat-label {
+    font-size: 0.9rem;
+    color: var(--neon-cyan);
+    text-transform: uppercase;
+    letter-spacing: 0.1rem;
+}
+
+.stat-item .stat-value {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--neon-magenta);
+    text-shadow: 0 0 10px var(--neon-magenta);
+}
+
 #player-name-input {
     margin-bottom: 1.5rem;
     font-size: 1.5rem;
@@ -946,14 +1062,52 @@ body::before {
 
 .waiting-message {
     margin-top: 1.5rem;
-    font-size: 1.2rem;
-    color: var(--neon-yellow);
-    animation: pulse 1.5s ease-in-out infinite;
 }
 
-@keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.5; }
+.searching-animation {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.searching-dots {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.searching-dots span {
+    width: 12px;
+    height: 12px;
+    background: var(--neon-cyan);
+    border-radius: 50%;
+    box-shadow: 0 0 10px var(--neon-cyan);
+    animation: searchingBounce 1.4s infinite ease-in-out;
+}
+
+.searching-dots span:nth-child(1) {
+    animation-delay: -0.32s;
+}
+
+.searching-dots span:nth-child(2) {
+    animation-delay: -0.16s;
+}
+
+@keyframes searchingBounce {
+    0%, 80%, 100% {
+        transform: scale(0.8);
+        opacity: 0.5;
+    }
+    40% {
+        transform: scale(1.2);
+        opacity: 1;
+    }
+}
+
+.searching-text {
+    font-size: 1.2rem;
+    color: var(--neon-yellow);
+    font-family: 'Orbitron', sans-serif;
 }
 
 .hidden {
@@ -1388,6 +1542,190 @@ body::before {
     background: var(--neon-cyan);
     border-radius: 10px;
     box-shadow: 0 0 10px var(--neon-cyan);
+}
+
+/* ========================================
+   ACHIEVEMENTS SCREEN
+   ======================================== */
+
+#achievements-screen {
+    text-align: center;
+}
+
+.achievements-content {
+    background: var(--panel-bg);
+    border: 2px solid var(--neon-cyan);
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 0 0 30px rgba(0, 255, 255, 0.3);
+    max-width: 1000px;
+    margin: 0 auto;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.achievements-stats {
+    display: flex;
+    gap: 2rem;
+    justify-content: center;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    background: rgba(0, 0, 0, 0.5);
+    border: 2px solid var(--neon-magenta);
+    border-radius: 10px;
+    padding: 1.5rem 3rem;
+    box-shadow: 0 0 20px rgba(255, 0, 255, 0.3);
+}
+
+.stat-value {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 3rem;
+    font-weight: 700;
+    color: var(--neon-magenta);
+    text-shadow: 0 0 20px var(--neon-magenta);
+}
+
+.stat-label {
+    font-size: 1rem;
+    color: var(--neon-cyan);
+    margin-top: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1rem;
+}
+
+.achievements-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.achievement-card {
+    background: rgba(0, 0, 0, 0.7);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    padding: 1.5rem;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.achievement-card.locked {
+    opacity: 0.5;
+    filter: grayscale(100%);
+}
+
+.achievement-card.unlocked {
+    border-color: var(--neon-green);
+    box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+}
+
+.achievement-card.tier-bronze { border-left: 4px solid #cd7f32; }
+.achievement-card.tier-silver { border-left: 4px solid #c0c0c0; }
+.achievement-card.tier-gold { border-left: 4px solid #ffd700; }
+.achievement-card.tier-platinum { border-left: 4px solid #e5e4e2; }
+
+.achievement-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+.achievement-name {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--neon-cyan);
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+}
+
+.achievement-description {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.7);
+    margin-bottom: 1rem;
+}
+
+.achievement-progress {
+    font-size: 0.85rem;
+    color: var(--neon-yellow);
+    margin-top: 0.5rem;
+}
+
+.achievement-unlocked-date {
+    font-size: 0.75rem;
+    color: var(--neon-green);
+    margin-top: 0.5rem;
+}
+
+/* Achievement Toast Notification */
+.achievement-toast {
+    position: fixed;
+    top: 100px;
+    right: 30px;
+    background: linear-gradient(135deg, rgba(0, 255, 0, 0.1), rgba(0, 255, 255, 0.1));
+    border: 2px solid var(--neon-green);
+    border-radius: 10px;
+    padding: 1.5rem;
+    box-shadow: 0 0 30px rgba(0, 255, 0, 0.5);
+    z-index: 10000;
+    animation: slideInRight 0.5s ease-out, slideOutRight 0.5s ease-in 4.5s;
+    min-width: 300px;
+}
+
+.achievement-toast.hidden {
+    display: none;
+}
+
+.achievement-toast-content {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.achievement-toast-icon {
+    font-size: 3rem;
+}
+
+.achievement-toast-text {
+    flex: 1;
+}
+
+.achievement-toast-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--neon-green);
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+}
+
+.achievement-toast-name {
+    font-size: 1.2rem;
+    color: var(--neon-cyan);
+    font-weight: 600;
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(400px);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOutRight {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(400px);
+        opacity: 0;
+    }
 }
 
 .combat-log::-webkit-scrollbar-thumb:hover {
