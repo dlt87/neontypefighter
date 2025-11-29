@@ -21,6 +21,10 @@ class Game {
         this.criticalHits = 0;
         this.startTime = null;
         
+        // ELO tracking for multiplayer
+        this.lastEloChange = undefined;
+        this.lastElo = undefined;
+        
         // Systems
         this.wordManager = new WordManager();
         this.particleSystem = new ParticleSystem();
@@ -363,7 +367,14 @@ class Game {
         `;
         
         // Add ELO change for multiplayer matches
+        console.log('🎮 Checking ELO display:', {
+            mode: this.mode,
+            lastEloChange: this.lastEloChange,
+            lastElo: this.lastElo
+        });
+        
         if (this.mode === 'multiplayer' && this.lastEloChange !== undefined) {
+            console.log('✅ Adding ELO to game over screen');
             const eloChangeText = this.lastEloChange > 0 ? `+${this.lastEloChange}` : this.lastEloChange;
             const eloColor = this.lastEloChange > 0 ? 'var(--neon-green)' : 'var(--neon-orange)';
             statsHTML += `
@@ -372,6 +383,8 @@ class Game {
                     <div style="font-size: 0.9em; opacity: 0.8;">New Rating: ${this.lastElo}</div>
                 </div>
             `;
+        } else {
+            console.log('❌ Not showing ELO:', this.mode !== 'multiplayer' ? 'Not multiplayer mode' : 'ELO data not available');
         }
         
         this.elements.gameOverStats.innerHTML = statsHTML;
@@ -390,6 +403,8 @@ class Game {
         this.currentInput = '';
         this.wordsTyped = 0;
         this.criticalHits = 0;
+        this.lastEloChange = undefined;
+        this.lastElo = undefined;
         
         if (this.aiOpponent) {
             this.aiOpponent.reset();

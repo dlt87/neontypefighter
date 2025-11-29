@@ -483,9 +483,11 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             
             multiplayerClient.on('onEloUpdate', (data) => {
+                console.log('📊 ELO Update received:', data);
                 // Store ELO change for display in game over screen
                 game.lastEloChange = data.eloChange;
                 game.lastElo = data.newElo;
+                console.log('✅ Stored ELO in game:', game.lastEloChange, game.lastElo);
             });
         }
         
@@ -643,12 +645,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const leaderboardList = document.getElementById('main-menu-leaderboard-list');
         
         try {
+            console.log('📊 Fetching ELO leaderboard...');
             const response = await fetch('https://neontypefighter-production.up.railway.app/api/elo/leaderboard');
             if (!response.ok) {
                 throw new Error('Failed to fetch ELO leaderboard');
             }
             
             const leaderboard = await response.json();
+            console.log('✅ ELO leaderboard data:', leaderboard);
             
             if (!leaderboard || leaderboard.length === 0) {
                 leaderboardList.innerHTML = '<div class="loading-message">No ranked matches yet.<br>Play multiplayer!</div>';
