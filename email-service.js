@@ -5,12 +5,30 @@
 
 const { Resend } = require('resend');
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Initialize Resend only if API key is available
+let resend = null;
+const RESEND_API_KEY = process.env.RESEND_API_KEY;
+
+if (RESEND_API_KEY && RESEND_API_KEY !== 'your_resend_api_key_here') {
+    try {
+        resend = new Resend(RESEND_API_KEY);
+        console.log('✅ Email service initialized');
+    } catch (error) {
+        console.warn('⚠️ Failed to initialize email service:', error.message);
+    }
+} else {
+    console.warn('⚠️ Email service disabled (no API key configured)');
+}
 
 // Email templates
 const emailService = {
     // Send verification email
     async sendVerificationEmail(email, username, token) {
+        if (!resend) {
+            console.log('📧 Email service disabled - would send verification to:', email);
+            return { success: false, error: 'Email service not configured' };
+        }
+        
         const verificationUrl = `${process.env.APP_URL || 'https://neontypefighter-production.up.railway.app'}/verify-email?token=${token}`;
         
         try {
@@ -58,6 +76,11 @@ const emailService = {
 
     // Send password reset email
     async sendPasswordResetEmail(email, username, token) {
+        if (!resend) {
+            console.log('📧 Email service disabled - would send password reset to:', email);
+            return { success: false, error: 'Email service not configured' };
+        }
+        
         const resetUrl = `${process.env.APP_URL || 'https://neontypefighter-production.up.railway.app'}/reset-password?token=${token}`;
         
         try {
