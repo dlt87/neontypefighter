@@ -38,11 +38,14 @@ class MultiplayerClient {
                 this.reconnectAttempts = 0;
                 
                 // Authenticate if token available
-                if (window.authClient && window.authClient.token) {
+                if (window.authClient && window.authClient.currentUser && window.authClient.currentUser.token) {
+                    console.log('🔐 Authenticating WebSocket with token...');
                     this.send({
                         type: 'authenticate',
-                        token: window.authClient.token
+                        token: window.authClient.currentUser.token
                     });
+                } else {
+                    console.log('⚠️ No auth token available for WebSocket');
                 }
                 
                 if (this.callbacks.onConnect) {

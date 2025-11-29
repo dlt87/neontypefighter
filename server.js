@@ -176,6 +176,7 @@ const wss = new WebSocket.Server({ server });
 // Game state
 const waitingPlayers = [];
 const activeMatches = new Map();
+const matchEloRecorded = new Map(); // Track which matches have recorded ELO
 
 // High Score storage (in-memory - use a database for production)
 const highScores = [];
@@ -261,6 +262,11 @@ function handleMessage(ws, data) {
 }
 
 function authenticateWebSocket(ws, token) {
+    if (!token) {
+        console.log('❌ No token provided for WebSocket authentication');
+        return;
+    }
+    
     const tokenData = verifyToken(token);
     if (tokenData) {
         ws.userId = tokenData.userId;
@@ -268,8 +274,9 @@ function authenticateWebSocket(ws, token) {
             type: 'authenticated',
             userId: tokenData.userId
         }));
-        console.log(`WebSocket authenticated for user: ${tokenData.userId}`);
+        console.log(`✅ WebSocket authenticated for user: ${tokenData.userId}`);
     } else {
+        console.log('❌ Invalid token for WebSocket authentication');
         ws.send(JSON.stringify({
             type: 'authError',
             error: 'Invalid token'
@@ -369,7 +376,10 @@ function relayAction(ws, data) {
 
 function handleGameOver(ws, data) {
     const matchId = activeMatches.get(ws.playerId);
-    if (!matchId) return;
+    if (!matchId) {
+        console.log('No match found for player:', ws.playerId);
+        return;
+    }
     
     const opponent = findOpponent(ws);
     if (opponent) {
@@ -378,15 +388,19 @@ function handleGameOver(ws, data) {
             opponentWon: data.won
         }));
         
-        // Record ELO change if both players are authenticated
-        if (data.won && ws.userId && opponent.userId) {
+        // Record ELO change if both players are authenticated and not already recorded
+        if (data.won && ws.userId && opponent.userId && !matchEloRecorded.get(matchId)) {
+            matchEloRecorded.set(matchId, true);
+            
             const winnerId = ws.userId;
             const loserId = opponent.userId;
             const matchDuration = data.matchDuration || null;
             
+            console.log(`Recording ELO for match ${matchId}: Winner=${winnerId}, Loser=${loserId}`);
+            
             eloDb.recordMatch(winnerId, loserId, matchDuration)
                 .then(result => {
-                    console.log(`ELO updated: ${result.winner.name} (+${result.winner.eloChange}) vs ${result.loser.name} (${result.loser.eloChange})`);
+                    console.log(`✅ ELO updated: ${result.winner.name} (+${result.winner.eloChange}) vs ${result.loser.name} (${result.loser.eloChange})`);
                     
                     // Send ELO update to both players
                     ws.send(JSON.stringify({
@@ -402,13 +416,22 @@ function handleGameOver(ws, data) {
                     }));
                 })
                 .catch(error => {
-                    console.error('Error recording match result:', error);
+                    console.error('❌ Error recording match result:', error);
                 });
+        } else {
+            console.log(`ELO not recorded - won: ${data.won}, ws.userId: ${ws.userId}, opponent.userId: ${opponent.userId}, already recorded: ${matchEloRecorded.get(matchId)}`);
         }
+    } else {
+        console.log('No opponent found for match:', matchId);
     }
     
     // Clean up match
     cleanupMatch(ws);
+    
+    // Clean up ELO tracking after a delay
+    setTimeout(() => {
+        matchEloRecorded.delete(matchId);
+    }, 5000);
 }
 
 function handleDisconnect(ws) {
