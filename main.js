@@ -325,6 +325,17 @@ document.addEventListener('DOMContentLoaded', () => {
         const timedCurrentWord = document.getElementById('timed-current-word');
         const timedNextWordPreview = document.getElementById('timed-next-word-preview');
         const timedFeedback = document.getElementById('timed-typing-feedback');
+        const wordBankSelect = document.getElementById('word-bank-select');
+        
+        // Set the word bank selector to current value
+        const currentBank = game.wordManager.getWordBank();
+        wordBankSelect.value = currentBank;
+        
+        // Handle word bank changes
+        wordBankSelect.addEventListener('change', (e) => {
+            game.wordManager.setWordBank(e.target.value);
+            console.log('Word bank changed to:', e.target.value);
+        });
         
         // Clear previous listeners by cloning
         const newInput = timedInput.cloneNode(true);

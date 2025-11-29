@@ -1181,6 +1181,52 @@ body::before {
     position: relative;
 }
 
+.timed-word-bank-selector {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    z-index: 100;
+}
+
+.word-bank-label {
+    color: var(--neon-cyan);
+    font-size: 0.9rem;
+    font-weight: bold;
+    text-shadow: 0 0 10px var(--neon-cyan);
+}
+
+.word-bank-select {
+    background: rgba(0, 0, 0, 0.7);
+    border: 2px solid var(--neon-cyan);
+    color: var(--neon-cyan);
+    padding: 8px 12px;
+    border-radius: 5px;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 1rem;
+    cursor: pointer;
+    outline: none;
+    box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+    transition: all 0.3s ease;
+}
+
+.word-bank-select:hover {
+    border-color: var(--neon-magenta);
+    box-shadow: 0 0 15px rgba(255, 0, 255, 0.5);
+}
+
+.word-bank-select:focus {
+    border-color: var(--neon-magenta);
+    box-shadow: 0 0 20px rgba(255, 0, 255, 0.7);
+}
+
+.word-bank-select option {
+    background: #0a0a1e;
+    color: var(--neon-cyan);
+}
+
 .timed-hud {
     display: flex;
     gap: 2rem;

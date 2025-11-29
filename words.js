@@ -2,7 +2,7 @@
 // WORD POOL - Cyberpunk Themed Abilities
 // ========================================
 
-const WORD_POOL = [
+const CYBERPUNK_WORDS = [
     // Short words (3-5 letters)
     'flare', 'pulse', 'void', 'nova', 'surge', 'byte', 'hack', 'fire',
     'bolt', 'zap', 'rush', 'dash', 'slam', 'rage', 'fury', 'glow',
@@ -12,7 +12,7 @@ const WORD_POOL = [
     'fracture', 'spire', 'blaze', 'quantum', 'phantom', 'cipher', 'reactor',
     'voltage', 'gravity', 'impulse', 'crimson', 'velvet', 'shadow', 'nexus',
     'matrix', 'vector', 'plasma', 'vortex', 'prism', 'chrome', 'signal',
-    'neural', 'binary', 'fusion', 'photon', 'laser', 'cyber', 'turbo', 'michael',
+    'neural', 'binary', 'fusion', 'photon', 'laser', 'cyber', 'turbo',
     
     // Long words (9+ letters)
     'cybernetic', 'hologram', 'algorithm', 'firewall', 'bandwidth', 'protocol',
@@ -20,6 +20,13 @@ const WORD_POOL = [
     'accelerate', 'frequency', 'resonance', 'dimension', 'cascade', 'velocity',
     'electric', 'magnetic', 'radiation', 'disruptor', 'generator', 'amplifier'
 ];
+
+const NAME_WORDS = [
+    'michael', 'reentika', 'david', 'george', 'krista', 'heidi', 'emma', 'alisha'
+];
+
+// Default word pool (can be switched)
+let WORD_POOL = [...CYBERPUNK_WORDS];
 
 class WordManager {
     constructor() {
@@ -89,5 +96,28 @@ class WordManager {
         this.currentWord = null;
         this.nextWord = null;
         this.initializeQueue();
+    }
+    
+    setWordBank(bankType) {
+        // bankType can be 'cyberpunk', 'names', or 'all'
+        if (bankType === 'cyberpunk') {
+            WORD_POOL = [...CYBERPUNK_WORDS];
+        } else if (bankType === 'names') {
+            WORD_POOL = [...NAME_WORDS];
+        } else if (bankType === 'all') {
+            WORD_POOL = [...CYBERPUNK_WORDS, ...NAME_WORDS];
+        }
+        this.reset();
+    }
+    
+    getWordBank() {
+        if (WORD_POOL.length === CYBERPUNK_WORDS.length && 
+            WORD_POOL.every(w => CYBERPUNK_WORDS.includes(w))) {
+            return 'cyberpunk';
+        } else if (WORD_POOL.length === NAME_WORDS.length && 
+                   WORD_POOL.every(w => NAME_WORDS.includes(w))) {
+            return 'names';
+        }
+        return 'all';
     }
 }
