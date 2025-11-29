@@ -38,6 +38,12 @@ class MultiplayerClient {
                 this.reconnectAttempts = 0;
                 
                 // Authenticate if token available
+                console.log('🔍 Checking auth:', {
+                    hasAuthClient: !!window.authClient,
+                    hasCurrentUser: !!(window.authClient && window.authClient.currentUser),
+                    hasToken: !!(window.authClient && window.authClient.currentUser && window.authClient.currentUser.token)
+                });
+                
                 if (window.authClient && window.authClient.currentUser && window.authClient.currentUser.token) {
                     console.log('🔐 Authenticating WebSocket with token...');
                     this.send({
@@ -45,7 +51,7 @@ class MultiplayerClient {
                         token: window.authClient.currentUser.token
                     });
                 } else {
-                    console.log('⚠️ No auth token available for WebSocket');
+                    console.log('⚠️ No auth token available for WebSocket - multiplayer ELO will not be tracked');
                 }
                 
                 if (this.callbacks.onConnect) {

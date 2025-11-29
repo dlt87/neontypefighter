@@ -160,6 +160,13 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     
     document.getElementById('multiplayer-mode-btn').addEventListener('click', () => {
+        // Require login for multiplayer
+        if (!authClient.currentUser) {
+            alert('Please log in to play multiplayer matches and track your ELO rating!');
+            document.getElementById('login-modal').classList.remove('hidden');
+            return;
+        }
+        
         showScreen('multiplayer');
         initMultiplayer();
     });
@@ -538,6 +545,15 @@ document.addEventListener('DOMContentLoaded', () => {
     function handleUserLogin(user) {
         console.log('User logged in:', user);
         updateUIForUser(user);
+        
+        // Re-authenticate multiplayer WebSocket if connected
+        if (multiplayerClient && multiplayerClient.connected) {
+            console.log('🔄 Re-authenticating existing WebSocket connection...');
+            multiplayerClient.send({
+                type: 'authenticate',
+                token: authClient.currentUser.token
+            });
+        }
     }
     
     function handleUserLogout() {

@@ -238,6 +238,10 @@ wss.on('close', () => {
 });
 
 function handleMessage(ws, data) {
+    if (data.type === 'authenticate') {
+        console.log('📨 Received authenticate message with token:', data.token ? 'present' : 'missing');
+    }
+    
     switch (data.type) {
         case 'authenticate':
             authenticateWebSocket(ws, data.token);
