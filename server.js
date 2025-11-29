@@ -117,6 +117,20 @@ const server = http.createServer((req, res) => {
             smtp_pass: process.env.SMTP_PASS ? 'set' : 'not set',
             app_url: process.env.APP_URL || 'not set'
         }));
+    } else if (pathname === '/api/test-email' && req.method === 'POST') {
+        let body = '';
+        req.on('data', chunk => { body += chunk.toString(); });
+        req.on('end', async () => {
+            try {
+                const { email } = JSON.parse(body);
+                const result = await emailService.sendVerificationEmail(email || process.env.SMTP_USER, 'Test User', 'test-token-123');
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ success: result, message: result ? 'Email sent! Check logs for details.' : 'Failed to send. Check logs.' }));
+            } catch (error) {
+                res.writeHead(500, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ error: error.message }));
+            }
+        });
     } else if (pathname === '/api/auth/register' && req.method === 'POST') {
         handleRegister(req, res);
     } else if (pathname === '/api/auth/login' && req.method === 'POST') {
