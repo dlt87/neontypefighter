@@ -158,7 +158,9 @@ class MultiplayerClient {
     cancelMatch() {
         this.inQueue = false;
         this.queuePosition = 0;
-        // Server will handle removal on disconnect or when another message is sent
+        this.send({
+            type: 'cancelMatch'
+        });
     }
     
     sendAction(word, isCritical, damage) {

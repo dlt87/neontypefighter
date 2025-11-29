@@ -217,16 +217,6 @@
 
             <!-- Particle Effects Container -->
             <div id="particles-container"></div>
-            
-            <!-- Match Start Countdown -->
-            <div id="match-countdown-overlay" class="hidden">
-                <div class="countdown-content">
-                    <div class="opponent-found-text">OPPONENT FOUND!</div>
-                    <div class="opponent-name-display" id="opponent-name-display"></div>
-                    <div class="countdown-number" id="countdown-number">3</div>
-                    <div class="countdown-text">GET READY!</div>
-                </div>
-            </div>
 
             <!-- Game Over Overlay -->
             <div id="game-over-overlay" class="hidden">
@@ -235,6 +225,16 @@
                     <div class="game-over-stats" id="game-over-stats"></div>
                     <button class="neon-button" id="return-menu-btn">RETURN TO MENU</button>
                 </div>
+            </div>
+        </div>
+        
+        <!-- Match Start Countdown (Outside game-screen so it can show while lobby is visible) -->
+        <div id="match-countdown-overlay" class="hidden">
+            <div class="countdown-content">
+                <div class="opponent-found-text">OPPONENT FOUND!</div>
+                <div class="opponent-name-display" id="opponent-name-display"></div>
+                <div class="countdown-number" id="countdown-number">3</div>
+                <div class="countdown-text">GET READY!</div>
             </div>
         </div>
 

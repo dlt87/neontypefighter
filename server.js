@@ -234,6 +234,10 @@ function handleMessage(ws, data) {
             findMatch(ws, data.playerName);
             break;
             
+        case 'cancelMatch':
+            cancelMatch(ws);
+            break;
+            
         case 'action':
             relayAction(ws, data);
             break;
@@ -247,9 +251,23 @@ function handleMessage(ws, data) {
 function findMatch(ws, playerName) {
     ws.playerName = playerName;
     
-    // Check if there's a waiting player
+    // Remove from queue first if already in it (prevents duplicates)
+    const existingIndex = waitingPlayers.indexOf(ws);
+    if (existingIndex > -1) {
+        waitingPlayers.splice(existingIndex, 1);
+    }
+    
+    // Check if there's a waiting player that isn't this player
     if (waitingPlayers.length > 0) {
         const opponent = waitingPlayers.shift();
+        
+        // Prevent self-matching (should not happen but safety check)
+        if (opponent.playerId === ws.playerId) {
+            console.log('Prevented self-match for:', playerName);
+            waitingPlayers.push(ws);
+            broadcastLobbyStats();
+            return;
+        }
         
         // Create match
         const matchId = generateId();
@@ -291,6 +309,15 @@ function findMatch(ws, playerName) {
         }));
         
         // Broadcast updated stats
+        broadcastLobbyStats();
+    }
+}
+
+function cancelMatch(ws) {
+    const waitingIndex = waitingPlayers.indexOf(ws);
+    if (waitingIndex > -1) {
+        waitingPlayers.splice(waitingIndex, 1);
+        console.log(`${ws.playerName} cancelled matchmaking`);
         broadcastLobbyStats();
     }
 }
