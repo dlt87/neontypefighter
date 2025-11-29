@@ -232,11 +232,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Multiplayer lobby
     document.getElementById('find-match-btn').addEventListener('click', () => {
-        const playerName = document.getElementById('player-name-input').value.trim();
-        if (!playerName) {
-            alert('Please enter your name!');
-            return;
-        }
+        const playerName = authClient.currentUser ? authClient.currentUser.username : 'Guest';
         
         if (multiplayerClient && multiplayerClient.connected) {
             multiplayerClient.findMatch(playerName);

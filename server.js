@@ -237,14 +237,14 @@ wss.on('close', () => {
     clearInterval(interval);
 });
 
-function handleMessage(ws, data) {
+async function handleMessage(ws, data) {
     if (data.type === 'authenticate') {
         console.log('📨 Received authenticate message with token:', data.token ? 'present' : 'missing');
     }
     
     switch (data.type) {
         case 'authenticate':
-            authenticateWebSocket(ws, data.token);
+            await authenticateWebSocket(ws, data.token);
             break;
             
         case 'findMatch':
@@ -265,7 +265,7 @@ function handleMessage(ws, data) {
     }
 }
 
-function authenticateWebSocket(ws, token) {
+async function authenticateWebSocket(ws, token) {
     if (!token) {
         console.log('❌ No token provided for WebSocket authentication');
         return;
@@ -274,11 +274,23 @@ function authenticateWebSocket(ws, token) {
     const userId = verifyToken(token);
     if (userId) {
         ws.userId = userId;
+        
+        // Get username from database
+        try {
+            const result = await db.query('SELECT username FROM users WHERE user_id = $1', [userId]);
+            if (result.rows.length > 0) {
+                ws.username = result.rows[0].username;
+            }
+        } catch (error) {
+            console.error('Error fetching username:', error);
+        }
+        
         ws.send(JSON.stringify({
             type: 'authenticated',
-            userId: userId
+            userId: userId,
+            username: ws.username
         }));
-        console.log(`✅ WebSocket authenticated for user: ${userId}`);
+        console.log(`✅ WebSocket authenticated for user: ${userId} (${ws.username})`);
     } else {
         console.log('❌ Invalid token for WebSocket authentication');
         ws.send(JSON.stringify({
@@ -289,7 +301,8 @@ function authenticateWebSocket(ws, token) {
 }
 
 function findMatch(ws, playerName) {
-    ws.playerName = playerName;
+    // Use authenticated username if available, otherwise use provided name
+    ws.playerName = ws.username || playerName;
     
     // Remove from queue first if already in it (prevents duplicates)
     const existingIndex = waitingPlayers.indexOf(ws);
