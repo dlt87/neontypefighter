@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neon Typing Fighter</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="game-container">
+        <!-- Main Menu -->
+        <div id="main-menu" class="menu-screen active">
+            <div class="neon-title">
+                <h1>NEON TYPING FIGHTER</h1>
+                <div class="subtitle">CYBERPUNK TYPING DUEL</div>
+            </div>
+            
+            <div class="main-menu-container">
+                <div class="main-menu-left">
+                    <div class="menu-buttons">
+                        <button class="neon-button" id="solo-mode-btn">SOLO MODE</button>
+                        <button class="neon-button" id="timed-mode-btn">TIMED MODE</button>
+                        <button class="neon-button" id="multiplayer-mode-btn">MULTIPLAYER</button>
+                        <button class="neon-button" id="themes-btn">THEMES</button>
+                        <button class="neon-button" id="settings-btn">SETTINGS</button>
+                    </div>
+                    
+                    <div class="user-panel" id="user-panel">
+                        <div class="user-info hidden" id="user-info">
+                            <span class="user-name" id="user-name-display"></span>
+                            <button class="logout-btn" id="logout-btn">LOGOUT</button>
+                        </div>
+                        <div class="auth-buttons" id="auth-buttons">
+                            <button class="neon-button small" id="login-btn">LOGIN</button>
+                            <button class="neon-button small secondary" id="register-btn">REGISTER</button>
+                        </div>
+                    </div>
+                    
+                    <div class="audio-controls">
+                        <button class="audio-toggle-btn" id="sound-toggle" title="Toggle Sound Effects">🔊 SFX</button>
+                        <button class="audio-toggle-btn" id="music-toggle" title="Toggle Background Music">🎵 MUSIC</button>
+                    </div>
+                </div>
+                
+                <div class="main-menu-right">
+                    <!-- Main Menu Leaderboard -->
+                    <div class="main-menu-leaderboard" id="main-menu-leaderboard">
+                        <div class="leaderboard-header">
+                            <h3 class="neon-text">🏆 TOP 10 🏆</h3>
+                        </div>
+                        <div class="leaderboard-list" id="main-menu-leaderboard-list">
+                            <div class="loading-message">Loading...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Login Modal -->
+        <div id="login-modal" class="modal hidden">
+            <div class="modal-content">
+                <h2 class="neon-text">LOGIN</h2>
+                <form id="login-form">
+                    <div class="form-group">
+                        <input type="text" id="login-username" placeholder="Username or Email" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="password" id="login-password" placeholder="Password" required>
+                    </div>
+                    <div class="error-message hidden" id="login-error"></div>
+                    <div class="form-buttons">
+                        <button type="submit" class="neon-button">LOGIN</button>
+                        <button type="button" class="neon-button secondary" id="login-cancel">CANCEL</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Register Modal -->
+        <div id="register-modal" class="modal hidden">
+            <div class="modal-content">
+                <h2 class="neon-text">REGISTER</h2>
+                <form id="register-form">
+                    <div class="form-group">
+                        <input type="text" id="register-username" placeholder="Username (3-20 characters)" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="email" id="register-email" placeholder="Email" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="password" id="register-password" placeholder="Password (min 6 characters)" required>
+                    </div>
+                    <div class="error-message hidden" id="register-error"></div>
+                    <div class="form-buttons">
+                        <button type="submit" class="neon-button">CREATE ACCOUNT</button>
+                        <button type="button" class="neon-button secondary" id="register-cancel">CANCEL</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <!-- Timed Mode Screen -->
+        <div id="timed-mode-screen" class="hidden">
+            <!-- Timed Mode HUD -->
+            <div class="timed-hud">
+                <div class="timed-stat-box">
+                    <div class="timed-stat-label">TIME</div>
+                    <div class="timed-stat-value" id="timed-timer">15.00</div>
+                </div>
+                <div class="timed-stat-box">
+                    <div class="timed-stat-label">SCORE</div>
+                    <div class="timed-stat-value" id="timed-score">0</div>
+                </div>
+                <div class="timed-stat-box">
+                    <div class="timed-stat-label">MULTIPLIER</div>
+                    <div class="timed-stat-value" id="timed-multiplier">x1.0</div>
+                </div>
+            </div>
+
+            <!-- Center Typing Area -->
+            <div class="timed-center-area">
+                <div class="word-display-container">
+                    <div class="current-word" id="timed-current-word"></div>
+                    <div class="next-word-preview" id="timed-next-word-preview">NEXT: </div>
+                </div>
+
+                <div class="typing-area">
+                    <input type="text" id="timed-typing-input" class="neon-input" placeholder="Type the word..." autocomplete="off" spellcheck="false">
+                    <div class="typing-feedback" id="timed-typing-feedback"></div>
+                </div>
+            </div>
+
+            <!-- Particle Effects -->
+            <div id="timed-particles-container"></div>
+
+            <!-- Results Overlay -->
+            <div id="timed-results-overlay" class="hidden">
+                <div class="timed-results-content">
+                    <h2 class="neon-text">TIME'S UP!</h2>
+                    <div class="timed-score-display">
+                        <div class="score-label">FINAL SCORE</div>
+                        <div class="score-value" id="timed-final-score">0</div>
+                    </div>
+                    <div class="timed-best-score">
+                        <div class="best-label">YOUR BEST</div>
+                        <div class="best-value" id="timed-best-score">0</div>
+                    </div>
+                    <div class="global-leaderboard" id="global-leaderboard">
+                        <div class="leaderboard-title">🏆 GLOBAL TOP 10 🏆</div>
+                        <div class="leaderboard-list" id="leaderboard-list"></div>
+                    </div>
+                    <div class="timed-stats" id="timed-stats"></div>
+                    <div class="timed-results-buttons">
+                        <button class="neon-button" id="replay-timed-btn">REPLAY</button>
+                        <button class="neon-button secondary" id="timed-menu-btn">MAIN MENU</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Game Screen -->
+        <div id="game-screen" class="hidden">
+            <!-- Player 1 (Left Side) -->
+            <div class="player-area player-left">
+                <div class="player-info">
+                    <div class="player-name" id="player1-name">PLAYER 1</div>
+                    <div class="health-container">
+                        <div class="health-bar-bg">
+                            <div class="health-bar neon-cyan" id="player1-health" style="width: 100%"></div>
+                        </div>
+                        <div class="health-text" id="player1-health-text">100</div>
+                    </div>
+                </div>
+                <div class="character-display" id="player1-character">
+                    <div class="character-sprite"></div>
+                </div>
+            </div>
+
+            <!-- Center Area -->
+            <div class="center-area">
+                <!-- Word Display -->
+                <div class="word-display-container">
+                    <div class="current-word" id="current-word"></div>
+                    <div class="next-word-preview" id="next-word-preview">NEXT: </div>
+                    <div class="word-queue" id="word-queue"></div>
+                </div>
+
+                <!-- Typing Input -->
+                <div class="typing-area">
+                    <input type="text" id="typing-input" class="neon-input" placeholder="Type the word..." autocomplete="off" spellcheck="false">
+                    <div class="typing-feedback" id="typing-feedback"></div>
+                </div>
+
+                <!-- Combat Log -->
+                <div class="combat-log" id="combat-log"></div>
+            </div>
+
+            <!-- Player 2 (Right Side) -->
+            <div class="player-area player-right">
+                <div class="player-info">
+                    <div class="player-name" id="player2-name">OPPONENT</div>
+                    <div class="health-container">
+                        <div class="health-bar-bg">
+                            <div class="health-bar neon-magenta" id="player2-health" style="width: 100%"></div>
+                        </div>
+                        <div class="health-text" id="player2-health-text">100</div>
+                    </div>
+                </div>
+                <div class="character-display" id="player2-character">
+                    <div class="character-sprite"></div>
+                </div>
+            </div>
+
+            <!-- Particle Effects Container -->
+            <div id="particles-container"></div>
+
+            <!-- Game Over Overlay -->
+            <div id="game-over-overlay" class="hidden">
+                <div class="game-over-content">
+                    <h2 id="game-over-title">VICTORY</h2>
+                    <div class="game-over-stats" id="game-over-stats"></div>
+                    <button class="neon-button" id="return-menu-btn">RETURN TO MENU</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Multiplayer Lobby -->
+        <div id="multiplayer-lobby" class="menu-screen hidden">
+            <h2 class="neon-text">MULTIPLAYER LOBBY</h2>
+            <div class="lobby-content">
+                <div class="connection-status" id="connection-status">Connecting...</div>
+                <input type="text" id="player-name-input" class="neon-input" placeholder="Enter your name" maxlength="12">
+                <button class="neon-button" id="find-match-btn">FIND MATCH</button>
+                <button class="neon-button secondary" id="back-to-menu-btn">BACK</button>
+                <div class="waiting-message hidden" id="waiting-message">Waiting for opponent...</div>
+            </div>
+        </div>
+
+        <!-- Theme Selector -->
+        <div id="theme-selector" class="menu-screen hidden">
+            <h2 class="neon-text">SELECT YOUR THEME</h2>
+            <div class="theme-selector-content">
+                <div class="theme-grid" id="theme-grid">
+                    <!-- Theme cards will be inserted here -->
+                </div>
+                <button class="neon-button secondary" id="back-from-themes-btn">BACK</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="config.js"></script>
+    <script src="themes.js"></script>
+    <script src="words.js"></script>
+    <script src="particle.js"></script>
+    <script src="sounds.js"></script>
+    <script src="auth.js"></script>
+    <script src="highscore-api.js"></script>
+    <script src="ai.js"></script>
+    <script src="websocket.js"></script>
+    <script src="game.js"></script>
+    <script src="timedmode.js"></script>
+    <script src="main.js"></script>
+</body>
+</html>
