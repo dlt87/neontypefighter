@@ -3,6 +3,9 @@
 // Node.js WebSocket Server + High Score API + Authentication
 // ========================================
 
+// Load environment variables from .env file in development
+require('dotenv').config();
+
 const WebSocket = require('ws');
 const http = require('http');
 const url = require('url');
