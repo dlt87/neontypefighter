@@ -175,7 +175,10 @@ const wss = new WebSocket.Server({ server });
 
 // Game state
 const waitingPlayers = [];
+const waitingCoopPlayers = [];
 const activeMatches = new Map();
+const activeCoopMatches = new Map();
+const bossAttackTimers = new Map();
 const matchEloRecorded = new Map(); // Track which matches have recorded ELO
 
 // High Score storage (in-memory - use a database for production)
@@ -251,16 +254,32 @@ async function handleMessage(ws, data) {
             findMatch(ws, data.playerName);
             break;
             
+        case 'findCoopMatch':
+            findCoopMatch(ws, data.playerName);
+            break;
+            
         case 'cancelMatch':
             cancelMatch(ws);
+            break;
+            
+        case 'cancelCoopMatch':
+            cancelCoopMatch(ws);
             break;
             
         case 'action':
             relayAction(ws, data);
             break;
             
+        case 'coopAction':
+            relayCoopAction(ws, data);
+            break;
+            
         case 'gameOver':
             handleGameOver(ws, data);
+            break;
+            
+        case 'coopGameOver':
+            handleCoopGameOver(ws, data);
             break;
     }
 }
@@ -456,19 +475,231 @@ function handleGameOver(ws, data) {
     }, 5000);
 }
 
+// Co-op matchmaking functions
+function findCoopMatch(ws, playerName) {
+    ws.playerName = ws.username || playerName;
+    console.log(`🤝 Finding co-op match for ${ws.playerName}`);
+    
+    // Remove from queue first if already in it
+    const existingIndex = waitingCoopPlayers.indexOf(ws);
+    if (existingIndex > -1) {
+        waitingCoopPlayers.splice(existingIndex, 1);
+    }
+    
+    // Check if there's a waiting player
+    if (waitingCoopPlayers.length > 0) {
+        const teammate = waitingCoopPlayers.shift();
+        
+        // Prevent self-matching
+        if (teammate.playerId === ws.playerId) {
+            console.log('Prevented self-match for:', playerName);
+            waitingCoopPlayers.push(ws);
+            broadcastLobbyStats();
+            return;
+        }
+        
+        // Create co-op match
+        const matchId = generateId();
+        const match = {
+            id: matchId,
+            player1: ws,
+            player2: teammate,
+            bossHealth: 300,
+            teamHealth: 200
+        };
+        
+        activeCoopMatches.set(matchId, match);
+        ws.coopMatchId = matchId;
+        teammate.coopMatchId = matchId;
+        
+        // Notify both players
+        ws.send(JSON.stringify({
+            type: 'coopMatchFound',
+            matchId: matchId,
+            teammateName: teammate.playerName,
+            playerNumber: 1
+        }));
+        
+        teammate.send(JSON.stringify({
+            type: 'coopMatchFound',
+            matchId: matchId,
+            teammateName: ws.playerName,
+            playerNumber: 2
+        }));
+        
+        console.log(`Co-op match created: ${ws.playerName} + ${teammate.playerName} vs Boss`);
+        broadcastLobbyStats();
+    } else {
+        // Add to waiting queue
+        waitingCoopPlayers.push(ws);
+        console.log(`${playerName} added to co-op waiting queue`);
+        
+        ws.send(JSON.stringify({
+            type: 'coopQueuePosition',
+            position: waitingCoopPlayers.length
+        }));
+        
+        broadcastLobbyStats();
+        
+        // Start boss attack timer
+        startBossAttackTimer(matchId);
+    }
+}
+
+function cancelCoopMatch(ws) {
+    const waitingIndex = waitingCoopPlayers.indexOf(ws);
+    if (waitingIndex > -1) {
+        waitingCoopPlayers.splice(waitingIndex, 1);
+        console.log(`${ws.playerName} cancelled co-op matchmaking`);
+        broadcastLobbyStats();
+    }
+}
+
+function relayCoopAction(ws, data) {
+    const matchId = ws.coopMatchId;
+    if (!matchId) return;
+    
+    const match = activeCoopMatches.get(matchId);
+    if (!match) return;
+    
+    // Update boss health
+    match.bossHealth = Math.max(0, match.bossHealth - data.damage);
+    
+    // Find teammate
+    const teammate = match.player1 === ws ? match.player2 : match.player1;
+    
+    if (teammate) {
+        teammate.send(JSON.stringify({
+            type: 'teammateAction',
+            playerNumber: data.playerNumber,
+            word: data.word,
+            damage: data.damage,
+            isCritical: data.isCritical
+        }));
+    }
+    
+    // Check if boss is defeated
+    if (match.bossHealth <= 0) {
+        clearBossAttackTimer(matchId);
+        // Game will end when client sends coopGameOver
+    }
+}
+
+function handleCoopGameOver(ws, data) {
+    const matchId = ws.coopMatchId;
+    if (!matchId) return;
+    
+    const match = activeCoopMatches.get(matchId);
+    if (!match) return;
+    
+    // Stop boss attacks
+    clearBossAttackTimer(matchId);
+    
+    const teammate = match.player1 === ws ? match.player2 : match.player1;
+    
+    if (teammate) {
+        teammate.send(JSON.stringify({
+            type: 'coopGameOver',
+            victory: data.victory,
+            stats: data.stats
+        }));
+    }
+    
+    // Clean up match
+    if (match.player1) {
+        delete match.player1.coopMatchId;
+    }
+    if (match.player2) {
+        delete match.player2.coopMatchId;
+    }
+    activeCoopMatches.delete(matchId);
+    broadcastLobbyStats();
+}
+
+function startBossAttackTimer(matchId) {
+    const BOSS_ATTACK_INTERVAL = 5000; // 5 seconds
+    const BOSS_DAMAGE = 20;
+    
+    const attackInterval = setInterval(() => {
+        const match = activeCoopMatches.get(matchId);
+        if (!match) {
+            clearInterval(attackInterval);
+            bossAttackTimers.delete(matchId);
+            return;
+        }
+        
+        // Reduce team health
+        match.teamHealth = Math.max(0, match.teamHealth - BOSS_DAMAGE);
+        
+        // Broadcast boss attack to both players
+        const attackMessage = JSON.stringify({
+            type: 'bossAttack',
+            damage: BOSS_DAMAGE,
+            teamHealth: match.teamHealth
+        });
+        
+        if (match.player1) {
+            match.player1.send(attackMessage);
+        }
+        if (match.player2) {
+            match.player2.send(attackMessage);
+        }
+        
+        // Check if team is defeated
+        if (match.teamHealth <= 0) {
+            clearInterval(attackInterval);
+            bossAttackTimers.delete(matchId);
+            // Game over handled by client
+        }
+    }, BOSS_ATTACK_INTERVAL);
+    
+    bossAttackTimers.set(matchId, attackInterval);
+}
+
+function clearBossAttackTimer(matchId) {
+    const timer = bossAttackTimers.get(matchId);
+    if (timer) {
+        clearInterval(timer);
+        bossAttackTimers.delete(matchId);
+    }
+}
+
 function handleDisconnect(ws) {
-    // Remove from waiting queue
+    // Remove from regular waiting queue
     const waitingIndex = waitingPlayers.indexOf(ws);
     if (waitingIndex > -1) {
         waitingPlayers.splice(waitingIndex, 1);
     }
     
-    // Notify opponent if in match
+    // Remove from co-op waiting queue
+    const coopWaitingIndex = waitingCoopPlayers.indexOf(ws);
+    if (coopWaitingIndex > -1) {
+        waitingCoopPlayers.splice(coopWaitingIndex, 1);
+    }
+    
+    // Notify opponent if in regular match
     const opponent = findOpponent(ws);
     if (opponent) {
         opponent.send(JSON.stringify({
             type: 'opponentDisconnected'
         }));
+    }
+    
+    // Notify teammate if in co-op match
+    const matchId = ws.coopMatchId;
+    if (matchId) {
+        const match = activeCoopMatches.get(matchId);
+        if (match) {
+            const teammate = match.player1 === ws ? match.player2 : match.player1;
+            if (teammate) {
+                teammate.send(JSON.stringify({
+                    type: 'teammateDisconnected'
+                }));
+                delete teammate.coopMatchId;
+            }
+        }
+        clearBossAttackTimer(matchId);
+        activeCoopMatches.delete(matchId);
     }
     
     cleanupMatch(ws);

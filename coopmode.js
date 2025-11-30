@@ -1,5 +1,5 @@
 // ========================================
-// CO-OP MODE - TEAM VS BOSS
+// CO-OP MODE - TEAM VS BOSS (ONLINE)
 // ========================================
 
 class CoopMode {
@@ -11,20 +11,23 @@ class CoopMode {
         this.bossTypingTimer = null;
         this.bossAttackDelay = CONFIG.BOSS_ATTACK_DELAY;
         
+        // WebSocket connection
+        this.ws = null;
+        this.connected = false;
+        this.inQueue = false;
+        this.inMatch = false;
+        this.playerNumber = 0; // 1 or 2
+        this.teammateName = '';
+        
         // Player tracking
-        this.player1Active = true;
-        this.player2Active = true;
-        this.player1Word = '';
-        this.player2Word = '';
-        this.player1Input = '';
-        this.player2Input = '';
-        this.player1Critical = true;
-        this.player2Critical = true;
+        this.myWord = '';
+        this.myInput = '';
+        this.myCritical = true;
+        this.teammateWord = '';
         
         // Stats
         this.totalDamageDealt = 0;
         this.criticalHits = 0;
-        this.bossAttacksBlocked = 0;
         
         // DOM elements
         this.elements = {
@@ -52,262 +55,305 @@ class CoopMode {
         if (missingElements.length > 0) {
             console.error('❌ Co-op mode missing elements:', missingElements);
         }
-        
-        // Setup input handlers once
-        this.setupInputHandlers();
     }
     
-    start() {
+    connectToServer() {
+        if (this.ws && this.connected) {
+            console.log('Already connected to server');
+            return;
+        }
+        
+        try {
+            console.log('Connecting to co-op server:', CONFIG.WEBSOCKET_URL);
+            this.ws = new WebSocket(CONFIG.WEBSOCKET_URL);
+            
+            this.ws.onopen = () => {
+                console.log('✅ Connected to co-op server');
+                this.connected = true;
+                
+                // Authenticate if available
+                if (window.authClient && window.authClient.currentUser && window.authClient.currentUser.token) {
+                    this.send({
+                        type: 'authenticate',
+                        token: window.authClient.currentUser.token
+                    });
+                }
+            };
+            
+            this.ws.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                this.handleMessage(data);
+            };
+            
+            this.ws.onerror = (error) => {
+                console.error('❌ Co-op WebSocket error:', error);
+            };
+            
+            this.ws.onclose = () => {
+                console.log('🔌 Disconnected from co-op server');
+                this.connected = false;
+                if (this.inMatch) {
+                    this.handleTeammateDisconnected();
+                }
+            };
+        } catch (error) {
+            console.error('❌ Failed to connect to co-op server:', error);
+        }
+    }
+    
+    handleMessage(data) {
+        console.log('📨 Co-op message:', data);
+        
+        switch (data.type) {
+            case 'coopMatchFound':
+                this.onMatchFound(data);
+                break;
+                
+            case 'teammateAction':
+                this.onTeammateAction(data);
+                break;
+                
+            case 'bossAttack':
+                this.handleBossAttack(data);
+                break;
+                
+            case 'coopGameOver':
+                this.handleGameOver(data);
+                break;
+                
+            case 'teammateDisconnected':
+                this.handleTeammateDisconnected();
+                break;
+        }
+    }
+    
+    send(data) {
+        if (this.ws && this.connected) {
+            this.ws.send(JSON.stringify(data));
+        }
+    }
+    
+    findMatch(playerName) {
+        this.connectToServer();
+        
+        // Wait for connection, then send match request
+        const checkConnection = setInterval(() => {
+            if (this.connected) {
+                clearInterval(checkConnection);
+                this.inQueue = true;
+                this.send({
+                    type: 'findCoopMatch',
+                    playerName: playerName || 'Player'
+                });
+                this.showMatchmaking();
+            }
+        }, 100);
+    }
+    
+    cancelMatch() {
+        if (this.inQueue) {
+            this.send({ type: 'cancelCoopMatch' });
+            this.inQueue = false;
+        }
+    }
+    
+    showMatchmaking() {
+        this.elements.bossStatus.textContent = '🔍 Finding Teammate...';
+        this.elements.player1Input.disabled = true;
+        this.elements.player2Input.disabled = true;
+    }
+    
+    onMatchFound(data) {
+        console.log('🎮 Co-op match found!', data);
+        this.inQueue = false;
+        this.inMatch = true;
+        this.playerNumber = data.playerNumber;
+        this.teammateName = data.teammateName;
+        this.bossHealth = data.bossHealth;
+        this.teamHealth = data.teamHealth;
+        
+        // Start the game
+        this.startMatch();
+    }
+    
+    startMatch() {
         this.isActive = true;
-        this.bossHealth = CONFIG.BOSS_MAX_HEALTH;
-        this.teamHealth = CONFIG.COOP_TEAM_MAX_HEALTH;
+        
+        // Reset stats
         this.totalDamageDealt = 0;
         this.criticalHits = 0;
-        this.bossAttacksBlocked = 0;
+        this.myCritical = true;
         
-        // Reset game state
+        // Setup UI based on player number
+        if (this.playerNumber === 1) {
+            // I'm player 1
+            this.elements.player1Input.disabled = false;
+            this.elements.player2Input.disabled = true;
+            setTimeout(() => this.elements.player1Input.focus(), 100);
+        } else {
+            // I'm player 2
+            this.elements.player1Input.disabled = true;
+            this.elements.player2Input.disabled = false;
+            setTimeout(() => this.elements.player2Input.focus(), 100);
+        }
+        
+        // Setup input handler
+        this.setupInputHandler();
+        
+        // Get first word
         this.game.wordManager.reset();
-        this.player1Critical = true;
-        this.player2Critical = true;
-        
-        // Assign initial words
-        this.assignNewWords();
+        this.assignNewWord();
         
         // Update UI
         this.updateHealthBars();
         this.elements.bossName.textContent = 'MEGA BOSS';
-        this.elements.bossStatus.textContent = 'ACTIVE';
+        this.elements.bossStatus.textContent = `🤝 ${this.teammateName}`;
         
-        // Enable inputs
-        this.elements.player1Input.disabled = false;
-        this.elements.player2Input.disabled = false;
-        this.elements.player1Input.value = '';
-        this.elements.player2Input.value = '';
-        
-        // Auto-focus player 1 input so typing can start immediately
-        setTimeout(() => {
-            this.elements.player1Input.focus();
-        }, 100);
-        
-        // Start boss attack cycle
-        this.scheduleBossAttack();
-        
-        console.log('🤝 Co-op mode started!');
+        console.log('🤝 Co-op match started!');
     }
     
-    setupInputHandlers() {
-        if (!this.elements.player1Input || !this.elements.player2Input) {
-            console.error('❌ Co-op input elements not found');
-            return;
+    setupInputHandler() {
+        const myInput = this.playerNumber === 1 ? this.elements.player1Input : this.elements.player2Input;
+        
+        // Remove old listener if exists
+        const newInput = myInput.cloneNode(true);
+        myInput.parentNode.replaceChild(newInput, myInput);
+        
+        // Update reference
+        if (this.playerNumber === 1) {
+            this.elements.player1Input = newInput;
+        } else {
+            this.elements.player2Input = newInput;
         }
         
-        // Player 1 input
-        this.elements.player1Input.addEventListener('input', (e) => {
-            this.player1Input = e.target.value.toLowerCase();
-            this.checkPlayer1Word();
-        });
-        
-        // Player 2 input
-        this.elements.player2Input.addEventListener('input', (e) => {
-            this.player2Input = e.target.value.toLowerCase();
-            this.checkPlayer2Word();
+        // Add new listener
+        newInput.addEventListener('input', (e) => {
+            this.myInput = e.target.value.toLowerCase();
+            this.checkMyWord();
         });
     }
     
-    assignNewWords() {
-        // Get two different words
-        this.player1Word = this.game.wordManager.getNextWord();
-        do {
-            this.player2Word = this.game.wordManager.getNextWord();
-        } while (this.player2Word === this.player1Word);
+    assignNewWord() {
+        this.myWord = this.game.wordManager.getNextWord();
+        this.myCritical = true;
         
-        this.elements.player1Word.textContent = this.player1Word;
-        this.elements.player2Word.textContent = this.player2Word;
-        
-        // Reset critical status
-        this.player1Critical = true;
-        this.player2Critical = true;
+        const myWordElement = this.playerNumber === 1 ? this.elements.player1Word : this.elements.player2Word;
+        myWordElement.textContent = this.myWord;
     }
     
-    checkPlayer1Word() {
-        const target = this.player1Word;
-        const input = this.player1Input;
+    checkMyWord() {
+        const target = this.myWord;
+        const input = this.myInput;
+        const myInput = this.playerNumber === 1 ? this.elements.player1Input : this.elements.player2Input;
+        const myFeedback = this.playerNumber === 1 ? this.elements.player1Feedback : this.elements.player2Feedback;
         
-        // Check if input matches the start of the word
         if (input.length > 0) {
             if (target.startsWith(input)) {
-                // Correct so far
-                this.elements.player1Input.classList.remove('error');
-                this.elements.player1Input.classList.add('correct');
-                this.elements.player1Feedback.textContent = '';
+                myInput.classList.remove('error');
+                myInput.classList.add('correct');
+                myFeedback.textContent = '';
                 
-                // Check if word is complete
                 if (input === target) {
-                    this.player1CompleteWord();
+                    this.completeWord();
                 }
             } else {
-                // Error detected
-                this.elements.player1Input.classList.remove('correct');
-                this.elements.player1Input.classList.add('error');
-                this.player1Critical = false;
-                this.elements.player1Feedback.textContent = '❌';
+                myInput.classList.remove('correct');
+                myInput.classList.add('error');
+                this.myCritical = false;
+                myFeedback.textContent = '❌';
                 this.game.soundManager.playErrorSound();
             }
         } else {
-            this.elements.player1Input.classList.remove('correct', 'error');
-            this.elements.player1Feedback.textContent = '';
+            myInput.classList.remove('correct', 'error');
+            myFeedback.textContent = '';
         }
     }
     
-    checkPlayer2Word() {
-        const target = this.player2Word;
-        const input = this.player2Input;
-        
-        // Check if input matches the start of the word
-        if (input.length > 0) {
-            if (target.startsWith(input)) {
-                // Correct so far
-                this.elements.player2Input.classList.remove('error');
-                this.elements.player2Input.classList.add('correct');
-                this.elements.player2Feedback.textContent = '';
-                
-                // Check if word is complete
-                if (input === target) {
-                    this.player2CompleteWord();
-                }
-            } else {
-                // Error detected
-                this.elements.player2Input.classList.remove('correct');
-                this.elements.player2Input.classList.add('error');
-                this.player2Critical = false;
-                this.elements.player2Feedback.textContent = '❌';
-                this.game.soundManager.playErrorSound();
-            }
-        } else {
-            this.elements.player2Input.classList.remove('correct', 'error');
-            this.elements.player2Feedback.textContent = '';
-        }
-    }
-    
-    player1CompleteWord() {
-        const isCritical = this.player1Critical;
+    completeWord() {
+        const isCritical = this.myCritical;
         let damage = CONFIG.BASE_DAMAGE;
         
         if (isCritical) {
             damage = Math.floor(damage * CONFIG.CRITICAL_MULTIPLIER);
             this.criticalHits++;
             this.game.soundManager.playCriticalSound();
-            this.elements.player1Feedback.textContent = '💥 CRITICAL!';
         } else {
             this.game.soundManager.playHitSound();
-            this.elements.player1Feedback.textContent = '✓ HIT';
         }
         
-        // Deal damage to boss
-        this.damageBoSS(damage, 1, isCritical);
+        // Send action to server
+        this.send({
+            type: 'coopAction',
+            word: this.myWord,
+            damage: damage,
+            isCritical: isCritical
+        });
         
-        // Clear input and get new word
-        this.elements.player1Input.value = '';
-        this.player1Input = '';
-        this.player1Critical = true;
-        this.player1Word = this.game.wordManager.getNextWord();
+        // Update local UI
+        const myInput = this.playerNumber === 1 ? this.elements.player1Input : this.elements.player2Input;
+        const myFeedback = this.playerNumber === 1 ? this.elements.player1Feedback : this.elements.player2Feedback;
         
-        // Make sure it's different from player 2's word
-        while (this.player1Word === this.player2Word) {
-            this.player1Word = this.game.wordManager.getNextWord();
-        }
+        myFeedback.textContent = isCritical ? '💥 CRITICAL!' : '✓ HIT';
+        myInput.value = '';
+        this.myInput = '';
+        myInput.classList.remove('correct', 'error');
         
-        this.elements.player1Word.textContent = this.player1Word;
-        this.elements.player1Input.classList.remove('correct', 'error');
+        // Get new word
+        this.assignNewWord();
         
         setTimeout(() => {
-            this.elements.player1Feedback.textContent = '';
+            myFeedback.textContent = '';
         }, 1000);
     }
     
-    player2CompleteWord() {
-        const isCritical = this.player2Critical;
-        let damage = CONFIG.BASE_DAMAGE;
+    onTeammateAction(data) {
+        console.log('👥 Teammate action:', data);
         
-        if (isCritical) {
-            damage = Math.floor(damage * CONFIG.CRITICAL_MULTIPLIER);
-            this.criticalHits++;
-            this.game.soundManager.playCriticalSound();
-            this.elements.player2Feedback.textContent = '💥 CRITICAL!';
-        } else {
-            this.game.soundManager.playHitSound();
-            this.elements.player2Feedback.textContent = '✓ HIT';
-        }
+        // Show teammate's word
+        const teammateWordElement = this.playerNumber === 1 ? this.elements.player2Word : this.elements.player1Word;
+        const teammateFeedback = this.playerNumber === 1 ? this.elements.player2Feedback : this.elements.player1Feedback;
         
-        // Deal damage to boss
-        this.damageBoSS(damage, 2, isCritical);
+        teammateWordElement.textContent = data.word;
+        teammateFeedback.textContent = data.isCritical ? '💥 CRITICAL!' : '✓ HIT';
         
-        // Clear input and get new word
-        this.elements.player2Input.value = '';
-        this.player2Input = '';
-        this.player2Critical = true;
-        this.player2Word = this.game.wordManager.getNextWord();
-        
-        // Make sure it's different from player 1's word
-        while (this.player2Word === this.player1Word) {
-            this.player2Word = this.game.wordManager.getNextWord();
-        }
-        
-        this.elements.player2Word.textContent = this.player2Word;
-        this.elements.player2Input.classList.remove('correct', 'error');
-        
-        setTimeout(() => {
-            this.elements.player2Feedback.textContent = '';
-        }, 1000);
-    }
-    
-    damageBoSS(damage, playerNum, isCritical) {
-        this.bossHealth = Math.max(0, this.bossHealth - damage);
-        this.totalDamageDealt += damage;
-        
-        // Update health bar
+        // Update boss health
+        this.bossHealth = Math.max(0, this.bossHealth - data.damage);
+        this.totalDamageDealt += data.damage;
         this.updateHealthBars();
         
-        // Create particles at boss position
+        // Visual effect
         const bossHealthBar = this.elements.bossHealth.parentElement;
         const rect = bossHealthBar.getBoundingClientRect();
         const x = rect.left + rect.width / 2;
         const y = rect.top + rect.height / 2;
         
-        if (isCritical) {
+        if (data.isCritical) {
             this.game.particleSystem.createCriticalHit(x, y);
         } else {
             this.game.particleSystem.createHit(x, y);
         }
         
-        // Check if boss is defeated
+        // Check victory
         if (this.bossHealth <= 0) {
             this.victory();
         }
+        
+        setTimeout(() => {
+            teammateFeedback.textContent = '';
+        }, 1000);
     }
     
-    scheduleBossAttack() {
+    handleBossAttack(data) {
         if (!this.isActive) return;
         
-        this.bossTypingTimer = setTimeout(() => {
-            this.bossAttack();
-        }, this.bossAttackDelay);
-    }
-    
-    bossAttack() {
-        if (!this.isActive) return;
-        
-        const damage = CONFIG.BOSS_DAMAGE;
-        this.teamHealth = Math.max(0, this.teamHealth - damage);
+        this.teamHealth = Math.max(0, data.teamHealth);
         
         // Visual feedback
         this.elements.bossStatus.textContent = '⚡ ATTACKING!';
         this.game.soundManager.playDamageSound();
-        
-        // Update health bar
         this.updateHealthBars();
         
-        // Flash the team health bar
+        // Flash health bar
         this.elements.teamHealth.parentElement.style.animation = 'none';
         setTimeout(() => {
             this.elements.teamHealth.parentElement.style.animation = 'pulse 0.5s';
@@ -315,17 +361,31 @@ class CoopMode {
         
         setTimeout(() => {
             if (this.isActive) {
-                this.elements.bossStatus.textContent = 'ACTIVE';
+                this.elements.bossStatus.textContent = `🤝 ${this.teammateName}`;
             }
         }, 500);
         
-        // Check if team is defeated
+        // Check defeat
         if (this.teamHealth <= 0) {
             this.defeat();
-        } else {
-            // Schedule next attack
-            this.scheduleBossAttack();
         }
+    }
+    
+    handleGameOver(data) {
+        console.log('🎮 Co-op game over:', data);
+        this.showResults(data.victory, data.stats);
+    }
+    
+    handleTeammateDisconnected() {
+        if (!this.isActive) return;
+        
+        this.isActive = false;
+        this.inMatch = false;
+        
+        alert('Your teammate disconnected! Returning to menu...');
+        this.stop();
+        document.getElementById('coop-mode-screen').classList.remove('active');
+        document.getElementById('main-menu').classList.add('active');
     }
     
     updateHealthBars() {
@@ -360,74 +420,91 @@ class CoopMode {
     
     victory() {
         this.isActive = false;
-        clearTimeout(this.bossTypingTimer);
+        this.inMatch = false;
         
-        this.elements.player1Input.disabled = true;
-        this.elements.player2Input.disabled = true;
+        const myInput = this.playerNumber === 1 ? this.elements.player1Input : this.elements.player2Input;
+        myInput.disabled = true;
+        
         this.elements.bossStatus.textContent = '💀 DEFEATED';
-        
-        // Play victory sound
         this.game.soundManager.playVictorySound();
         
-        // Show victory screen
-        setTimeout(() => {
-            this.showResults(true);
-        }, 1000);
+        // Notify server
+        this.send({
+            type: 'coopGameOver',
+            victory: true,
+            stats: {
+                totalDamage: this.totalDamageDealt,
+                criticalHits: this.criticalHits
+            }
+        });
     }
     
     defeat() {
         this.isActive = false;
-        clearTimeout(this.bossTypingTimer);
+        this.inMatch = false;
         
-        this.elements.player1Input.disabled = true;
-        this.elements.player2Input.disabled = true;
+        const myInput = this.playerNumber === 1 ? this.elements.player1Input : this.elements.player2Input;
+        myInput.disabled = true;
         
-        // Play defeat sound
         this.game.soundManager.playDefeatSound();
         
-        // Show defeat screen
-        setTimeout(() => {
-            this.showResults(false);
-        }, 1000);
+        // Notify server
+        this.send({
+            type: 'coopGameOver',
+            victory: false,
+            stats: {
+                totalDamage: this.totalDamageDealt,
+                criticalHits: this.criticalHits
+            }
+        });
     }
     
-    showResults(victory) {
-        const resultsHtml = `
-            <div class="coop-results">
-                <h2 class="neon-text">${victory ? '🏆 VICTORY! 🏆' : '💀 DEFEATED 💀'}</h2>
-                <div class="coop-stats">
-                    <p><span class="stat-label">Total Damage:</span> <span class="stat-value">${this.totalDamageDealt}</span></p>
-                    <p><span class="stat-label">Critical Hits:</span> <span class="stat-value">${this.criticalHits}</span></p>
-                    <p><span class="stat-label">Boss Remaining HP:</span> <span class="stat-value">${this.bossHealth}</span></p>
-                    <p><span class="stat-label">Team HP:</span> <span class="stat-value">${this.teamHealth}</span></p>
+    showResults(victory, stats = {}) {
+        setTimeout(() => {
+            const resultsHtml = `
+                <div class="coop-results">
+                    <h2 class="neon-text">${victory ? '🏆 VICTORY! 🏆' : '💀 DEFEATED 💀'}</h2>
+                    <div class="coop-stats">
+                        <p><span class="stat-label">Teammate:</span> <span class="stat-value">${this.teammateName}</span></p>
+                        <p><span class="stat-label">Total Damage:</span> <span class="stat-value">${this.totalDamageDealt}</span></p>
+                        <p><span class="stat-label">Critical Hits:</span> <span class="stat-value">${this.criticalHits}</span></p>
+                        <p><span class="stat-label">Boss Remaining HP:</span> <span class="stat-value">${this.bossHealth}</span></p>
+                        <p><span class="stat-label">Team HP:</span> <span class="stat-value">${this.teamHealth}</span></p>
+                    </div>
+                    <button class="neon-button" id="coop-play-again-btn">PLAY AGAIN</button>
+                    <button class="neon-button secondary" id="coop-back-to-menu-btn">MAIN MENU</button>
                 </div>
-                <button class="neon-button" id="coop-play-again-btn">PLAY AGAIN</button>
-                <button class="neon-button secondary" id="coop-back-to-menu-btn">MAIN MENU</button>
-            </div>
-        `;
-        
-        const resultsDiv = document.createElement('div');
-        resultsDiv.className = 'coop-results-overlay';
-        resultsDiv.innerHTML = resultsHtml;
-        document.getElementById('coop-mode-screen').appendChild(resultsDiv);
-        
-        // Button handlers
-        document.getElementById('coop-play-again-btn').addEventListener('click', () => {
-            resultsDiv.remove();
-            this.start();
-        });
-        
-        document.getElementById('coop-back-to-menu-btn').addEventListener('click', () => {
-            resultsDiv.remove();
-            document.getElementById('coop-mode-screen').classList.remove('active');
-            document.getElementById('main-menu').classList.add('active');
-        });
+            `;
+            
+            const resultsDiv = document.createElement('div');
+            resultsDiv.className = 'coop-results-overlay';
+            resultsDiv.innerHTML = resultsHtml;
+            document.getElementById('coop-mode-screen').appendChild(resultsDiv);
+            
+            // Button handlers
+            document.getElementById('coop-play-again-btn').addEventListener('click', () => {
+                resultsDiv.remove();
+                this.findMatch(window.authClient?.currentUser?.username || 'Player');
+            });
+            
+            document.getElementById('coop-back-to-menu-btn').addEventListener('click', () => {
+                resultsDiv.remove();
+                this.stop();
+                document.getElementById('coop-mode-screen').classList.remove('active');
+                document.getElementById('main-menu').classList.add('active');
+            });
+        }, 1000);
     }
     
     stop() {
         this.isActive = false;
+        this.inMatch = false;
         clearTimeout(this.bossTypingTimer);
-        this.elements.player1Input.disabled = true;
-        this.elements.player2Input.disabled = true;
+        
+        if (this.ws && this.connected) {
+            this.ws.close();
+            this.ws = null;
+            this.connected = false;
+        }
     }
 }

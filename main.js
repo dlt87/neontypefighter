@@ -934,13 +934,14 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Co-op mode handlers
     document.getElementById('coop-start-btn').addEventListener('click', () => {
-        console.log('🎮 Starting co-op mode...');
+        console.log('🎮 Starting co-op matchmaking...');
         if (!game.coopMode) {
             console.log('Creating new CoopMode instance...');
             game.coopMode = new CoopMode(game);
         }
         if (game.coopMode) {
-            game.coopMode.start();
+            const playerName = authClient?.currentUser?.username || 'Player';
+            game.coopMode.findMatch(playerName);
         } else {
             console.error('❌ Failed to create CoopMode instance');
         }
