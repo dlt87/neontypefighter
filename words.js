@@ -9,6 +9,9 @@ const CYBERPUNK_WORDS = [
     'neon', 'grid', 'wave', 'beam', 'tech', 'core', 'link', 'sync',
     'data', 'code', 'port', 'node', 'ram', 'rom', 'cpu', 'gpu',
     'disk', 'chip', 'pixel', 'scan', 'ping', 'boot', 'load', 'save',
+    'mesh', 'loop', 'array', 'stack', 'queue', 'heap', 'tree', 'graph',
+    'hash', 'key', 'value', 'flag', 'bit', 'hex', 'bin', 'octal',
+    'trace', 'debug', 'patch', 'merge', 'clone', 'fork', 'push', 'pull',
     
     // Medium words (6-8 letters)
     'fracture', 'spire', 'blaze', 'quantum', 'phantom', 'cipher', 'reactor',
@@ -19,6 +22,11 @@ const CYBERPUNK_WORDS = [
     'daemon', 'kernel', 'buffer', 'cache', 'thread', 'process', 'memory',
     'storage', 'backup', 'restore', 'compile', 'execute', 'runtime', 'digital',
     'virtual', 'augment', 'enhance', 'upgrade', 'decrypt', 'encrypt', 'secure',
+    'adapter', 'gateway', 'bridge', 'switch', 'modem', 'filter', 'parser',
+    'scanner', 'lexer', 'token', 'syntax', 'semantic', 'pragma', 'macro',
+    'module', 'package', 'library', 'archive', 'registry', 'service', 'agent',
+    'handler', 'wrapper', 'proxy', 'facade', 'factory', 'builder', 'adapter',
+    'observer', 'listener', 'callback', 'promise', 'async', 'await', 'yield',
     
     // Long words (9+ letters)
     'cybernetic', 'hologram', 'algorithm', 'firewall', 'bandwidth', 'protocol',
@@ -27,16 +35,22 @@ const CYBERPUNK_WORDS = [
     'electric', 'magnetic', 'radiation', 'disruptor', 'generator', 'amplifier',
     'cyberdeck', 'netrunner', 'datasphere', 'cyberspace', 'holonet', 'virtuality',
     'datastream', 'megacorp', 'technomancer', 'biomech', 'nanotech', 'darknet',
-    'blackice', 'firewall', 'backdoor', 'rootkit', 'exploit', 'debugger',
+    'blackice', 'backdoor', 'rootkit', 'exploit', 'debugger', 'profiler',
     'emulator', 'simulator', 'framework', 'compiler', 'interpreter', 'optimizer',
     'processor', 'multitask', 'multithreading', 'encryption', 'decryption', 'compression',
-    'decompression', 'transmission', 'bandwidth', 'latency', 'throughput', 'uplink',
-    'downlink', 'crosslink', 'feedback', 'response', 'request', 'handshake',
+    'decompression', 'transmission', 'latency', 'throughput', 'uplink', 'downlink',
+    'crosslink', 'feedback', 'response', 'request', 'handshake', 'connection',
     'authentication', 'authorization', 'verification', 'validation', 'certificate', 'credential',
     'blockchain', 'cryptocurrency', 'artificial', 'intelligence', 'machinelearning', 'deeplearning',
     'neuralnetwork', 'cybersecurity', 'penetration', 'vulnerability', 'malicious', 'antimalware',
-    'ransomware', 'trojan', 'worm', 'botnet', 'phishing', 'spoofing',
-    'sniffing', 'injection', 'overflow', 'shellcode', 'payload', 'backdoor'
+    'ransomware', 'trojan', 'worm', 'botnet', 'phishing', 'spoofing', 'hijacking',
+    'sniffing', 'injection', 'overflow', 'shellcode', 'payload', 'escalation',
+    'repository', 'container', 'orchestration', 'deployment', 'continuous', 'integration',
+    'microservice', 'serverless', 'cloudnative', 'kubernetes', 'terraform', 'ansible',
+    'monitoring', 'telemetry', 'observability', 'traceability', 'scalability', 'reliability',
+    'availability', 'redundancy', 'failover', 'loadbalancer', 'distributed', 'decentralized',
+    'consensus', 'replication', 'sharding', 'partitioning', 'indexing', 'optimization',
+    'refactoring', 'abstraction', 'encapsulation', 'polymorphism', 'inheritance', 'composition'
 ];
 
 const NAME_WORDS = [

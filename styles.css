@@ -2694,6 +2694,61 @@ body::before {
     justify-content: center;
 }
 
+/* Wave Complete Overlay */
+.wave-complete-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    animation: fadeIn 0.3s ease-in;
+}
+
+.wave-complete-content {
+    text-align: center;
+    animation: scaleIn 0.5s ease-out;
+}
+
+.wave-complete-content h2 {
+    font-size: 4rem;
+    margin: 0 0 20px 0;
+    text-shadow: 0 0 20px var(--neon-cyan),
+                 0 0 40px var(--neon-cyan),
+                 0 0 60px var(--neon-cyan);
+    animation: pulse 0.5s ease-in-out infinite alternate;
+}
+
+.wave-complete-content p {
+    font-size: 1.5rem;
+    color: var(--neon-magenta);
+    margin: 0;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes scaleIn {
+    from {
+        transform: scale(0.5);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
 .endless-game-over {
     position: fixed;
     top: 50%;

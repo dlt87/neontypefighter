@@ -255,13 +255,38 @@ class EndlessMode {
             this.game.soundManager.play('victory');
         }
         
-        // Show wave complete message
+        // Show wave complete message in feedback
         this.elements.typingFeedback.textContent = `🎉 Wave ${this.currentWave} Complete!`;
         this.elements.typingFeedback.style.color = 'var(--neon-green)';
         this.elements.typingInput.disabled = true;
         
+        // Create big overlay message
+        const overlay = document.createElement('div');
+        overlay.className = 'wave-complete-overlay';
+        overlay.innerHTML = `
+            <div class="wave-complete-content">
+                <h2 class="neon-text">⚡ WAVE ${this.currentWave} DESTROYED! ⚡</h2>
+                <p>Preparing next wave...</p>
+            </div>
+        `;
+        this.screen.appendChild(overlay);
+        
+        // Add particle effects
+        if (this.game.particleSystem) {
+            for (let i = 0; i < 30; i++) {
+                setTimeout(() => {
+                    this.game.particleSystem.createBurst(
+                        window.innerWidth / 2,
+                        window.innerHeight / 2,
+                        10
+                    );
+                }, i * 50);
+            }
+        }
+        
         // Advance to next wave after delay
         setTimeout(() => {
+            overlay.remove();
             this.elements.typingFeedback.textContent = '';
             this.elements.typingFeedback.style.color = '';
             this.currentWave++;
@@ -345,13 +370,19 @@ class EndlessMode {
         }
         
         try {
+            const token = window.authClient.currentUser.token;
+            const userId = window.authClient.currentUser.id;
+            const userName = window.authClient.currentUser.name;
+            
             const response = await fetch('/api/endless-scores', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${window.authClient.getToken()}`
+                    'Authorization': `Bearer ${token}`
                 },
                 body: JSON.stringify({
+                    userId,
+                    userName,
                     wave: this.currentWave,
                     wordsTyped: this.totalWordsTyped,
                     criticalHits: this.totalCriticalHits,
