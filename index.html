@@ -32,8 +32,8 @@
                 <div class="main-menu-center">
                     <div class="menu-buttons">
                         <button class="neon-button" id="solo-mode-btn">SOLO VS AI</button>
-                        <button class="neon-button" id="coop-mode-btn">ONLINE CO-OP</button>
-                        <button class="neon-button" id="timed-mode-btn">TIMED (15s)</button>
+                        <button class="neon-button" id="coop-mode-btn">CO-OP</button>
+                        <button class="neon-button" id="timed-mode-btn">TIMED</button>
                         <button class="neon-button" id="endless-mode-btn">ENDLESS</button>
                         <button class="neon-button" id="multiplayer-mode-btn">MULTIPLAYER</button>
                     </div>
@@ -150,6 +150,26 @@
         </div>
         <!-- Timed Mode Screen -->
         <div id="timed-mode-screen" class="hidden">
+            <!-- Home Button -->
+            <button class="home-button" id="timed-home-btn" title="Return to Menu">
+                <span class="home-icon">🏠</span>
+            </button>
+            
+            <!-- Start Game Overlay -->
+            <div id="timed-start-overlay" class="timed-start-overlay">
+                <div class="timed-start-content">
+                    <h2 class="neon-text">TIMED CHALLENGE</h2>
+                    <p class="timed-start-description">Type as many words as you can in 15 seconds!</p>
+                    <div class="timed-start-rules">
+                        <div class="rule-item">⚡ 2 points per word</div>
+                        <div class="rule-item">💎 Perfect words get 1.5x bonus</div>
+                        <div class="rule-item">🔥 Difficulty increases every 5 words</div>
+                    </div>
+                    <button class="neon-button" id="timed-start-game-btn">START GAME</button>
+                    <button class="neon-button secondary" id="timed-start-back-btn">BACK TO MENU</button>
+                </div>
+            </div>
+            
             <!-- Timed Mode HUD -->
             <div class="timed-hud">
                 <div class="timed-stat-box">
@@ -209,6 +229,11 @@
 
         <!-- Game Screen -->
         <div id="game-screen" class="hidden">
+            <!-- Home Button -->
+            <button class="home-button" id="game-home-btn" title="Return to Menu">
+                <span class="home-icon">🏠</span>
+            </button>
+            
             <!-- Player 1 (Left Side) -->
             <div class="player-area player-left">
                 <div class="player-info">
@@ -417,6 +442,11 @@
 
         <!-- Endless Mode Screen -->
         <div id="endless-mode-screen" class="menu-screen hidden">
+            <!-- Home Button -->
+            <button class="home-button" id="endless-home-btn" title="Return to Menu">
+                <span class="home-icon">🏠</span>
+            </button>
+            
             <div class="endless-container">
                 <h2 class="neon-text">ENDLESS MODE</h2>
                 <p class="endless-description">Survive as many waves as you can! Each wave increases in difficulty.</p>

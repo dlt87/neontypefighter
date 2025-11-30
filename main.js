@@ -166,9 +166,49 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('timed-mode-btn').addEventListener('click', () => {
         showScreen('timed');
         setupTimedMode();
+        // Don't start game immediately - show start overlay instead
+        document.getElementById('timed-start-overlay').style.display = 'flex';
+    });
+    
+    // Timed mode start game button
+    document.getElementById('timed-start-game-btn').addEventListener('click', () => {
+        document.getElementById('timed-start-overlay').style.display = 'none';
         showTimedCountdown(() => {
             game.startTimedMode();
         });
+    });
+    
+    // Timed mode start screen back button
+    document.getElementById('timed-start-back-btn').addEventListener('click', () => {
+        showScreen('menu');
+    });
+    
+    // Home button handlers
+    document.getElementById('game-home-btn').addEventListener('click', () => {
+        if (confirm('Are you sure you want to quit and return to the menu?')) {
+            game.endGame();
+            showScreen('menu');
+        }
+    });
+    
+    document.getElementById('timed-home-btn').addEventListener('click', () => {
+        if (confirm('Are you sure you want to quit and return to the menu?')) {
+            if (game.timedMode) {
+                game.timedMode.reset();
+                // Hide results overlay if visible
+                document.getElementById('timed-results-overlay').classList.add('hidden');
+            }
+            showScreen('menu');
+        }
+    });
+    
+    document.getElementById('endless-home-btn').addEventListener('click', () => {
+        if (confirm('Are you sure you want to quit and return to the menu?')) {
+            if (game.endlessMode) {
+                game.endlessMode.endGame();
+            }
+            showScreen('menu');
+        }
     });
     
     document.getElementById('endless-mode-btn').addEventListener('click', () => {
@@ -377,6 +417,17 @@ document.addEventListener('DOMContentLoaded', () => {
         const timedCurrentWord = document.getElementById('timed-current-word');
         const timedNextWordPreview = document.getElementById('timed-next-word-preview');
         const timedFeedback = document.getElementById('timed-typing-feedback');
+        
+        // Hide results overlay if it's visible from previous game
+        const resultsOverlay = document.getElementById('timed-results-overlay');
+        if (resultsOverlay) {
+            resultsOverlay.classList.add('hidden');
+        }
+        
+        // Reset timed mode if it exists
+        if (game.timedMode) {
+            game.timedMode.reset();
+        }
         
         // Clear previous listeners by cloning
         const newInput = timedInput.cloneNode(true);
