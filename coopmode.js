@@ -25,6 +25,11 @@ class CoopMode {
         this.myCritical = true;
         this.teammateWord = '';
         
+        // Turn-based system
+        this.currentTurn = 1; // Which player's turn (1 or 2)
+        this.isMyTurn = false;
+        this.currentWord = ''; // The active word being typed
+        
         // Stats
         this.totalDamageDealt = 0;
         this.criticalHits = 0;
@@ -234,6 +239,10 @@ class CoopMode {
             case 'teammateAction':
                 this.onTeammateAction(data);
                 break;
+            
+            case 'turnChange':
+                this.onTurnChange(data);
+                break;
                 
             case 'bossAttack':
                 this.handleBossAttack(data);
@@ -321,16 +330,22 @@ class CoopMode {
         this.bossHealth = this.maxBossHealth;
         this.teamHealth = this.maxTeamHealth;
         
+        // Initialize turn-based system - Player 1 always starts
+        this.currentTurn = 1;
+        this.isMyTurn = (this.playerNumber === 1);
+        this.currentWord = this.game.wordManager.getRandomWord();
+        this.myCritical = true;
+        
         // Update health bars to 100%
         console.log('Initializing health bars...');
         this.updateBossHealth();
         this.updateTeamHealth();
         
-        // Set up words
-        this.myWord = this.game.wordManager.getRandomWord();
-        this.teammateWord = this.game.wordManager.getRandomWord();
+        // Set up the single word display for turn-based play
+        this.elements.player1Word.textContent = this.currentWord;
+        this.elements.player2Word.textContent = this.currentWord;
         
-        console.log('Words assigned:', { myWord: this.myWord, teammateWord: this.teammateWord });
+        console.log('Words assigned:', { currentWord: this.currentWord });
         
         // Remove old event listeners by cloning and replacing
         const player1Input = this.elements.player1Input;
@@ -345,13 +360,14 @@ class CoopMode {
         this.elements.player1Input = newPlayer1Input;
         this.elements.player2Input = newPlayer2Input;
         
-        // Set up UI based on player number
+        // Set up UI based on whose turn it is
         if (this.playerNumber === 1) {
-            this.elements.player1Word.textContent = this.myWord;
-            this.elements.player2Word.textContent = this.teammateWord;
+            // I'm player 1 - I start
             this.elements.player1Input.disabled = false;
             this.elements.player2Input.disabled = true;
             this.elements.player1Input.value = '';
+            this.elements.player1Input.placeholder = 'YOUR TURN - Type here...';
+            this.elements.player2Input.placeholder = 'Waiting for Player 1...';
             
             // Add event listener
             this.elements.player1Input.addEventListener('input', (e) => {
@@ -361,19 +377,18 @@ class CoopMode {
             
             setTimeout(() => this.elements.player1Input.focus(), 100);
         } else {
-            this.elements.player2Word.textContent = this.myWord;
-            this.elements.player1Word.textContent = this.teammateWord;
-            this.elements.player2Input.disabled = false;
+            // I'm player 2 - I wait for my turn
+            this.elements.player2Input.disabled = true;
             this.elements.player1Input.disabled = true;
             this.elements.player2Input.value = '';
+            this.elements.player2Input.placeholder = 'Waiting for Player 1...';
+            this.elements.player1Input.placeholder = "Player 1's turn...";
             
-            // Add event listener
+            // Add event listener (will be disabled initially)
             this.elements.player2Input.addEventListener('input', (e) => {
                 console.log('Player 2 input:', e.target.value);
                 this.handleMyInput(e);
             });
-            
-            setTimeout(() => this.elements.player2Input.focus(), 100);
         }
         
         this.elements.bossName.textContent = 'CYBER BOSS';
@@ -383,19 +398,22 @@ class CoopMode {
     }
     
     handleMyInput(e) {
-        if (!this.isActive) return;
+        if (!this.isActive || !this.isMyTurn) {
+            // Not my turn - ignore input
+            return;
+        }
         
         this.myInput = e.target.value.toLowerCase();
         const myInputElement = this.playerNumber === 1 ? this.elements.player1Input : this.elements.player2Input;
         const myFeedback = this.playerNumber === 1 ? this.elements.player1Feedback : this.elements.player2Feedback;
         
         if (this.myInput.length > 0) {
-            if (this.myWord.startsWith(this.myInput)) {
+            if (this.currentWord.startsWith(this.myInput)) {
                 myInputElement.classList.remove('error');
                 myInputElement.classList.add('correct');
                 myFeedback.textContent = '';
                 
-                if (this.myInput === this.myWord) {
+                if (this.myInput === this.currentWord) {
                     this.completeWord();
                 }
             } else {
@@ -459,7 +477,7 @@ class CoopMode {
         // Send action to server
         this.send({
             type: 'coopAction',
-            word: this.myWord,
+            word: this.currentWord,
             damage: damage,
             isCritical: this.myCritical
         });
@@ -470,16 +488,33 @@ class CoopMode {
             return;
         }
         
-        // Get new word
-        this.myWord = this.game.wordManager.getRandomWord();
-        const myWordElement = this.playerNumber === 1 ? this.elements.player1Word : this.elements.player2Word;
-        myWordElement.textContent = this.myWord;
+        // Get new word for next turn
+        this.currentWord = this.game.wordManager.getRandomWord();
         
-        // Reset input
+        // Switch turns
+        this.currentTurn = this.currentTurn === 1 ? 2 : 1;
+        this.isMyTurn = false; // My turn is over
+        
+        // Update UI
+        this.elements.player1Word.textContent = this.currentWord;
+        this.elements.player2Word.textContent = this.currentWord;
+        
+        // Disable my input, enable teammate's
+        const myInputElement = this.playerNumber === 1 ? this.elements.player1Input : this.elements.player2Input;
         myInputElement.value = '';
         myInputElement.classList.remove('correct', 'error');
+        myInputElement.disabled = true;
+        myInputElement.placeholder = `Waiting for Player ${this.currentTurn}...`;
         this.myInput = '';
-        this.myCritical = true;
+        
+        // Notify server about turn change
+        this.send({
+            type: 'turnChange',
+            nextTurn: this.currentTurn,
+            newWord: this.currentWord
+        });
+        
+        console.log(`Turn complete. Next turn: Player ${this.currentTurn}`);
         
         // Clear feedback after delay
         setTimeout(() => {
@@ -488,15 +523,52 @@ class CoopMode {
         }, 1000);
     }
     
+    onTurnChange(data) {
+        // Teammate finished their word, now it's my turn
+        this.currentTurn = data.nextTurn;
+        this.currentWord = data.newWord;
+        this.isMyTurn = (this.playerNumber === this.currentTurn);
+        this.myCritical = true;
+        
+        // Update word display
+        this.elements.player1Word.textContent = this.currentWord;
+        this.elements.player2Word.textContent = this.currentWord;
+        
+        console.log(`Turn changed. Current turn: Player ${this.currentTurn}, My turn: ${this.isMyTurn}`);
+        
+        if (this.isMyTurn) {
+            // Enable my input
+            const myInput = this.playerNumber === 1 ? this.elements.player1Input : this.elements.player2Input;
+            myInput.disabled = false;
+            myInput.value = '';
+            myInput.placeholder = 'YOUR TURN - Type here...';
+            myInput.focus();
+            
+            // Clear other player's input
+            const otherInput = this.playerNumber === 1 ? this.elements.player2Input : this.elements.player1Input;
+            otherInput.placeholder = `Player ${this.playerNumber === 1 ? 2 : 1}'s turn...`;
+        } else {
+            // Not my turn, keep disabled
+            const myInput = this.playerNumber === 1 ? this.elements.player1Input : this.elements.player2Input;
+            myInput.disabled = true;
+            myInput.placeholder = `Waiting for Player ${this.currentTurn}...`;
+            
+            // Update other player's placeholder
+            const otherInput = this.playerNumber === 1 ? this.elements.player2Input : this.elements.player1Input;
+            otherInput.placeholder = 'YOUR TURN - Type here...';
+        }
+    }
+    
     onTeammateAction(data) {
-        const teammateWordElement = this.playerNumber === 1 ? this.elements.player2Word : this.elements.player1Word;
-        const teammateFeedback = this.playerNumber === 1 ? this.elements.player2Feedback : this.elements.player1Feedback;
+        // Teammate completed their word - update boss health and show feedback
         
         // Update boss health
         this.bossHealth = Math.max(0, this.bossHealth - data.damage);
         this.updateBossHealth();
         
-        // Show feedback
+        // Show feedback on teammate's side
+        const teammateFeedback = this.playerNumber === 1 ? this.elements.player2Feedback : this.elements.player1Feedback;
+        
         if (data.isCritical) {
             teammateFeedback.textContent = `🔥 CRITICAL! -${data.damage}`;
             teammateFeedback.classList.add('critical');
@@ -513,10 +585,6 @@ class CoopMode {
             );
         }
         
-        // Get new word for teammate
-        this.teammateWord = this.game.wordManager.getRandomWord();
-        teammateWordElement.textContent = this.teammateWord;
-        
         // Clear feedback after delay
         setTimeout(() => {
             teammateFeedback.textContent = '';
@@ -527,6 +595,8 @@ class CoopMode {
         if (this.bossHealth <= 0) {
             this.endGame(true);
         }
+        
+        // Turn change will be handled by onTurnChange message from server
     }
     
     handleBossAttack(data) {

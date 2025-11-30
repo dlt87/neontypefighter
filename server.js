@@ -274,6 +274,10 @@ async function handleMessage(ws, data) {
             relayCoopAction(ws, data);
             break;
         
+        case 'turnChange':
+            relayTurnChange(ws, data);
+            break;
+        
         case 'coopGameReady':
             handleCoopGameReady(ws);
             break;
@@ -630,6 +634,27 @@ function relayCoopAction(ws, data) {
         clearBossAttackTimer(matchId);
         // Game will end when client sends coopGameOver
     }
+}
+
+function relayTurnChange(ws, data) {
+    const matchId = ws.coopMatchId;
+    if (!matchId) return;
+    
+    const match = activeCoopMatches.get(matchId);
+    if (!match) return;
+    
+    // Find teammate and notify them it's their turn
+    const teammate = match.player1 === ws ? match.player2 : match.player1;
+    
+    if (teammate) {
+        teammate.send(JSON.stringify({
+            type: 'turnChange',
+            nextTurn: data.nextTurn,
+            newWord: data.newWord
+        }));
+    }
+    
+    console.log(`Turn changed in match ${matchId}. Next turn: Player ${data.nextTurn}`);
 }
 
 function relayCoopTyping(ws, data) {
