@@ -278,6 +278,10 @@ async function handleMessage(ws, data) {
             relayTurnChange(ws, data);
             break;
         
+        case 'typingPreview':
+            relayTypingPreview(ws, data);
+            break;
+        
         case 'coopGameReady':
             handleCoopGameReady(ws);
             break;
@@ -655,6 +659,24 @@ function relayTurnChange(ws, data) {
     }
     
     console.log(`Turn changed in match ${matchId}. Next turn: Player ${data.nextTurn}`);
+}
+
+function relayTypingPreview(ws, data) {
+    const matchId = ws.coopMatchId;
+    if (!matchId) return;
+    
+    const match = activeCoopMatches.get(matchId);
+    if (!match) return;
+    
+    // Find teammate and send them the typing preview
+    const teammate = match.player1 === ws ? match.player2 : match.player1;
+    
+    if (teammate && teammate.readyState === WebSocket.OPEN) {
+        teammate.send(JSON.stringify({
+            type: 'typingPreview',
+            text: data.text
+        }));
+    }
 }
 
 function relayCoopTyping(ws, data) {

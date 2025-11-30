@@ -2176,6 +2176,20 @@ body::before {
     color: var(--neon-cyan);
 }
 
+.coop-game-over-buttons {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    margin-top: 30px;
+}
+
+.coop-game-over-buttons button {
+    padding: 15px 30px;
+    font-size: 1.2rem;
+    flex: 1;
+    max-width: 200px;
+}
+
 .coop-header {
     text-align: center;
     margin-bottom: 30px;
@@ -2260,7 +2274,101 @@ body::before {
     box-shadow: 0 0 20px var(--neon-cyan);
 }
 
-/* Player Areas */
+/* Shared Typing Area */
+.coop-shared-typing {
+    background: rgba(10, 10, 30, 0.9);
+    border: 2px solid var(--neon-cyan);
+    border-radius: 15px;
+    padding: 30px;
+    margin: 30px auto;
+    max-width: 800px;
+    box-shadow: 0 0 30px rgba(0, 255, 255, 0.4);
+}
+
+.coop-shared-typing .word-display {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.coop-shared-typing .current-word {
+    font-size: 3rem;
+    color: var(--neon-cyan);
+    text-shadow: 0 0 20px var(--neon-cyan);
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.6);
+    border-radius: 10px;
+    letter-spacing: 0.1em;
+}
+
+.turn-indicator {
+    text-align: center;
+    padding: 15px;
+    margin: 20px 0;
+    border: 2px solid var(--neon-magenta);
+    border-radius: 10px;
+    background: rgba(0, 0, 0, 0.5);
+    transition: all 0.3s ease;
+}
+
+.turn-indicator span {
+    font-size: 1.5rem;
+    color: var(--neon-magenta);
+    text-shadow: 0 0 10px var(--neon-magenta);
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.coop-shared-typing .typing-area {
+    margin-top: 20px;
+}
+
+.coop-shared-typing .neon-input {
+    width: 100%;
+    font-size: 1.5rem;
+    padding: 15px;
+    text-align: center;
+}
+
+.coop-shared-typing .typing-feedback {
+    text-align: center;
+    margin-top: 15px;
+    font-size: 1.3rem;
+    min-height: 30px;
+}
+
+.players-info {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(0, 255, 255, 0.3);
+}
+
+.player-info {
+    text-align: center;
+    padding: 15px;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 8px;
+    border: 1px solid var(--neon-cyan);
+}
+
+.player-info .player-label {
+    display: block;
+    font-size: 0.9rem;
+    color: var(--neon-magenta);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+.player-info span:not(.player-label) {
+    font-size: 1.2rem;
+    color: var(--neon-cyan);
+    text-shadow: 0 0 8px var(--neon-cyan);
+}
+
+/* Player Areas (deprecated - keeping for backwards compatibility) */
 .coop-players {
     display: grid;
     grid-template-columns: 1fr 1fr;

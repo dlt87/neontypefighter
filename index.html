@@ -427,41 +427,32 @@
                     </div>
                 </div>
 
-                <!-- Player Areas -->
-                <div class="coop-players">
-                    <!-- Player 1 -->
-                    <div class="coop-player">
-                        <h4 class="player-label">PLAYER 1</h4>
-                        <div class="word-display">
-                            <div class="current-word" id="coop-player1-word">cyber</div>
-                        </div>
-                        <div class="typing-area">
-                            <input type="text" 
-                                   class="neon-input" 
-                                   id="coop-player1-input" 
-                                   placeholder="Type here..."
-                                   autocomplete="off"
-                                   spellcheck="false"
-                                   disabled>
-                            <div class="typing-feedback" id="coop-player1-feedback"></div>
-                        </div>
+                <!-- Shared Typing Area -->
+                <div class="coop-shared-typing">
+                    <div class="word-display">
+                        <div class="current-word" id="coop-current-word">cyber</div>
                     </div>
-
-                    <!-- Player 2 -->
-                    <div class="coop-player">
-                        <h4 class="player-label">PLAYER 2</h4>
-                        <div class="word-display">
-                            <div class="current-word" id="coop-player2-word">neon</div>
+                    <div class="turn-indicator" id="coop-turn-indicator">
+                        <span id="coop-turn-text">Player 1's Turn</span>
+                    </div>
+                    <div class="typing-area">
+                        <input type="text" 
+                               class="neon-input" 
+                               id="coop-shared-input" 
+                               placeholder="Type here..."
+                               autocomplete="off"
+                               spellcheck="false"
+                               disabled>
+                        <div class="typing-feedback" id="coop-typing-feedback"></div>
+                    </div>
+                    <div class="players-info">
+                        <div class="player-info">
+                            <span class="player-label">PLAYER 1</span>
+                            <span id="coop-player1-name">Player 1</span>
                         </div>
-                        <div class="typing-area">
-                            <input type="text" 
-                                   class="neon-input" 
-                                   id="coop-player2-input" 
-                                   placeholder="Type here..."
-                                   autocomplete="off"
-                                   spellcheck="false"
-                                   disabled>
-                            <div class="typing-feedback" id="coop-player2-feedback"></div>
+                        <div class="player-info">
+                            <span class="player-label">PLAYER 2</span>
+                            <span id="coop-player2-name">Player 2</span>
                         </div>
                     </div>
                 </div>
@@ -470,7 +461,10 @@
                 <div class="coop-game-over hidden" id="coop-game-over">
                     <h3 id="coop-game-over-title">VICTORY!</h3>
                     <div id="coop-game-over-stats"></div>
-                    <button class="neon-button" id="coop-play-again-btn">PLAY AGAIN</button>
+                    <div class="coop-game-over-buttons">
+                        <button class="neon-button" id="coop-play-again-btn">PLAY AGAIN</button>
+                        <button class="neon-button secondary" id="coop-menu-btn">MAIN MENU</button>
+                    </div>
                 </div>
             </div>
         </div>

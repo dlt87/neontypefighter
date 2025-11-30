@@ -47,6 +47,7 @@ class CoopMode {
         this.cancelMatchBtn = document.getElementById('coop-cancel-match-btn');
         this.backBtn = document.getElementById('coop-back-btn');
         this.playAgainBtn = document.getElementById('coop-play-again-btn');
+        this.menuBtn = document.getElementById('coop-menu-btn');
         
         // Countdown elements
         this.countdownOverlay = document.getElementById('coop-countdown-overlay');
@@ -61,12 +62,13 @@ class CoopMode {
             bossHealthText: document.getElementById('coop-boss-health-text'),
             teamHealth: document.getElementById('coop-team-health'),
             teamHealthText: document.getElementById('coop-team-health-text'),
-            player1Word: document.getElementById('coop-player1-word'),
-            player2Word: document.getElementById('coop-player2-word'),
-            player1Input: document.getElementById('coop-player1-input'),
-            player2Input: document.getElementById('coop-player2-input'),
-            player1Feedback: document.getElementById('coop-player1-feedback'),
-            player2Feedback: document.getElementById('coop-player2-feedback'),
+            sharedInput: document.getElementById('coop-shared-input'),
+            currentWord: document.getElementById('coop-current-word'),
+            typingFeedback: document.getElementById('coop-typing-feedback'),
+            turnIndicator: document.getElementById('coop-turn-indicator'),
+            turnText: document.getElementById('coop-turn-text'),
+            player1Name: document.getElementById('coop-player1-name'),
+            player2Name: document.getElementById('coop-player2-name'),
             bossName: document.getElementById('coop-boss-name'),
             bossStatus: document.getElementById('coop-boss-status'),
             gameOver: document.getElementById('coop-game-over'),
@@ -87,11 +89,14 @@ class CoopMode {
         if (this.playAgainBtn) {
             this.playAgainBtn.addEventListener('click', () => this.playAgain());
         }
+        if (this.menuBtn) {
+            this.menuBtn.addEventListener('click', () => this.returnToMenu());
+        }
         
         console.log('✅ Co-op UI setup complete', {
             gameArea: !!this.gameArea,
-            player1Input: !!this.elements.player1Input,
-            player2Input: !!this.elements.player2Input
+            sharedInput: !!this.elements.sharedInput,
+            currentWord: !!this.elements.currentWord
         });
     }
     
@@ -243,6 +248,10 @@ class CoopMode {
             case 'turnChange':
                 this.onTurnChange(data);
                 break;
+            
+            case 'typingPreview':
+                this.onTypingPreview(data);
+                break;
                 
             case 'bossAttack':
                 this.handleBossAttack(data);
@@ -312,8 +321,8 @@ class CoopMode {
             playerNumber: this.playerNumber,
             teammateName: this.teammateName,
             gameArea: !!this.gameArea,
-            player1Input: !!this.elements.player1Input,
-            player2Input: !!this.elements.player2Input
+            sharedInput: !!this.elements.sharedInput,
+            currentWord: !!this.elements.currentWord
         });
         
         this.isActive = true;
@@ -342,53 +351,51 @@ class CoopMode {
         this.updateTeamHealth();
         
         // Set up the single word display for turn-based play
-        this.elements.player1Word.textContent = this.currentWord;
-        this.elements.player2Word.textContent = this.currentWord;
+        this.elements.currentWord.textContent = this.currentWord;
+        
+        // Set up player names
+        if (this.playerNumber === 1) {
+            this.elements.player1Name.textContent = this.game.currentUser?.username || 'You';
+            this.elements.player2Name.textContent = this.teammateName;
+        } else {
+            this.elements.player1Name.textContent = this.teammateName;
+            this.elements.player2Name.textContent = this.game.currentUser?.username || 'You';
+        }
         
         console.log('Words assigned:', { currentWord: this.currentWord });
         
         // Remove old event listeners by cloning and replacing
-        const player1Input = this.elements.player1Input;
-        const player2Input = this.elements.player2Input;
-        
-        const newPlayer1Input = player1Input.cloneNode(true);
-        const newPlayer2Input = player2Input.cloneNode(true);
-        
-        player1Input.parentNode.replaceChild(newPlayer1Input, player1Input);
-        player2Input.parentNode.replaceChild(newPlayer2Input, player2Input);
-        
-        this.elements.player1Input = newPlayer1Input;
-        this.elements.player2Input = newPlayer2Input;
+        const sharedInput = this.elements.sharedInput;
+        const newSharedInput = sharedInput.cloneNode(true);
+        sharedInput.parentNode.replaceChild(newSharedInput, sharedInput);
+        this.elements.sharedInput = newSharedInput;
         
         // Set up UI based on whose turn it is
-        if (this.playerNumber === 1) {
-            // I'm player 1 - I start
-            this.elements.player1Input.disabled = false;
-            this.elements.player2Input.disabled = true;
-            this.elements.player1Input.value = '';
-            this.elements.player1Input.placeholder = 'YOUR TURN - Type here...';
-            this.elements.player2Input.placeholder = 'Waiting for Player 1...';
+        if (this.isMyTurn) {
+            // My turn - enable input
+            this.elements.sharedInput.disabled = false;
+            this.elements.sharedInput.value = '';
+            this.elements.sharedInput.placeholder = 'YOUR TURN - Type here...';
+            this.elements.turnText.textContent = 'Your Turn';
+            this.elements.turnIndicator.style.borderColor = 'var(--neon-cyan)';
+            this.elements.turnIndicator.style.boxShadow = '0 0 10px var(--neon-cyan)';
             
-            // Add event listener
-            this.elements.player1Input.addEventListener('input', (e) => {
-                console.log('Player 1 input:', e.target.value);
+            // Add event listener for input and typing preview
+            this.elements.sharedInput.addEventListener('input', (e) => {
+                console.log('My input:', e.target.value);
                 this.handleMyInput(e);
+                this.sendTypingPreview(e.target.value);
             });
             
-            setTimeout(() => this.elements.player1Input.focus(), 100);
+            setTimeout(() => this.elements.sharedInput.focus(), 100);
         } else {
-            // I'm player 2 - I wait for my turn
-            this.elements.player2Input.disabled = true;
-            this.elements.player1Input.disabled = true;
-            this.elements.player2Input.value = '';
-            this.elements.player2Input.placeholder = 'Waiting for Player 1...';
-            this.elements.player1Input.placeholder = "Player 1's turn...";
-            
-            // Add event listener (will be disabled initially)
-            this.elements.player2Input.addEventListener('input', (e) => {
-                console.log('Player 2 input:', e.target.value);
-                this.handleMyInput(e);
-            });
+            // Not my turn - disable input but show teammate's typing
+            this.elements.sharedInput.disabled = true;
+            this.elements.sharedInput.value = '';
+            this.elements.sharedInput.placeholder = `${this.teammateName}'s turn...`;
+            this.elements.turnText.textContent = `${this.teammateName}'s Turn`;
+            this.elements.turnIndicator.style.borderColor = 'var(--neon-magenta)';
+            this.elements.turnIndicator.style.boxShadow = '0 0 10px var(--neon-magenta)';
         }
         
         this.elements.bossName.textContent = 'CYBER BOSS';
@@ -404,32 +411,30 @@ class CoopMode {
         }
         
         this.myInput = e.target.value.toLowerCase();
-        const myInputElement = this.playerNumber === 1 ? this.elements.player1Input : this.elements.player2Input;
-        const myFeedback = this.playerNumber === 1 ? this.elements.player1Feedback : this.elements.player2Feedback;
         
         if (this.myInput.length > 0) {
             if (this.currentWord.startsWith(this.myInput)) {
-                myInputElement.classList.remove('error');
-                myInputElement.classList.add('correct');
-                myFeedback.textContent = '';
+                this.elements.sharedInput.classList.remove('error');
+                this.elements.sharedInput.classList.add('correct');
+                this.elements.typingFeedback.textContent = '';
                 
                 if (this.myInput === this.currentWord) {
                     this.completeWord();
                 }
             } else {
-                myInputElement.classList.remove('correct');
-                myInputElement.classList.add('error');
+                this.elements.sharedInput.classList.remove('correct');
+                this.elements.sharedInput.classList.add('error');
                 
                 if (this.myCritical) {
                     this.myCritical = false;
                 }
                 
-                myFeedback.textContent = '❌';
+                this.elements.typingFeedback.textContent = '❌';
                 this.game.soundManager.play('error');
             }
         } else {
-            myInputElement.classList.remove('correct', 'error');
-            myFeedback.textContent = '';
+            this.elements.sharedInput.classList.remove('correct', 'error');
+            this.elements.typingFeedback.textContent = '';
         }
     }
     
@@ -448,16 +453,13 @@ class CoopMode {
         }
         
         // Show feedback
-        const myFeedback = this.playerNumber === 1 ? this.elements.player1Feedback : this.elements.player2Feedback;
-        const myInputElement = this.playerNumber === 1 ? this.elements.player1Input : this.elements.player2Input;
-        
         if (this.myCritical) {
-            myFeedback.textContent = `🔥 CRITICAL! -${damage}`;
-            myFeedback.classList.add('critical');
+            this.elements.typingFeedback.textContent = `🔥 CRITICAL! -${damage}`;
+            this.elements.typingFeedback.classList.add('critical');
             this.game.soundManager.play('critical');
         } else {
-            myFeedback.textContent = `✓ -${damage}`;
-            myFeedback.classList.remove('critical');
+            this.elements.typingFeedback.textContent = `✓ -${damage}`;
+            this.elements.typingFeedback.classList.remove('critical');
             this.game.soundManager.play('hit');
         }
         
@@ -496,15 +498,16 @@ class CoopMode {
         this.isMyTurn = false; // My turn is over
         
         // Update UI
-        this.elements.player1Word.textContent = this.currentWord;
-        this.elements.player2Word.textContent = this.currentWord;
+        this.elements.currentWord.textContent = this.currentWord;
         
-        // Disable my input, enable teammate's
-        const turnInputElement = this.playerNumber === 1 ? this.elements.player1Input : this.elements.player2Input;
-        turnInputElement.value = '';
-        turnInputElement.classList.remove('correct', 'error');
-        turnInputElement.disabled = true;
-        turnInputElement.placeholder = `Waiting for Player ${this.currentTurn}...`;
+        // Disable input
+        this.elements.sharedInput.value = '';
+        this.elements.sharedInput.classList.remove('correct', 'error');
+        this.elements.sharedInput.disabled = true;
+        this.elements.sharedInput.placeholder = `${this.teammateName}'s turn...`;
+        this.elements.turnText.textContent = `${this.teammateName}'s Turn`;
+        this.elements.turnIndicator.style.borderColor = 'var(--neon-magenta)';
+        this.elements.turnIndicator.style.boxShadow = '0 0 10px var(--neon-magenta)';
         this.myInput = '';
         
         // Notify server about turn change
@@ -531,32 +534,49 @@ class CoopMode {
         this.myCritical = true;
         
         // Update word display
-        this.elements.player1Word.textContent = this.currentWord;
-        this.elements.player2Word.textContent = this.currentWord;
+        this.elements.currentWord.textContent = this.currentWord;
         
         console.log(`Turn changed. Current turn: Player ${this.currentTurn}, My turn: ${this.isMyTurn}`);
         
         if (this.isMyTurn) {
             // Enable my input
-            const myInput = this.playerNumber === 1 ? this.elements.player1Input : this.elements.player2Input;
-            myInput.disabled = false;
-            myInput.value = '';
-            myInput.placeholder = 'YOUR TURN - Type here...';
-            myInput.focus();
-            
-            // Clear other player's input
-            const otherInput = this.playerNumber === 1 ? this.elements.player2Input : this.elements.player1Input;
-            otherInput.placeholder = `Player ${this.playerNumber === 1 ? 2 : 1}'s turn...`;
+            this.elements.sharedInput.disabled = false;
+            this.elements.sharedInput.value = '';
+            this.elements.sharedInput.placeholder = 'YOUR TURN - Type here...';
+            this.elements.turnText.textContent = 'Your Turn';
+            this.elements.turnIndicator.style.borderColor = 'var(--neon-cyan)';
+            this.elements.turnIndicator.style.boxShadow = '0 0 10px var(--neon-cyan)';
+            this.elements.sharedInput.focus();
         } else {
             // Not my turn, keep disabled
-            const myInput = this.playerNumber === 1 ? this.elements.player1Input : this.elements.player2Input;
-            myInput.disabled = true;
-            myInput.placeholder = `Waiting for Player ${this.currentTurn}...`;
-            
-            // Update other player's placeholder
-            const otherInput = this.playerNumber === 1 ? this.elements.player2Input : this.elements.player1Input;
-            otherInput.placeholder = 'YOUR TURN - Type here...';
+            this.elements.sharedInput.disabled = true;
+            this.elements.sharedInput.placeholder = `${this.teammateName}'s turn...`;
+            this.elements.turnText.textContent = `${this.teammateName}'s Turn`;
+            this.elements.turnIndicator.style.borderColor = 'var(--neon-magenta)';
+            this.elements.turnIndicator.style.boxShadow = '0 0 10px var(--neon-magenta)';
         }
+    }
+    
+    sendTypingPreview(text) {
+        // Send real-time typing preview to teammate
+        if (!this.isActive || !this.isMyTurn || !this.connected) {
+            return;
+        }
+        
+        this.send({
+            type: 'typingPreview',
+            text: text
+        });
+    }
+    
+    onTypingPreview(data) {
+        // Receive teammate's typing preview and display it
+        if (!this.isActive || this.isMyTurn) {
+            return;
+        }
+        
+        // Update the shared input to show what teammate is typing
+        this.elements.sharedInput.value = data.text;
     }
     
     onTeammateAction(data) {
@@ -566,30 +586,30 @@ class CoopMode {
         this.bossHealth = Math.max(0, this.bossHealth - data.damage);
         this.updateBossHealth();
         
-        // Show feedback on teammate's side
-        const teammateFeedback = this.playerNumber === 1 ? this.elements.player2Feedback : this.elements.player1Feedback;
-        
+        // Show feedback
         if (data.isCritical) {
-            teammateFeedback.textContent = `🔥 CRITICAL! -${data.damage}`;
-            teammateFeedback.classList.add('critical');
+            this.elements.typingFeedback.textContent = `🔥 ${this.teammateName} - CRITICAL! -${data.damage}`;
+            this.elements.typingFeedback.classList.add('critical');
             this.game.particleSystem.createCriticalEffect(
                 document.body,
                 'var(--neon-cyan)'
             );
+            this.game.soundManager.play('critical');
         } else {
-            teammateFeedback.textContent = `✓ -${data.damage}`;
-            teammateFeedback.classList.remove('critical');
+            this.elements.typingFeedback.textContent = `✓ ${this.teammateName} -${data.damage}`;
+            this.elements.typingFeedback.classList.remove('critical');
             this.game.particleSystem.createHitEffect(
                 document.body,
                 'var(--neon-magenta)'
             );
+            this.game.soundManager.play('hit');
         }
         
         // Clear feedback after delay
         setTimeout(() => {
-            teammateFeedback.textContent = '';
-            teammateFeedback.classList.remove('critical');
-        }, 1000);
+            this.elements.typingFeedback.textContent = '';
+            this.elements.typingFeedback.classList.remove('critical');
+        }, 1500);
         
         // Check if boss is defeated
         if (this.bossHealth <= 0) {
@@ -634,9 +654,8 @@ class CoopMode {
         this.isActive = false;
         this.inMatch = false;
         
-        // Disable inputs
-        this.elements.player1Input.disabled = true;
-        this.elements.player2Input.disabled = true;
+        // Disable input
+        this.elements.sharedInput.disabled = true;
         
         // Show game over screen
         this.elements.gameOver.classList.remove('hidden');
