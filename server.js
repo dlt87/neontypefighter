@@ -1448,7 +1448,11 @@ async function handleGetUserAchievements(req, res) {
 // ELO Leaderboard Handler
 async function handleGetEloLeaderboard(req, res) {
     try {
-        const leaderboard = await eloDb.getEloLeaderboard(50);
+        const url = new URL(req.url, `http://${req.headers.host}`);
+        const limit = parseInt(url.searchParams.get('limit')) || 10;
+        const validLimit = Math.min(Math.max(limit, 1), 100); // Clamp between 1 and 100
+        
+        const leaderboard = await eloDb.getEloLeaderboard(validLimit);
         
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify(leaderboard));
@@ -1648,7 +1652,11 @@ function handleSubmitEndlessScore(req, res) {
 // Handle endless mode leaderboard request
 async function handleGetEndlessLeaderboard(req, res) {
     try {
-        const leaderboard = await endlessScoreDb.getLeaderboard(10);
+        const url = new URL(req.url, `http://${req.headers.host}`);
+        const limit = parseInt(url.searchParams.get('limit')) || 10;
+        const validLimit = Math.min(Math.max(limit, 1), 100); // Clamp between 1 and 100
+        
+        const leaderboard = await endlessScoreDb.getLeaderboard(validLimit);
         
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify(leaderboard));

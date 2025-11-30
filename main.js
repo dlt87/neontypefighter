@@ -196,6 +196,15 @@ document.addEventListener('DOMContentLoaded', () => {
         populateThemeSelector();
     });
     
+    // Leaderboard show more toggle
+    window.showingTop50 = false;
+    document.getElementById('leaderboard-show-more').addEventListener('click', () => {
+        window.showingTop50 = !window.showingTop50;
+        const btn = document.getElementById('leaderboard-show-more');
+        btn.textContent = window.showingTop50 ? 'SHOW TOP 10' : 'SHOW TOP 50';
+        loadMainMenuLeaderboard();
+    });
+    
     document.getElementById('settings-btn').addEventListener('click', () => {
         showScreen('settings');
         loadSettings();
@@ -203,7 +212,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     document.getElementById('achievements-btn').addEventListener('click', () => {
         showScreen('achievements');
-        loadAchievements();
+        window.loadAchievements();
     });
     
     // FAQ button
@@ -722,14 +731,15 @@ document.addEventListener('DOMContentLoaded', () => {
         // Check which tab is active
         const activeTab = document.querySelector('.leaderboard-tab.active');
         const tabType = activeTab ? activeTab.dataset.tab : 'timed';
+        const limit = window.showingTop50 ? 50 : 10;
         
         try {
             if (tabType === 'elo') {
-                await loadEloLeaderboard();
+                await loadEloLeaderboard(limit);
             } else if (tabType === 'endless') {
-                await loadEndlessLeaderboard();
+                await loadEndlessLeaderboard(limit);
             } else {
-                await loadTimedLeaderboard();
+                await loadTimedLeaderboard(limit);
             }
         } catch (error) {
             console.error('Failed to load leaderboard:', error);
@@ -737,11 +747,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
     
-    async function loadTimedLeaderboard() {
+    async function loadTimedLeaderboard(limit = 10) {
         const leaderboardList = document.getElementById('main-menu-leaderboard-list');
         
         try {
-            const leaderboard = await highScoreAPI.getLeaderboard(10);
+            const leaderboard = await highScoreAPI.getLeaderboard(limit);
             
             if (!leaderboard || leaderboard.length === 0) {
                 leaderboardList.innerHTML = '<div class="loading-message">No scores yet.<br>Be the first!</div>';
@@ -769,12 +779,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
     
-    async function loadEloLeaderboard() {
+    async function loadEloLeaderboard(limit = 10) {
         const leaderboardList = document.getElementById('main-menu-leaderboard-list');
         
         try {
             console.log('📊 Fetching ELO leaderboard...');
-            const response = await fetch('https://neontypefighter-production.up.railway.app/api/elo/leaderboard');
+            const response = await fetch(`https://neontypefighter-production.up.railway.app/api/elo/leaderboard?limit=${limit}`);
             if (!response.ok) {
                 throw new Error('Failed to fetch ELO leaderboard');
             }
@@ -808,11 +818,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
     
-    async function loadEndlessLeaderboard() {
+    async function loadEndlessLeaderboard(limit = 10) {
         const leaderboardList = document.getElementById('main-menu-leaderboard-list');
         
         try {
-            const response = await fetch('https://neontypefighter-production.up.railway.app/api/endless-scores/top');
+            const response = await fetch(`https://neontypefighter-production.up.railway.app/api/endless-scores/top?limit=${limit}`);
             
             if (!response.ok) {
                 throw new Error('Failed to fetch endless leaderboard');
@@ -862,7 +872,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('music-volume-value').textContent = musicVolume + '%';
 
     // Achievements Management
-    async function loadAchievements() {
+    window.loadAchievements = async function() {
         const achievementsGrid = document.getElementById('achievements-grid');
         const unlockedCount = document.getElementById('unlocked-count');
         const totalCount = document.getElementById('total-count');
@@ -1016,4 +1026,15 @@ document.addEventListener('DOMContentLoaded', () => {
     
     console.log('🎮 Neon Typing Fighter initialized!');
     console.log('💡 Press ESC during a game to return to menu');
+    
+    // Auto-start background music
+    setTimeout(() => {
+        if (game && game.soundManager) {
+            game.soundManager.startMusic();
+            const musicBtn = document.getElementById('music-toggle');
+            if (musicBtn && !musicBtn.classList.contains('disabled')) {
+                // Music is now playing
+            }
+        }
+    }, 500);
 });

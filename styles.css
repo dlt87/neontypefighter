@@ -300,6 +300,28 @@ body::before {
     font-size: 1.1em;
 }
 
+.leaderboard-show-more {
+    margin-top: 15px;
+    padding: 10px 25px;
+    background: rgba(255, 0, 255, 0.2);
+    border: 2px solid var(--neon-magenta);
+    color: var(--neon-magenta);
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    transition: all 0.3s ease;
+    width: 100%;
+}
+
+.leaderboard-show-more:hover {
+    background: rgba(255, 0, 255, 0.3);
+    box-shadow: 0 0 20px rgba(255, 0, 255, 0.5);
+    transform: translateY(-2px);
+}
+
 /* User Panel and Login */
 .user-panel {
     margin-top: 10px;
