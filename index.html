@@ -29,6 +29,11 @@
                         <button class="neon-button" id="settings-btn">SETTINGS</button>
                     </div>
                     
+                    <div class="audio-controls">
+                        <button class="audio-toggle-btn" id="sound-toggle" title="Toggle Sound Effects">🔊 SFX</button>
+                        <button class="audio-toggle-btn" id="music-toggle" title="Toggle Background Music">🎵 MUSIC</button>
+                    </div>
+                    
                     <div class="user-panel" id="user-panel">
                         <div class="user-info hidden" id="user-info">
                             <span class="user-name" id="user-name-display"></span>
@@ -42,20 +47,6 @@
                             <button class="neon-button small" id="login-btn">LOGIN</button>
                             <button class="neon-button small secondary" id="register-btn">REGISTER</button>
                         </div>
-                    </div>
-                    
-                    <div class="word-bank-selector-main">
-                        <label class="word-bank-label">WORD BANK:</label>
-                        <select id="word-bank-select-main" class="word-bank-select">
-                            <option value="cyberpunk">Cyberpunk</option>
-                            <option value="names">Names</option>
-                            <option value="all">All Words</option>
-                        </select>
-                    </div>
-                    
-                    <div class="audio-controls">
-                        <button class="audio-toggle-btn" id="sound-toggle" title="Toggle Sound Effects">🔊 SFX</button>
-                        <button class="audio-toggle-btn" id="music-toggle" title="Toggle Background Music">🎵 MUSIC</button>
                     </div>
                 </div>
                 
@@ -327,6 +318,14 @@
                             <option value="easy">Easy</option>
                             <option value="medium" selected>Medium</option>
                             <option value="hard">Hard</option>
+                        </select>
+                    </div>
+                    <div class="setting-item">
+                        <label for="word-bank-select">Word Bank</label>
+                        <select id="word-bank-select" class="neon-select">
+                            <option value="cyberpunk">Cyberpunk</option>
+                            <option value="names">Names</option>
+                            <option value="all">All Words</option>
                         </select>
                     </div>
                     <div class="setting-item">

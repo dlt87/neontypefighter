@@ -198,8 +198,8 @@ document.addEventListener('DOMContentLoaded', () => {
         loadAchievements();
     });
     
-    // Word bank selector on main menu
-    const wordBankSelect = document.getElementById('word-bank-select-main');
+    // Word bank selector in settings
+    const wordBankSelect = document.getElementById('word-bank-select');
     if (wordBankSelect) {
         // Set initial value
         wordBankSelect.value = game.wordManager.getWordBank();
