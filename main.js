@@ -717,6 +717,8 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             if (tabType === 'elo') {
                 await loadEloLeaderboard();
+            } else if (tabType === 'endless') {
+                await loadEndlessLeaderboard();
             } else {
                 await loadTimedLeaderboard();
             }
@@ -793,6 +795,44 @@ document.addEventListener('DOMContentLoaded', () => {
             }).join('');
         } catch (error) {
             console.error('Failed to load ELO leaderboard:', error);
+            leaderboardList.innerHTML = '<div class="loading-message">Server offline.<br>Play to set scores!</div>';
+        }
+    }
+    
+    async function loadEndlessLeaderboard() {
+        const leaderboardList = document.getElementById('main-menu-leaderboard-list');
+        
+        try {
+            const response = await fetch('https://neontypefighter-production.up.railway.app/api/endless-scores/top');
+            
+            if (!response.ok) {
+                throw new Error('Failed to fetch endless leaderboard');
+            }
+            
+            const leaderboard = await response.json();
+            
+            if (!leaderboard || leaderboard.length === 0) {
+                leaderboardList.innerHTML = '<div class="loading-message">No scores yet.<br>Be the first!</div>';
+                return;
+            }
+            
+            const currentUserId = authClient.currentUser?.sub;
+            
+            leaderboardList.innerHTML = leaderboard.map((entry, index) => {
+                const rank = index + 1;
+                const isCurrentUser = entry.userId === currentUserId;
+                const rankClass = rank === 1 ? 'top-1' : rank === 2 ? 'top-2' : rank === 3 ? 'top-3' : '';
+                
+                return `
+                    <div class="leaderboard-entry ${isCurrentUser ? 'current-user' : ''}">
+                        <div class="leaderboard-rank ${rankClass}">#${rank}</div>
+                        <div class="leaderboard-user">${entry.userName}</div>
+                        <div class="leaderboard-score">Wave ${entry.wave} <span style="font-size:0.8em;opacity:0.7">(${entry.wordsTyped} words)</span></div>
+                    </div>
+                `;
+            }).join('');
+        } catch (error) {
+            console.error('Failed to load endless leaderboard:', error);
             leaderboardList.innerHTML = '<div class="loading-message">Server offline.<br>Play to set scores!</div>';
         }
     }

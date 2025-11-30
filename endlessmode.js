@@ -29,6 +29,9 @@ class EndlessMode {
         this.currentInput = '';
         this.isCritical = true;
         
+        // Word history to prevent repetition
+        this.wordHistory = [];
+        
         this.setupUI();
     }
     
@@ -95,10 +98,10 @@ class EndlessMode {
     }
     
     startWave() {
-        // Calculate wave difficulty
-        this.difficultyMultiplier = 1 + (this.currentWave - 1) * 0.1;
-        this.wordsRequired = Math.floor(this.wordsPerWave + (this.currentWave - 1) * 1.5);
-        this.timePerWave = Math.max(20, 30 - Math.floor((this.currentWave - 1) * 0.5));
+        // Calculate wave difficulty (more gradual progression)
+        this.difficultyMultiplier = 1 + (this.currentWave - 1) * 0.05;
+        this.wordsRequired = Math.floor(this.wordsPerWave + (this.currentWave - 1) * 0.8);
+        this.timePerWave = Math.max(25, 35 - Math.floor((this.currentWave - 1) * 0.3));
         this.timeRemaining = this.timePerWave;
         this.wordsCompleted = 0;
         
@@ -129,9 +132,25 @@ class EndlessMode {
     getNewWord() {
         // Get word based on difficulty
         const wordPool = this.getWordPoolForDifficulty();
-        this.currentWord = wordPool[Math.floor(Math.random() * wordPool.length)];
+        let newWord;
+        let attempts = 0;
+        const maxAttempts = 50;
+        
+        // Keep trying until we get a word not in recent history
+        do {
+            newWord = wordPool[Math.floor(Math.random() * wordPool.length)];
+            attempts++;
+        } while (this.wordHistory.includes(newWord) && attempts < maxAttempts);
+        
+        this.currentWord = newWord;
         this.currentInput = '';
         this.isCritical = true;
+        
+        // Add to history and keep only last 3 words
+        this.wordHistory.push(newWord);
+        if (this.wordHistory.length > 3) {
+            this.wordHistory.shift();
+        }
         
         this.elements.currentWord.textContent = this.currentWord;
         this.elements.typingInput.value = '';
@@ -140,20 +159,20 @@ class EndlessMode {
     
     getWordPoolForDifficulty() {
         // Easy words for early waves (3-6 letters)
-        if (this.currentWave <= 3) {
+        if (this.currentWave <= 5) {
             return ['cyber', 'neon', 'pixel', 'digital', 'matrix', 'chrome', 'glitch', 'byte', 'hack', 'fire',
                     'bolt', 'beam', 'tech', 'core', 'link', 'sync', 'grid', 'wave', 'data', 'code',
                     'node', 'port', 'ram', 'rom', 'cpu', 'gpu', 'usb', 'lan', 'wifi', 'cloud'];
         }
         // Medium words (6-8 letters)
-        else if (this.currentWave <= 7) {
+        else if (this.currentWave <= 10) {
             return ['quantum', 'protocol', 'algorithm', 'interface', 'terminal', 'firewall', 'encrypted',
                     'network', 'system', 'server', 'client', 'socket', 'packet', 'router', 'daemon',
                     'kernel', 'buffer', 'cache', 'thread', 'process', 'memory', 'storage', 'backup',
                     'restore', 'compile', 'execute', 'runtime', 'binary', 'hexcode', 'decrypt'];
         }
         // Hard words (8-10 letters)
-        else if (this.currentWave <= 12) {
+        else if (this.currentWave <= 18) {
             return ['bandwidth', 'mainframe', 'synthwave', 'wavelength', 'frequency', 'amplifier', 'override',
                     'cyberdeck', 'holonet', 'datastream', 'netrunner', 'firewall', 'cyberpunk', 'hologram',
                     'database', 'backtrack', 'overclock', 'processor', 'multitask', 'firmware', 'software',
