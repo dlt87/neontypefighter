@@ -275,9 +275,10 @@ class EndlessMode {
         if (this.game.particleSystem) {
             for (let i = 0; i < 30; i++) {
                 setTimeout(() => {
-                    this.game.particleSystem.createBurst(
+                    this.game.particleSystem.createExplosion(
                         window.innerWidth / 2,
                         window.innerHeight / 2,
+                        '#00ffff',
                         10
                     );
                 }, i * 50);
@@ -434,7 +435,7 @@ class EndlessMode {
             
             const username = document.createElement('span');
             username.className = 'username';
-            username.textContent = score.username;
+            username.textContent = score.userName || score.username || 'Unknown';
             
             const wave = document.createElement('span');
             wave.className = 'wave';
@@ -442,7 +443,7 @@ class EndlessMode {
             
             const words = document.createElement('span');
             words.className = 'words';
-            words.textContent = `${score.words_typed} words`;
+            words.textContent = `${score.wordsTyped || score.words_typed || 0} words`;
             
             entry.appendChild(rank);
             entry.appendChild(username);
