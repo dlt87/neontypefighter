@@ -317,7 +317,12 @@ class CoopMode {
         this.wordsTyped = 0;
         this.myCritical = true;
         
-        // Update health bars
+        // Initialize health to max
+        this.bossHealth = this.maxBossHealth;
+        this.teamHealth = this.maxTeamHealth;
+        
+        // Update health bars to 100%
+        console.log('Initializing health bars...');
         this.updateBossHealth();
         this.updateTeamHealth();
         
@@ -439,11 +444,17 @@ class CoopMode {
         }
         
         // Particles
-        this.game.particleSystem.createBurst(
-            window.innerWidth / 2,
-            window.innerHeight / 3,
-            this.myCritical ? 'critical' : 'hit'
-        );
+        if (this.myCritical) {
+            this.game.particleSystem.createCriticalEffect(
+                document.body,
+                'var(--neon-cyan)'
+            );
+        } else {
+            this.game.particleSystem.createHitEffect(
+                document.body,
+                'var(--neon-magenta)'
+            );
+        }
         
         // Send action to server
         this.send({
@@ -470,6 +481,7 @@ class CoopMode {
         this.myInput = '';
         this.myCritical = true;
         
+        // Clear feedback after delay
         setTimeout(() => {
             myFeedback.textContent = '';
             myFeedback.classList.remove('critical');
@@ -488,22 +500,24 @@ class CoopMode {
         if (data.isCritical) {
             teammateFeedback.textContent = `🔥 CRITICAL! -${data.damage}`;
             teammateFeedback.classList.add('critical');
+            this.game.particleSystem.createCriticalEffect(
+                document.body,
+                'var(--neon-cyan)'
+            );
         } else {
             teammateFeedback.textContent = `✓ -${data.damage}`;
             teammateFeedback.classList.remove('critical');
+            this.game.particleSystem.createHitEffect(
+                document.body,
+                'var(--neon-magenta)'
+            );
         }
-        
-        // Particles
-        this.game.particleSystem.createBurst(
-            window.innerWidth / 2,
-            window.innerHeight / 3,
-            data.isCritical ? 'critical' : 'hit'
-        );
         
         // Get new word for teammate
         this.teammateWord = this.game.wordManager.getRandomWord();
         teammateWordElement.textContent = this.teammateWord;
         
+        // Clear feedback after delay
         setTimeout(() => {
             teammateFeedback.textContent = '';
             teammateFeedback.classList.remove('critical');
@@ -516,7 +530,8 @@ class CoopMode {
     }
     
     handleBossAttack(data) {
-        this.teamHealth = Math.max(0, this.teamHealth - data.damage);
+        // Update team health from server
+        this.teamHealth = Math.max(0, data.teamHealth);
         this.updateTeamHealth();
         
         this.elements.bossStatus.textContent = `💥 BOSS ATTACKED! -${data.damage}`;
@@ -532,15 +547,17 @@ class CoopMode {
     }
     
     updateBossHealth() {
-        const percentage = (this.bossHealth / this.maxBossHealth) * 100;
+        const percentage = Math.max(0, Math.min(100, (this.bossHealth / this.maxBossHealth) * 100));
         this.elements.bossHealth.style.width = `${percentage}%`;
         this.elements.bossHealthText.textContent = `${Math.round(this.bossHealth)} / ${this.maxBossHealth}`;
+        console.log(`Boss health: ${Math.round(this.bossHealth)}/${this.maxBossHealth} (${percentage.toFixed(1)}%)`);
     }
     
     updateTeamHealth() {
-        const percentage = (this.teamHealth / this.maxTeamHealth) * 100;
+        const percentage = Math.max(0, Math.min(100, (this.teamHealth / this.maxTeamHealth) * 100));
         this.elements.teamHealth.style.width = `${percentage}%`;
         this.elements.teamHealthText.textContent = `${Math.round(this.teamHealth)} / ${this.maxTeamHealth}`;
+        console.log(`Team health: ${Math.round(this.teamHealth)}/${this.maxTeamHealth} (${percentage.toFixed(1)}%)`);
     }
     
     endGame(victory) {
