@@ -282,6 +282,10 @@ async function handleMessage(ws, data) {
             relayCoopNewWord(ws, data);
             break;
             
+        case 'coopPenalty':
+            relayCoopPenalty(ws, data);
+            break;
+            
         case 'gameOver':
             handleGameOver(ws, data);
             break;
@@ -632,6 +636,34 @@ function relayCoopNewWord(ws, data) {
             type: 'teammateNewWord',
             word: data.word
         }));
+    }
+}
+
+function relayCoopPenalty(ws, data) {
+    const matchId = ws.coopMatchId;
+    if (!matchId) return;
+    
+    const match = activeCoopMatches.get(matchId);
+    if (!match) return;
+    
+    // Update team health
+    match.teamHealth = Math.max(0, match.teamHealth - data.damage);
+    
+    // Find teammate
+    const teammate = match.player1 === ws ? match.player2 : match.player1;
+    
+    if (teammate) {
+        teammate.send(JSON.stringify({
+            type: 'teammatePenalty',
+            damage: data.damage,
+            teamHealth: match.teamHealth
+        }));
+    }
+    
+    // Check if team is defeated
+    if (match.teamHealth <= 0) {
+        clearBossAttackTimer(matchId);
+        // Game over handled by client
     }
 }
 

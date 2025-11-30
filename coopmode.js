@@ -127,6 +127,10 @@ class CoopMode {
                 this.onTeammateAction(data);
                 break;
                 
+            case 'teammatePenalty':
+                this.onteammatePenalty(data);
+                break;
+                
             case 'bossAttack':
                 this.handleBossAttack(data);
                 break;
@@ -286,13 +290,37 @@ class CoopMode {
             } else {
                 myInput.classList.remove('correct');
                 myInput.classList.add('error');
-                this.myCritical = false;
+                
+                // Only apply penalty once per mistake
+                if (this.myCritical) {
+                    this.myCritical = false;
+                    this.penalizeTeam();
+                }
+                
                 myFeedback.textContent = '❌';
                 this.game.soundManager.playErrorSound();
             }
         } else {
             myInput.classList.remove('correct', 'error');
             myFeedback.textContent = '';
+        }
+    }
+    
+    penalizeTeam() {
+        const MISTAKE_DAMAGE = 10; // Penalty for typing mistakes
+        
+        this.teamHealth = Math.max(0, this.teamHealth - MISTAKE_DAMAGE);
+        this.updateHealthBars();
+        
+        // Send penalty to server to sync with teammate
+        this.send({
+            type: 'coopPenalty',
+            damage: MISTAKE_DAMAGE
+        });
+        
+        // Check defeat
+        if (this.teamHealth <= 0) {
+            this.defeat();
         }
     }
     
@@ -308,13 +336,35 @@ class CoopMode {
             this.game.soundManager.playHitSound();
         }
         
-        // Send action to server
+        // Update local boss health immediately
+        this.bossHealth = Math.max(0, this.bossHealth - damage);
+        this.totalDamageDealt += damage;
+        this.updateHealthBars();
+        
+        // Visual effect
+        const bossHealthBar = this.elements.bossHealth.parentElement;
+        const rect = bossHealthBar.getBoundingClientRect();
+        const x = rect.left + rect.width / 2;
+        const y = rect.top + rect.height / 2;
+        
+        if (isCritical) {
+            this.game.particleSystem.createCriticalHit(x, y);
+        } else {
+            this.game.particleSystem.createHit(x, y);
+        }
+        
+        // Send action to server (to update teammate)
         this.send({
             type: 'coopAction',
             word: this.myWord,
             damage: damage,
             isCritical: isCritical
         });
+        
+        // Check victory
+        if (this.bossHealth <= 0) {
+            this.victory();
+        }
         
         // Update local UI
         const myInput = this.playerNumber === 1 ? this.elements.player1Input : this.elements.player2Input;
@@ -381,6 +431,25 @@ class CoopMode {
         setTimeout(() => {
             teammateFeedback.textContent = '';
         }, 1000);
+    }
+    
+    onteammatePenalty(data) {
+        console.log('⚠️ Teammate made a mistake!');
+        
+        // Update team health based on teammate's mistake
+        this.teamHealth = Math.max(0, data.teamHealth);
+        this.updateHealthBars();
+        
+        // Visual feedback
+        this.elements.teamHealth.parentElement.style.animation = 'none';
+        setTimeout(() => {
+            this.elements.teamHealth.parentElement.style.animation = 'pulse 0.5s';
+        }, 10);
+        
+        // Check defeat
+        if (this.teamHealth <= 0) {
+            this.defeat();
+        }
     }
     
     handleBossAttack(data) {
