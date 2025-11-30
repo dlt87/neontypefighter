@@ -23,6 +23,7 @@
                         <button class="neon-button" id="solo-mode-btn">SOLO MODE</button>
                         <button class="neon-button" id="coop-mode-btn">CO-OP MODE</button>
                         <button class="neon-button" id="timed-mode-btn">TIMED MODE</button>
+                        <button class="neon-button" id="endless-mode-btn">ENDLESS MODE</button>
                         <button class="neon-button" id="multiplayer-mode-btn">MULTIPLAYER</button>
                         <button class="neon-button" id="achievements-btn">ACHIEVEMENTS</button>
                         <button class="neon-button" id="themes-btn">THEMES</button>
@@ -377,6 +378,93 @@
             </div>
         </div>
 
+        <!-- Endless Mode Screen -->
+        <div id="endless-mode-screen" class="menu-screen hidden">
+            <div class="endless-container">
+                <h2 class="neon-text">ENDLESS MODE</h2>
+                <p class="endless-description">Survive as many waves as you can! Each wave increases in difficulty.</p>
+                
+                <!-- Wave Info -->
+                <div class="endless-wave-header">
+                    <div class="wave-stat">
+                        <span class="stat-label">WAVE</span>
+                        <span class="stat-value" id="endless-wave-number">1</span>
+                    </div>
+                    <div class="wave-stat">
+                        <span class="stat-label">WORDS</span>
+                        <span class="stat-value" id="endless-words-progress">0 / 5</span>
+                    </div>
+                    <div class="wave-stat">
+                        <span class="stat-label">TIME</span>
+                        <span class="stat-value" id="endless-timer">30s</span>
+                    </div>
+                </div>
+                
+                <div class="endless-wave-info" id="endless-wave-info">
+                    Wave 1 - Complete 5 words in 30s
+                </div>
+                
+                <!-- Game Area -->
+                <div class="endless-game-area">
+                    <div class="word-display">
+                        <div class="current-word" id="endless-current-word">cyber</div>
+                    </div>
+                    
+                    <div class="typing-area">
+                        <input type="text" 
+                               class="neon-input" 
+                               id="endless-typing-input" 
+                               placeholder="Type the word..." 
+                               autocomplete="off" 
+                               spellcheck="false"
+                               disabled>
+                        <div class="typing-feedback" id="endless-typing-feedback"></div>
+                    </div>
+                </div>
+                
+                <!-- Leaderboard -->
+                <div class="endless-leaderboard">
+                    <h3 class="neon-text">TOP SURVIVORS</h3>
+                    <div id="endless-leaderboard-list" class="leaderboard-list">
+                        <!-- Leaderboard entries will be inserted here -->
+                    </div>
+                </div>
+                
+                <!-- Controls -->
+                <div class="endless-controls">
+                    <button class="neon-button" id="endless-start-btn">START GAME</button>
+                    <button class="neon-button secondary" id="endless-back-btn">BACK TO MENU</button>
+                </div>
+                
+                <!-- Game Over Screen -->
+                <div id="endless-game-over" class="game-over-screen hidden">
+                    <h3 id="endless-game-over-title">GAME OVER</h3>
+                    <div class="game-over-stats">
+                        <div class="stat-row">
+                            <span class="stat-label">Final Wave:</span>
+                            <span class="stat-value" id="endless-final-wave">1</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">Words Typed:</span>
+                            <span class="stat-value" id="endless-total-words">0</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">Critical Hits:</span>
+                            <span class="stat-value" id="endless-total-criticals">0</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">Survival Time:</span>
+                            <span class="stat-value" id="endless-survival-time">0:00</span>
+                        </div>
+                    </div>
+                    <div class="game-over-buttons">
+                        <button class="neon-button" id="endless-play-again-btn">PLAY AGAIN</button>
+                        <button class="neon-button secondary" id="endless-menu-btn">MAIN MENU</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Co-op Mode Screen -->
         <div id="coop-mode-screen" class="menu-screen hidden">
             <!-- Matchmaking Menu -->
@@ -492,6 +580,7 @@
     <script src="websocket.js"></script>
     <script src="game.js"></script>
     <script src="timedmode.js"></script>
+    <script src="endlessmode.js"></script>
     <script src="coopmode.js"></script>
     <script src="main.js"></script>
 </body>

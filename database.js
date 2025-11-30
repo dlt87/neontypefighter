@@ -163,6 +163,23 @@ async function initDatabase() {
             CREATE INDEX IF NOT EXISTS idx_user_achievements ON user_achievements(user_id);
         `);
 
+        // Create endless_scores table
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS endless_scores (
+                score_id SERIAL PRIMARY KEY,
+                user_id VARCHAR(255) NOT NULL,
+                user_name VARCHAR(50) NOT NULL,
+                wave INTEGER NOT NULL,
+                words_typed INTEGER NOT NULL,
+                critical_hits INTEGER,
+                survival_time INTEGER,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+            );
+            CREATE INDEX IF NOT EXISTS idx_endless_wave ON endless_scores(wave DESC);
+            CREATE INDEX IF NOT EXISTS idx_endless_user ON endless_scores(user_id, wave DESC);
+        `);
+
         // Insert default achievements if not exist
         await client.query(`
             INSERT INTO achievements (achievement_id, name, description, icon, tier, requirement) VALUES
@@ -667,11 +684,75 @@ const eloDb = {
     }
 };
 
+// Endless Mode Score Database Functions
+const endlessScoreDb = {
+    // Submit a new endless mode score
+    async submitScore(userId, userName, wave, wordsTyped, criticalHits, survivalTime) {
+        const result = await pool.query(
+            `INSERT INTO endless_scores 
+             (user_id, user_name, wave, words_typed, critical_hits, survival_time)
+             VALUES ($1, $2, $3, $4, $5, $6)
+             RETURNING *`,
+            [userId, userName, wave, wordsTyped, criticalHits || 0, survivalTime || 0]
+        );
+        return result.rows[0];
+    },
+
+    // Get top N scores by wave (leaderboard)
+    async getLeaderboard(limit = 10) {
+        const result = await pool.query(
+            `SELECT DISTINCT ON (user_id)
+                user_id as "userId",
+                user_name as "userName",
+                wave,
+                words_typed as "wordsTyped",
+                critical_hits as "criticalHits",
+                survival_time as "survivalTime",
+                created_at as "timestamp"
+             FROM endless_scores
+             ORDER BY user_id, wave DESC, words_typed DESC, created_at DESC
+             LIMIT $1`,
+            [limit * 3] // Get more to filter duplicates
+        );
+        
+        // Sort by wave (primary) and words typed (secondary), then take top N
+        const topScores = result.rows
+            .sort((a, b) => {
+                if (b.wave !== a.wave) return b.wave - a.wave;
+                return b.wordsTyped - a.wordsTyped;
+            })
+            .slice(0, limit);
+        
+        return topScores;
+    },
+
+    // Get user's best score
+    async getUserBestScore(userId) {
+        const result = await pool.query(
+            `SELECT 
+                user_id as "userId",
+                user_name as "userName",
+                wave,
+                words_typed as "wordsTyped",
+                critical_hits as "criticalHits",
+                survival_time as "survivalTime",
+                created_at as "timestamp"
+             FROM endless_scores
+             WHERE user_id = $1
+             ORDER BY wave DESC, words_typed DESC
+             LIMIT 1`,
+            [userId]
+        );
+        return result.rows[0];
+    }
+};
+
 module.exports = {
     initDatabase,
     userDb,
     scoreDb,
     achievementDb,
     eloDb,
+    endlessScoreDb,
     pool
 };

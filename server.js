@@ -12,7 +12,7 @@ const url = require('url');
 const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
-const { initDatabase, userDb, scoreDb, achievementDb, eloDb, pool } = require('./database');
+const { initDatabase, userDb, scoreDb, achievementDb, eloDb, endlessScoreDb, pool } = require('./database');
 const emailService = require('./email-service');
 
 const PORT = process.env.PORT || 8080;
@@ -164,6 +164,10 @@ const server = http.createServer((req, res) => {
         handleGetMatchHistory(req, res);
     } else if (pathname === '/api/match/result' && req.method === 'POST') {
         handleMatchResult(req, res);
+    } else if (pathname === '/api/endless-scores' && req.method === 'POST') {
+        handleSubmitEndlessScore(req, res);
+    } else if (pathname === '/api/endless-scores/top' && req.method === 'GET') {
+        handleGetEndlessLeaderboard(req, res);
     } else {
         res.writeHead(404, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: 'Not found' }));
@@ -1573,6 +1577,83 @@ async function handleMatchResult(req, res) {
         });
     } catch (error) {
         console.error('Error handling match result:', error);
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Internal server error' }));
+    }
+}
+
+// Handle endless mode score submission
+function handleSubmitEndlessScore(req, res) {
+    let body = '';
+    req.on('data', chunk => {
+        body += chunk.toString();
+    });
+    
+    req.on('end', async () => {
+        try {
+            const data = JSON.parse(body);
+            const { userId, userName, wave, wordsTyped, criticalHits, survivalTime } = data;
+            
+            if (!userId || !userName || wave === undefined) {
+                res.writeHead(400, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ error: 'Missing required fields' }));
+                return;
+            }
+            
+            // Check if user exists
+            const user = await userDb.findById(userId);
+            
+            if (!user) {
+                res.writeHead(404, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ error: 'User not found' }));
+                return;
+            }
+            
+            // Save endless mode score to database
+            const scoreEntry = await endlessScoreDb.submitScore(
+                userId, 
+                userName, 
+                wave, 
+                wordsTyped || 0, 
+                criticalHits || 0, 
+                survivalTime || 0
+            );
+            
+            // Get user's best score
+            const userBest = await endlessScoreDb.getUserBestScore(userId);
+            const isNewBest = userBest && userBest.wave === wave && userBest.wordsTyped === wordsTyped;
+            
+            // Get leaderboard to calculate rank
+            const leaderboard = await endlessScoreDb.getLeaderboard(100);
+            const rank = leaderboard.findIndex(s => 
+                s.userId === userId && s.wave === wave && s.wordsTyped === wordsTyped
+            ) + 1;
+            
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({
+                success: true,
+                rank: rank || 0,
+                isNewBest
+            }));
+            
+            console.log(`🌊 Endless score submitted: ${userName} - Wave ${wave}, ${wordsTyped} words (Rank #${rank || 'N/A'})`);
+        } catch (error) {
+            console.error('Error handling endless score submission:', error);
+            res.writeHead(500, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'Internal server error' }));
+        }
+    });
+}
+
+// Handle endless mode leaderboard request
+async function handleGetEndlessLeaderboard(req, res) {
+    try {
+        const leaderboard = await endlessScoreDb.getLeaderboard(10);
+        
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify(leaderboard));
+    } catch (error) {
+        console.error('Error getting endless leaderboard:', error);
         res.writeHead(500, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: 'Internal server error' }));
     }

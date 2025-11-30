@@ -171,6 +171,14 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
     
+    document.getElementById('endless-mode-btn').addEventListener('click', () => {
+        showScreen('endless');
+        if (!game.endlessMode) {
+            game.endlessMode = new EndlessMode(game);
+        }
+        game.endlessMode.show();
+    });
+    
     document.getElementById('multiplayer-mode-btn').addEventListener('click', () => {
         // Require login for multiplayer
         if (!authClient.currentUser) {
@@ -293,6 +301,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const settingsMenu = document.getElementById('settings-menu');
         const achievementsScreen = document.getElementById('achievements-screen');
         const coopModeScreen = document.getElementById('coop-mode-screen');
+        const endlessModeScreen = document.getElementById('endless-mode-screen');
         
         mainMenu.classList.remove('active');
         mainMenu.classList.add('hidden');
@@ -307,6 +316,10 @@ document.addEventListener('DOMContentLoaded', () => {
         achievementsScreen.classList.remove('active');
         coopModeScreen.classList.add('hidden');
         coopModeScreen.classList.remove('active');
+        if (endlessModeScreen) {
+            endlessModeScreen.classList.add('hidden');
+            endlessModeScreen.classList.remove('active');
+        }
         
         if (screen === 'menu') {
             mainMenu.classList.add('active');
@@ -321,6 +334,11 @@ document.addEventListener('DOMContentLoaded', () => {
             themeSelector.style.display = 'flex';
         } else if (screen === 'timed') {
             timedModeScreen.classList.remove('hidden');
+        } else if (screen === 'endless') {
+            if (endlessModeScreen) {
+                endlessModeScreen.classList.remove('hidden');
+                endlessModeScreen.classList.add('active');
+            }
         } else if (screen === 'settings') {
             settingsMenu.classList.remove('hidden');
             settingsMenu.classList.add('active');

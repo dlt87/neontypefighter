@@ -2515,6 +2515,268 @@ body::before {
     }
 }
 
+/* ========================================
+   ENDLESS MODE STYLES
+   ======================================== */
+
+.endless-container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.endless-description {
+    text-align: center;
+    color: var(--neon-cyan);
+    font-size: 1.1rem;
+    margin-bottom: 30px;
+    text-shadow: 0 0 10px var(--neon-cyan);
+}
+
+.endless-wave-header {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.wave-stat {
+    background: rgba(0, 0, 0, 0.7);
+    border: 2px solid var(--neon-cyan);
+    border-radius: 10px;
+    padding: 15px;
+    text-align: center;
+}
+
+.wave-stat .stat-label {
+    display: block;
+    font-size: 0.9rem;
+    color: var(--neon-magenta);
+    margin-bottom: 5px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.wave-stat .stat-value {
+    display: block;
+    font-size: 2rem;
+    color: var(--neon-cyan);
+    font-weight: bold;
+    text-shadow: 0 0 15px var(--neon-cyan);
+}
+
+.endless-wave-info {
+    text-align: center;
+    font-size: 1.2rem;
+    color: var(--neon-magenta);
+    margin-bottom: 30px;
+    padding: 15px;
+    background: rgba(255, 0, 255, 0.1);
+    border-radius: 8px;
+    text-shadow: 0 0 10px var(--neon-magenta);
+}
+
+.endless-game-area {
+    background: rgba(0, 0, 0, 0.8);
+    border: 3px solid var(--neon-cyan);
+    border-radius: 15px;
+    padding: 40px;
+    margin-bottom: 30px;
+    box-shadow: 0 0 30px rgba(0, 255, 255, 0.3);
+}
+
+.endless-game-area .word-display {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.endless-game-area .current-word {
+    font-size: 3.5rem;
+    color: var(--neon-cyan);
+    text-shadow: 0 0 20px var(--neon-cyan);
+    letter-spacing: 0.15em;
+    padding: 20px;
+    background: rgba(0, 255, 255, 0.05);
+    border-radius: 10px;
+}
+
+.endless-game-area .typing-area {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.endless-game-area .neon-input {
+    width: 100%;
+    font-size: 1.8rem;
+    padding: 15px;
+    text-align: center;
+}
+
+.endless-game-area .typing-feedback {
+    text-align: center;
+    margin-top: 15px;
+    font-size: 1.5rem;
+    min-height: 40px;
+}
+
+.endless-leaderboard {
+    background: rgba(0, 0, 0, 0.7);
+    border: 2px solid var(--neon-magenta);
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 30px;
+}
+
+.endless-leaderboard h3 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: var(--neon-magenta);
+    text-shadow: 0 0 15px var(--neon-magenta);
+}
+
+.endless-leaderboard .leaderboard-list {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.endless-leaderboard .leaderboard-entry {
+    display: grid;
+    grid-template-columns: 60px 1fr 100px 120px;
+    gap: 15px;
+    padding: 12px;
+    margin-bottom: 10px;
+    background: rgba(0, 255, 255, 0.05);
+    border: 1px solid rgba(0, 255, 255, 0.2);
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.endless-leaderboard .leaderboard-entry:hover {
+    background: rgba(0, 255, 255, 0.1);
+    border-color: var(--neon-cyan);
+    transform: translateX(5px);
+}
+
+.endless-leaderboard .rank {
+    color: var(--neon-magenta);
+    font-weight: bold;
+    font-size: 1.2rem;
+    text-shadow: 0 0 8px var(--neon-magenta);
+}
+
+.endless-leaderboard .username {
+    color: var(--neon-cyan);
+    font-size: 1.1rem;
+}
+
+.endless-leaderboard .wave {
+    color: #ffaa00;
+    font-weight: bold;
+    text-align: right;
+}
+
+.endless-leaderboard .words {
+    color: var(--neon-magenta);
+    font-size: 0.9rem;
+    text-align: right;
+}
+
+.endless-leaderboard .no-scores {
+    text-align: center;
+    color: var(--text-secondary);
+    padding: 20px;
+    font-style: italic;
+}
+
+.endless-controls {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+}
+
+.endless-game-over {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.95);
+    border: 3px solid var(--neon-cyan);
+    border-radius: 15px;
+    padding: 40px;
+    text-align: center;
+    z-index: 1000;
+    min-width: 400px;
+    box-shadow: 0 0 50px rgba(0, 255, 255, 0.5);
+}
+
+.endless-game-over h3 {
+    font-size: 3rem;
+    margin-bottom: 30px;
+    color: var(--neon-red);
+    text-shadow: 0 0 20px var(--neon-red);
+}
+
+.endless-game-over .game-over-stats {
+    margin-bottom: 30px;
+}
+
+.endless-game-over .stat-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 20px;
+    margin: 8px 0;
+    background: rgba(0, 255, 255, 0.05);
+    border-radius: 8px;
+}
+
+.endless-game-over .stat-label {
+    color: var(--neon-magenta);
+    font-size: 1.1rem;
+}
+
+.endless-game-over .stat-value {
+    color: var(--neon-cyan);
+    font-size: 1.3rem;
+    font-weight: bold;
+    text-shadow: 0 0 10px var(--neon-cyan);
+}
+
+.endless-game-over .game-over-buttons {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+    .endless-wave-header {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+    
+    .endless-game-area .current-word {
+        font-size: 2.5rem;
+    }
+    
+    .endless-game-area .neon-input {
+        font-size: 1.3rem;
+    }
+    
+    .endless-leaderboard .leaderboard-entry {
+        grid-template-columns: 50px 1fr 80px;
+        gap: 10px;
+    }
+    
+    .endless-leaderboard .words {
+        display: none;
+    }
+    
+    .endless-game-over {
+        min-width: 90%;
+        padding: 30px 20px;
+    }
+}
+
 /* Mobile responsive */
 @media (max-width: 768px) {
     .coop-players {
