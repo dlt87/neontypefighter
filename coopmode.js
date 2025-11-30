@@ -115,6 +115,14 @@ class CoopMode {
                 this.elements.bossStatus.textContent = `🔍 Finding Teammate... (${data.position} in queue)`;
                 break;
                 
+            case 'teammateTyping':
+                this.onTeammateTyping(data);
+                break;
+                
+            case 'teammateNewWord':
+                this.onTeammateNewWord(data);
+                break;
+                
             case 'teammateAction':
                 this.onTeammateAction(data);
                 break;
@@ -236,6 +244,13 @@ class CoopMode {
         newInput.addEventListener('input', (e) => {
             this.myInput = e.target.value.toLowerCase();
             this.checkMyWord();
+            
+            // Send typing progress to teammate
+            this.send({
+                type: 'coopTyping',
+                input: this.myInput,
+                word: this.myWord
+            });
         });
     }
     
@@ -245,6 +260,12 @@ class CoopMode {
         
         const myWordElement = this.playerNumber === 1 ? this.elements.player1Word : this.elements.player2Word;
         myWordElement.textContent = this.myWord;
+        
+        // Send new word to teammate
+        this.send({
+            type: 'coopNewWord',
+            word: this.myWord
+        });
     }
     
     checkMyWord() {
@@ -310,6 +331,19 @@ class CoopMode {
         setTimeout(() => {
             myFeedback.textContent = '';
         }, 1000);
+    }
+    
+    onTeammateTyping(data) {
+        // Show teammate's current typing progress
+        const teammateInput = this.playerNumber === 1 ? this.elements.player2Input : this.elements.player1Input;
+        teammateInput.value = data.input;
+    }
+    
+    onTeammateNewWord(data) {
+        // Update teammate's word display
+        const teammateWordElement = this.playerNumber === 1 ? this.elements.player2Word : this.elements.player1Word;
+        teammateWordElement.textContent = data.word;
+        this.teammateWord = data.word;
     }
     
     onTeammateAction(data) {

@@ -274,6 +274,14 @@ async function handleMessage(ws, data) {
             relayCoopAction(ws, data);
             break;
             
+        case 'coopTyping':
+            relayCoopTyping(ws, data);
+            break;
+            
+        case 'coopNewWord':
+            relayCoopNewWord(ws, data);
+            break;
+            
         case 'gameOver':
             handleGameOver(ws, data);
             break;
@@ -587,6 +595,43 @@ function relayCoopAction(ws, data) {
     if (match.bossHealth <= 0) {
         clearBossAttackTimer(matchId);
         // Game will end when client sends coopGameOver
+    }
+}
+
+function relayCoopTyping(ws, data) {
+    const matchId = ws.coopMatchId;
+    if (!matchId) return;
+    
+    const match = activeCoopMatches.get(matchId);
+    if (!match) return;
+    
+    // Find teammate
+    const teammate = match.player1 === ws ? match.player2 : match.player1;
+    
+    if (teammate) {
+        teammate.send(JSON.stringify({
+            type: 'teammateTyping',
+            input: data.input,
+            word: data.word
+        }));
+    }
+}
+
+function relayCoopNewWord(ws, data) {
+    const matchId = ws.coopMatchId;
+    if (!matchId) return;
+    
+    const match = activeCoopMatches.get(matchId);
+    if (!match) return;
+    
+    // Find teammate
+    const teammate = match.player1 === ws ? match.player2 : match.player1;
+    
+    if (teammate) {
+        teammate.send(JSON.stringify({
+            type: 'teammateNewWord',
+            word: data.word
+        }));
     }
 }
 
