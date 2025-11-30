@@ -219,9 +219,9 @@
                         <div class="leaderboard-list" id="leaderboard-list"></div>
                     </div>
                     <div class="timed-stats" id="timed-stats"></div>
-                    <div class="timed-results-buttons">
-                        <button class="neon-button" id="replay-timed-btn">REPLAY</button>
-                        <button class="neon-button secondary" id="timed-menu-btn">MAIN MENU</button>
+                    <div class="game-over-buttons timed-results-buttons">
+                        <button class="neon-button" id="replay-timed-btn">PLAY AGAIN</button>
+                        <button class="neon-button secondary" id="timed-menu-btn">RETURN TO MENU</button>
                     </div>
                 </div>
             </div>
@@ -233,6 +233,29 @@
             <button class="home-button" id="game-home-btn" title="Return to Menu">
                 <span class="home-icon">🏠</span>
             </button>
+            
+            <!-- Start Game Overlay -->
+            <div id="game-start-overlay" class="game-start-overlay">
+                <div class="game-start-content">
+                    <h2 class="neon-text">SOLO VS AI</h2>
+                    <p class="game-start-description">Battle against an AI opponent! First to deplete opponent's health wins.</p>
+                    <div class="game-start-rules">
+                        <div class="rule-item">⚡ Type words perfectly for critical hits</div>
+                        <div class="rule-item">🛡️ Mistakes reduce damage dealt</div>
+                        <div class="rule-item">🎯 Perfect accuracy = maximum damage</div>
+                    </div>
+                    <div class="difficulty-selector">
+                        <label for="ai-difficulty-select">Select Difficulty:</label>
+                        <select id="ai-difficulty-select" class="neon-select">
+                            <option value="easy">Easy</option>
+                            <option value="medium" selected>Medium</option>
+                            <option value="hard">Hard</option>
+                        </select>
+                    </div>
+                    <button class="neon-button" id="game-start-btn">START GAME</button>
+                    <button class="neon-button secondary" id="game-start-back-btn">BACK TO MENU</button>
+                </div>
+            </div>
             
             <!-- Player 1 (Left Side) -->
             <div class="player-area player-left">
@@ -291,10 +314,12 @@
             <!-- Game Over Overlay -->
             <div id="game-over-overlay" class="hidden">
                 <div class="game-over-content">
-                    <h2 id="game-over-title">VICTORY</h2>
+                    <h2 class="neon-text" id="game-over-title">VICTORY</h2>
                     <div class="game-over-stats" id="game-over-stats"></div>
-                    <button class="neon-button" id="play-again-btn" style="display:none;">PLAY AGAIN</button>
-                    <button class="neon-button" id="return-menu-btn">RETURN TO MENU</button>
+                    <div class="game-over-buttons">
+                        <button class="neon-button" id="play-again-btn" style="display:none;">PLAY AGAIN</button>
+                        <button class="neon-button secondary" id="return-menu-btn">RETURN TO MENU</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -447,6 +472,22 @@
                 <span class="home-icon">🏠</span>
             </button>
             
+            <!-- Start Game Overlay -->
+            <div id="endless-start-overlay" class="endless-start-overlay">
+                <div class="endless-start-content">
+                    <h2 class="neon-text">ENDLESS MODE</h2>
+                    <p class="endless-start-description">Survive as many waves as you can! Each wave increases in difficulty.</p>
+                    <div class="endless-start-rules">
+                        <div class="rule-item">🌊 Waves get progressively harder</div>
+                        <div class="rule-item">⏱️ Complete words before time runs out</div>
+                        <div class="rule-item">📈 More words and less time each wave</div>
+                        <div class="rule-item">🏆 Compete for the top score!</div>
+                    </div>
+                    <button class="neon-button" id="endless-start-game-btn">START GAME</button>
+                    <button class="neon-button secondary" id="endless-start-back-btn">BACK TO MENU</button>
+                </div>
+            </div>
+            
             <div class="endless-container">
                 <h2 class="neon-text">ENDLESS MODE</h2>
                 <p class="endless-description">Survive as many waves as you can! Each wave increases in difficulty.</p>
@@ -509,7 +550,7 @@
                 
                 <!-- Game Over Screen -->
                 <div id="endless-game-over" class="game-over-screen hidden">
-                    <h3 id="endless-game-over-title">GAME OVER</h3>
+                    <h2 class="neon-text" id="endless-game-over-title">GAME OVER</h2>
                     <div class="game-over-stats">
                         <div class="stat-row">
                             <span class="stat-label">Final Wave:</span>
@@ -530,7 +571,7 @@
                     </div>
                     <div class="game-over-buttons">
                         <button class="neon-button" id="endless-play-again-btn">PLAY AGAIN</button>
-                        <button class="neon-button secondary" id="endless-menu-btn">MAIN MENU</button>
+                        <button class="neon-button secondary" id="endless-menu-btn">RETURN TO MENU</button>
                     </div>
                 </div>
             </div>

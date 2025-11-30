@@ -150,7 +150,19 @@ document.addEventListener('DOMContentLoaded', () => {
     // Button handlers
     document.getElementById('solo-mode-btn').addEventListener('click', () => {
         showScreen('game');
-        game.startSoloGame();
+        document.getElementById('game-start-overlay').style.display = 'flex';
+    });
+    
+    // Game start button (Solo mode)
+    document.getElementById('game-start-btn').addEventListener('click', () => {
+        const difficulty = document.getElementById('ai-difficulty-select').value;
+        document.getElementById('game-start-overlay').style.display = 'none';
+        game.startSoloGame(difficulty);
+    });
+    
+    // Game start back button
+    document.getElementById('game-start-back-btn').addEventListener('click', () => {
+        showScreen('menu');
     });
     
     document.getElementById('coop-mode-btn').addEventListener('click', () => {
@@ -216,7 +228,21 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!game.endlessMode) {
             game.endlessMode = new EndlessMode(game);
         }
+        document.getElementById('endless-start-overlay').style.display = 'flex';
         game.endlessMode.show();
+    });
+    
+    // Endless mode start button
+    document.getElementById('endless-start-game-btn').addEventListener('click', () => {
+        document.getElementById('endless-start-overlay').style.display = 'none';
+        if (game.endlessMode) {
+            game.endlessMode.startGame();
+        }
+    });
+    
+    // Endless mode start back button
+    document.getElementById('endless-start-back-btn').addEventListener('click', () => {
+        showScreen('menu');
     });
     
     document.getElementById('multiplayer-mode-btn').addEventListener('click', () => {
@@ -241,7 +267,16 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('leaderboard-show-more').addEventListener('click', () => {
         window.showingTop50 = !window.showingTop50;
         const btn = document.getElementById('leaderboard-show-more');
-        btn.textContent = window.showingTop50 ? 'SHOW TOP 10' : 'SHOW TOP 50';
+        const titleEl = document.querySelector('.leaderboard-header h3');
+        
+        if (window.showingTop50) {
+            btn.textContent = 'SHOW TOP 10';
+            titleEl.textContent = '🏆 TOP 50 🏆';
+        } else {
+            btn.textContent = 'SHOW TOP 50';
+            titleEl.textContent = '🏆 TOP 10 🏆';
+        }
+        
         loadMainMenuLeaderboard();
     });
     

@@ -88,7 +88,7 @@ class Game {
         });
     }
     
-    startSoloGame() {
+    startSoloGame(difficulty = 'medium') {
         // Stop any existing AI opponent
         if (this.aiOpponent) {
             this.aiOpponent.stopTyping();
@@ -96,7 +96,7 @@ class Game {
         
         this.mode = 'solo';
         this.player2Name = 'AI OPPONENT';
-        this.aiOpponent = new AIOpponent(this);
+        this.aiOpponent = new AIOpponent(this, difficulty);
         this.initGame();
         
         // Start AI after a short delay
