@@ -2600,6 +2600,30 @@ body::before {
     border-radius: 10px;
 }
 
+.endless-game-area .next-word-preview {
+    margin-top: 15px;
+    font-size: 1.2rem;
+    opacity: 0.6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.endless-game-area .next-word-label {
+    color: var(--neon-magenta);
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+.endless-game-area .next-word {
+    color: var(--neon-cyan);
+    text-shadow: 0 0 10px var(--neon-cyan);
+    font-size: 1.5rem;
+    letter-spacing: 0.1em;
+}
+
 .endless-game-area .typing-area {
     max-width: 600px;
     margin: 0 auto;

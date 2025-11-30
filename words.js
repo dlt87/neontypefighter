@@ -12,6 +12,10 @@ const CYBERPUNK_WORDS = [
     'mesh', 'loop', 'array', 'stack', 'queue', 'heap', 'tree', 'graph',
     'hash', 'key', 'value', 'flag', 'bit', 'hex', 'bin', 'octal',
     'trace', 'debug', 'patch', 'merge', 'clone', 'fork', 'push', 'pull',
+    'laser', 'mech', 'droid', 'bot', 'ai', 'app', 'web', 'net',
+    'hub', 'pod', 'shell', 'bash', 'sudo', 'root', 'user', 'admin',
+    'file', 'dir', 'path', 'home', 'var', 'tmp', 'bin', 'etc',
+    'dev', 'proc', 'sys', 'mnt', 'opt', 'usr', 'lib', 'sbin',
     
     // Medium words (6-8 letters)
     'fracture', 'spire', 'blaze', 'quantum', 'phantom', 'cipher', 'reactor',
@@ -27,6 +31,14 @@ const CYBERPUNK_WORDS = [
     'module', 'package', 'library', 'archive', 'registry', 'service', 'agent',
     'handler', 'wrapper', 'proxy', 'facade', 'factory', 'builder', 'adapter',
     'observer', 'listener', 'callback', 'promise', 'async', 'await', 'yield',
+    'console', 'logging', 'testing', 'jenkins', 'docker', 'vagrant', 'puppet',
+    'gitlab', 'github', 'bitbucket', 'jira', 'slack', 'discord', 'twitch',
+    'streaming', 'gaming', 'esports', 'viewport', 'render', 'shader', 'texture',
+    'sprite', 'polygon', 'vertex', 'fragment', 'lighting', 'physics', 'collision',
+    'raycast', 'pathfinding', 'animation', 'rigging', 'skeleton', 'motion', 'capture',
+    'tracking', 'sensor', 'lidar', 'radar', 'sonar', 'infrared', 'ultraviolet',
+    'spectrum', 'wavelength', 'bandwidth', 'gigabit', 'megabyte', 'terabyte', 'petabyte',
+    'exabyte', 'zettabyte', 'yottabyte', 'quantum', 'qubit', 'superposition', 'entanglement',
     
     // Long words (9+ letters)
     'cybernetic', 'hologram', 'algorithm', 'firewall', 'bandwidth', 'protocol',
@@ -50,7 +62,26 @@ const CYBERPUNK_WORDS = [
     'monitoring', 'telemetry', 'observability', 'traceability', 'scalability', 'reliability',
     'availability', 'redundancy', 'failover', 'loadbalancer', 'distributed', 'decentralized',
     'consensus', 'replication', 'sharding', 'partitioning', 'indexing', 'optimization',
-    'refactoring', 'abstraction', 'encapsulation', 'polymorphism', 'inheritance', 'composition'
+    'refactoring', 'abstraction', 'encapsulation', 'polymorphism', 'inheritance', 'composition',
+    'javascript', 'typescript', 'python', 'golang', 'rust', 'kotlin', 'swift',
+    'objective', 'assembly', 'fortran', 'cobol', 'pascal', 'ada', 'lisp',
+    'haskell', 'erlang', 'elixir', 'clojure', 'scala', 'groovy', 'dart',
+    'flutter', 'react', 'angular', 'vue', 'svelte', 'ember', 'backbone',
+    'jquery', 'bootstrap', 'tailwind', 'sass', 'less', 'webpack', 'vite',
+    'rollup', 'parcel', 'babel', 'eslint', 'prettier', 'jest', 'mocha',
+    'cypress', 'selenium', 'puppeteer', 'playwright', 'storybook', 'chromatic', 'figma',
+    'sketch', 'photoshop', 'illustrator', 'aftereffects', 'premiere', 'audition', 'lightroom',
+    'blender', 'unity', 'unreal', 'godot', 'gamemaker', 'construct', 'phaser',
+    'pixi', 'three', 'babylon', 'aframe', 'webgl', 'opengl', 'vulkan',
+    'directx', 'metal', 'opencl', 'cuda', 'tensor', 'pytorch', 'tensorflow',
+    'keras', 'scikit', 'pandas', 'numpy', 'matplotlib', 'jupyter', 'anaconda',
+    'hadoop', 'spark', 'kafka', 'rabbitmq', 'redis', 'memcached', 'elasticsearch',
+    'mongodb', 'postgresql', 'mysql', 'mariadb', 'oracle', 'sqlserver', 'cassandra',
+    'dynamodb', 'firebase', 'supabase', 'planetscale', 'cockroachdb', 'timescaledb', 'influxdb',
+    'prometheus', 'grafana', 'datadog', 'newrelic', 'splunk', 'logstash', 'kibana',
+    'nginx', 'apache', 'tomcat', 'jetty', 'undertow', 'netty', 'vertx',
+    'express', 'fastify', 'koa', 'hapi', 'restify', 'nestjs', 'nextjs',
+    'nuxtjs', 'gatsby', 'astro', 'remix', 'sveltekit', 'solidstart', 'qwik'
 ];
 
 const NAME_WORDS = [

@@ -32,6 +32,12 @@ class EndlessMode {
         // Word history to prevent repetition
         this.wordHistory = [];
         
+        // Pause state
+        this.isPaused = false;
+        
+        // Next word preview
+        this.nextWord = '';
+        
         this.setupUI();
     }
     
@@ -43,6 +49,7 @@ class EndlessMode {
             wordsProgress: document.getElementById('endless-words-progress'),
             timer: document.getElementById('endless-timer'),
             currentWord: document.getElementById('endless-current-word'),
+            nextWord: document.getElementById('endless-next-word'),
             typingInput: document.getElementById('endless-typing-input'),
             typingFeedback: document.getElementById('endless-typing-feedback'),
             startBtn: document.getElementById('endless-start-btn'),
@@ -75,6 +82,17 @@ class EndlessMode {
         if (this.elements.typingInput) {
             this.elements.typingInput.addEventListener('input', (e) => this.handleInput(e));
         }
+        
+        // ESC key to pause
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && this.isActive && !this.elements.gameOverScreen.classList.contains('hidden')) {
+                // Don't pause if game over screen is visible
+                return;
+            }
+            if (e.key === 'Escape' && this.isActive) {
+                this.togglePause();
+            }
+        });
         
         console.log('✅ Endless Mode initialized');
     }
@@ -152,7 +170,20 @@ class EndlessMode {
             this.wordHistory.shift();
         }
         
+        // Generate next word preview
+        let nextWordCandidate;
+        attempts = 0;
+        do {
+            nextWordCandidate = wordPool[Math.floor(Math.random() * wordPool.length)];
+            attempts++;
+        } while (this.wordHistory.includes(nextWordCandidate) && nextWordCandidate === newWord && attempts < maxAttempts);
+        
+        this.nextWord = nextWordCandidate;
+        
         this.elements.currentWord.textContent = this.currentWord;
+        if (this.elements.nextWord) {
+            this.elements.nextWord.textContent = this.nextWord;
+        }
         this.elements.typingInput.value = '';
         this.elements.typingInput.classList.remove('correct', 'error');
     }
@@ -165,14 +196,14 @@ class EndlessMode {
                     'node', 'port', 'ram', 'rom', 'cpu', 'gpu', 'usb', 'lan', 'wifi', 'cloud'];
         }
         // Medium words (6-8 letters)
-        else if (this.currentWave <= 10) {
+        else if (this.currentWave <= 8) {
             return ['quantum', 'protocol', 'algorithm', 'interface', 'terminal', 'firewall', 'encrypted',
                     'network', 'system', 'server', 'client', 'socket', 'packet', 'router', 'daemon',
                     'kernel', 'buffer', 'cache', 'thread', 'process', 'memory', 'storage', 'backup',
                     'restore', 'compile', 'execute', 'runtime', 'binary', 'hexcode', 'decrypt'];
         }
         // Hard words (8-10 letters)
-        else if (this.currentWave <= 18) {
+        else if (this.currentWave <= 11) {
             return ['bandwidth', 'mainframe', 'synthwave', 'wavelength', 'frequency', 'amplifier', 'override',
                     'cyberdeck', 'holonet', 'datastream', 'netrunner', 'firewall', 'cyberpunk', 'hologram',
                     'database', 'backtrack', 'overclock', 'processor', 'multitask', 'firmware', 'software',
@@ -344,6 +375,45 @@ class EndlessMode {
         } else {
             this.elements.timer.style.color = 'var(--neon-cyan)';
             this.elements.timer.style.animation = 'none';
+        }
+    }
+    
+    togglePause() {
+        if (!this.isActive) return;
+        
+        this.isPaused = !this.isPaused;
+        
+        if (this.isPaused) {
+            // Pause game
+            clearInterval(this.timerInterval);
+            this.elements.typingInput.disabled = true;
+            
+            // Create pause overlay
+            const pauseOverlay = document.createElement('div');
+            pauseOverlay.id = 'endless-pause-overlay';
+            pauseOverlay.className = 'wave-complete-overlay';
+            pauseOverlay.innerHTML = `
+                <div class="wave-complete-content">
+                    <h2 class="neon-text">⏸️ PAUSED ⏸️</h2>
+                    <p>Press ESC to resume</p>
+                </div>
+            `;
+            this.screen.appendChild(pauseOverlay);
+            
+            console.log('⏸️ Game paused');
+        } else {
+            // Resume game
+            this.startTimer();
+            this.elements.typingInput.disabled = false;
+            this.elements.typingInput.focus();
+            
+            // Remove pause overlay
+            const pauseOverlay = document.getElementById('endless-pause-overlay');
+            if (pauseOverlay) {
+                pauseOverlay.remove();
+            }
+            
+            console.log('▶️ Game resumed');
         }
     }
     
