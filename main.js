@@ -416,7 +416,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function showScreen(screen) {
         const settingsMenu = document.getElementById('settings-menu');
         const achievementsScreen = document.getElementById('achievements-screen');
-        const coopModeScreen = document.getElementById('coop-mode-screen');
+        const coopGameScreen = document.getElementById('coop-game-screen');
         const endlessModeScreen = document.getElementById('endless-mode-screen');
         
         mainMenu.classList.remove('active');
@@ -430,8 +430,10 @@ document.addEventListener('DOMContentLoaded', () => {
         settingsMenu.classList.remove('active');
         achievementsScreen.classList.add('hidden');
         achievementsScreen.classList.remove('active');
-        coopModeScreen.classList.add('hidden');
-        coopModeScreen.classList.remove('active');
+        if (coopGameScreen) {
+            coopGameScreen.classList.add('hidden');
+            coopGameScreen.classList.remove('active');
+        }
         if (endlessModeScreen) {
             endlessModeScreen.classList.add('hidden');
             endlessModeScreen.classList.remove('active');
@@ -1180,12 +1182,8 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Auto-start background music
     setTimeout(() => {
-        if (game && game.soundManager) {
-            game.soundManager.startMusic();
-            const musicBtn = document.getElementById('music-toggle');
-            if (musicBtn && !musicBtn.classList.contains('disabled')) {
-                // Music is now playing
-            }
+        if (game && game.soundManager && game.soundManager.musicEnabled) {
+            game.soundManager.startBackgroundMusic();
         }
     }, 500);
 });
