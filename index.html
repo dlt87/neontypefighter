@@ -495,19 +495,28 @@
             <h2 class="neon-text">PLAYER PROFILE</h2>
             <div class="profile-content">
                 <div class="profile-header" id="profile-header">
-                    <div class="profile-username" id="profile-username">Guest</div>
-                    <div class="profile-elo" id="profile-elo">ELO: N/A</div>
+                    <div class="profile-info">
+                        <h3 id="profile-username">Player</h3>
+                        <p id="profile-elo">Current ELO: 1000</p>
+                    </div>
                 </div>
                 
-                <div class="profile-tabs">
-                    <button class="profile-tab active" data-tab="timed">TIMED MODE</button>
-                    <button class="profile-tab" data-tab="solo">SOLO MODE</button>
-                    <button class="profile-tab" data-tab="endless">ENDLESS MODE</button>
-                    <button class="profile-tab" data-tab="pvp">PVP MATCHES</button>
-                </div>
-                
-                <div class="profile-history" id="profile-history">
-                    <div class="loading-message">Loading your game history...</div>
+                <div class="profile-highscores">
+                    <div class="highscore-card">
+                        <h3>🎯 Timed Mode</h3>
+                        <div class="highscore-value" id="timed-highscore">--</div>
+                        <div class="highscore-label">Best Score</div>
+                    </div>
+                    <div class="highscore-card">
+                        <h3>🌊 Endless Mode</h3>
+                        <div class="highscore-value" id="endless-highscore">--</div>
+                        <div class="highscore-label">Best Wave</div>
+                    </div>
+                    <div class="highscore-card">
+                        <h3>⚔️ PvP Ranking</h3>
+                        <div class="highscore-value" id="pvp-highscore">--</div>
+                        <div class="highscore-label">Best ELO</div>
+                    </div>
                 </div>
                 
                 <button class="neon-button secondary" id="back-from-profile-btn">BACK</button>

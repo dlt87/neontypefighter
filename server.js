@@ -168,6 +168,9 @@ const server = http.createServer((req, res) => {
         handleSubmitEndlessScore(req, res);
     } else if (pathname === '/api/endless-scores/top' && req.method === 'GET') {
         handleGetEndlessLeaderboard(req, res);
+    } else if (pathname.startsWith('/api/endless-scores/user/') && req.method === 'GET') {
+        const userId = pathname.split('/')[4];
+        handleGetUserEndlessScore(req, res, userId);
     } else {
         res.writeHead(404, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: 'Not found' }));
@@ -1662,6 +1665,26 @@ async function handleGetEndlessLeaderboard(req, res) {
         res.end(JSON.stringify(leaderboard));
     } catch (error) {
         console.error('Error getting endless leaderboard:', error);
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Internal server error' }));
+    }
+}
+
+// Handle get user's best endless score
+async function handleGetUserEndlessScore(req, res, userId) {
+    try {
+        const userBest = await endlessScoreDb.getUserBestScore(userId);
+        
+        if (!userBest) {
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ wave: 0, wordsTyped: 0 }));
+            return;
+        }
+    
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify(userBest));
+    } catch (error) {
+        console.error('Error getting user endless score:', error);
         res.writeHead(500, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: 'Internal server error' }));
     }

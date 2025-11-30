@@ -1178,17 +1178,7 @@ document.addEventListener('DOMContentLoaded', () => {
         loadMainMenuLeaderboard();
     });
     
-    // Profile tab switching
-    document.querySelectorAll('.profile-tab').forEach(tab => {
-        tab.addEventListener('click', (e) => {
-            document.querySelectorAll('.profile-tab').forEach(t => t.classList.remove('active'));
-            e.target.classList.add('active');
-            const mode = e.target.dataset.tab;
-            loadProfileHistory(mode);
-        });
-    });
-    
-    // Profile loading function
+    // Profile loading function - shows only high scores
     async function loadPlayerProfile() {
         if (!authClient.currentUser) {
             return;
@@ -1197,7 +1187,43 @@ document.addEventListener('DOMContentLoaded', () => {
         const user = authClient.currentUser;
         document.getElementById('profile-username').textContent = user.username;
         
-        // Load ELO rating
+        // Load Timed Mode High Score
+        try {
+            const response = await fetch(`https://neontypefighter-production.up.railway.app/api/scores/user/${user.id}`, {
+                headers: {
+                    'Authorization': `Bearer ${user.token}`
+                }
+            });
+            if (response.ok) {
+                const data = await response.json();
+                document.getElementById('timed-highscore').textContent = data.score || 0;
+            } else {
+                document.getElementById('timed-highscore').textContent = '0';
+            }
+        } catch (error) {
+            console.error('Failed to load timed score:', error);
+            document.getElementById('timed-highscore').textContent = '--';
+        }
+        
+        // Load Endless Mode High Score
+        try {
+            const response = await fetch(`https://neontypefighter-production.up.railway.app/api/endless-scores/user/${user.id}`, {
+                headers: {
+                    'Authorization': `Bearer ${user.token}`
+                }
+            });
+            if (response.ok) {
+                const data = await response.json();
+                document.getElementById('endless-highscore').textContent = data.wave || 0;
+            } else {
+                document.getElementById('endless-highscore').textContent = '0';
+            }
+        } catch (error) {
+            console.error('Failed to load endless score:', error);
+            document.getElementById('endless-highscore').textContent = '--';
+        }
+        
+        // Load PvP ELO (current rating + best rating)
         try {
             const response = await fetch(`https://neontypefighter-production.up.railway.app/api/elo/stats`, {
                 headers: {
@@ -1206,97 +1232,18 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             if (response.ok) {
                 const data = await response.json();
-                document.getElementById('profile-elo').textContent = `ELO: ${data.rating || 1000}`;
+                const currentElo = data.rating || 1000;
+                const bestElo = data.peak_rating || currentElo;
+                document.getElementById('profile-elo').textContent = `Current ELO: ${currentElo}`;
+                document.getElementById('pvp-highscore').textContent = bestElo;
+            } else {
+                document.getElementById('profile-elo').textContent = 'ELO: 1000';
+                document.getElementById('pvp-highscore').textContent = '1000';
             }
         } catch (error) {
             console.error('Failed to load ELO:', error);
             document.getElementById('profile-elo').textContent = 'ELO: N/A';
-        }
-        
-        // Load initial history (timed mode)
-        loadProfileHistory('timed');
-    }
-    
-    async function loadProfileHistory(mode) {
-        const historyContainer = document.getElementById('profile-history');
-        historyContainer.innerHTML = '<div class="loading-message">Loading history...</div>';
-        
-        if (!authClient.currentUser) {
-            historyContainer.innerHTML = '<div class="loading-message">Please log in to view history</div>';
-            return;
-        }
-        
-        try {
-            let endpoint = '';
-            const userId = authClient.currentUser.id;
-            
-            if (mode === 'timed') {
-                endpoint = `https://neontypefighter-production.up.railway.app/api/scores/user/${userId}`;
-            } else if (mode === 'pvp') {
-                endpoint = `https://neontypefighter-production.up.railway.app/api/elo/history`;
-            } else if (mode === 'endless') {
-                endpoint = `https://neontypefighter-production.up.railway.app/api/endless-scores/user/${userId}`;
-            } else {
-                historyContainer.innerHTML = '<div class="loading-message">History not available for this mode yet</div>';
-                return;
-            }
-            
-            const response = await fetch(endpoint, {
-                headers: {
-                    'Authorization': `Bearer ${authClient.currentUser.token}`
-                }
-            });
-            
-            if (!response.ok) {
-                throw new Error('Failed to fetch history');
-            }
-            
-            const history = await response.json();
-            
-            if (!history || history.length === 0) {
-                historyContainer.innerHTML = '<div class="loading-message">No games played yet in this mode</div>';
-                return;
-            }
-            
-            // Display history based on mode
-            historyContainer.innerHTML = history.map(entry => {
-                const date = new Date(entry.created_at || entry.match_date).toLocaleDateString();
-                
-                if (mode === 'timed') {
-                    return `
-                        <div class="history-entry">
-                            <div class="history-date">${date}</div>
-                            <div class="history-mode">Timed Challenge</div>
-                            <div class="history-score">Score: ${entry.score}</div>
-                            <div class="history-result">${entry.words_completed} words</div>
-                        </div>
-                    `;
-                } else if (mode === 'pvp') {
-                    const result = entry.result === 'win' ? 'WIN' : 'LOSS';
-                    const resultClass = entry.result === 'win' ? 'win' : 'loss';
-                    return `
-                        <div class="history-entry">
-                            <div class="history-date">${date}</div>
-                            <div class="history-mode">vs ${entry.opponent_name}</div>
-                            <div class="history-score">±${entry.rating_change} ELO</div>
-                            <div class="history-result ${resultClass}">${result}</div>
-                        </div>
-                    `;
-                } else if (mode === 'endless') {
-                    return `
-                        <div class="history-entry">
-                            <div class="history-date">${date}</div>
-                            <div class="history-mode">Endless Mode</div>
-                            <div class="history-score">Wave ${entry.wave}</div>
-                            <div class="history-result">${entry.words_typed} words</div>
-                        </div>
-                    `;
-                }
-            }).join('');
-            
-        } catch (error) {
-            console.error('Failed to load profile history:', error);
-            historyContainer.innerHTML = '<div class="loading-message">Failed to load history</div>';
+            document.getElementById('pvp-highscore').textContent = '--';
         }
     }
     
