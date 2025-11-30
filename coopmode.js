@@ -148,7 +148,9 @@ class CoopMode {
             this.send({ type: 'coopGameOver', reason: 'left' });
         }
         this.reset();
-        showScreen('main');
+        if (window.showScreen) {
+            window.showScreen('menu');
+        }
     }
     
     playAgain() {

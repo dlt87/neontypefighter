@@ -333,6 +333,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
     
+    // Make showScreen globally accessible for other modules
+    window.showScreen = showScreen;
+    
     function setupTimedMode() {
         const timedInput = document.getElementById('timed-typing-input');
         const timedCurrentWord = document.getElementById('timed-current-word');
