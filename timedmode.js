@@ -46,6 +46,8 @@ class TimedMode {
         
         // Reset game state
         this.game.wordManager.reset();
+        // Set max word length for timed mode
+        this.game.wordManager.maxWordLength = 7;
         this.game.currentInput = '';
         this.game.isCritical = true;
         
@@ -319,5 +321,9 @@ class TimedMode {
         this.perfectWords = 0;
         this.difficultyLevel = 1;
         this.difficultyMultiplier = 1;
+        // Reset word length restriction
+        if (this.game.wordManager) {
+            this.game.wordManager.maxWordLength = null;
+        }
     }
 }

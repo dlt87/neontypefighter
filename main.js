@@ -165,20 +165,6 @@ document.addEventListener('DOMContentLoaded', () => {
         showScreen('menu');
     });
     
-    document.getElementById('coop-mode-btn').addEventListener('click', () => {
-        // Require login for multiplayer
-        if (!authClient.currentUser) {
-            alert('Please log in to play co-op and multiplayer modes!');
-            document.getElementById('login-modal').classList.remove('hidden');
-            return;
-        }
-        
-        showScreen('multiplayer');
-        initMultiplayer();
-        // Auto-select co-op mode
-        setTimeout(() => selectMultiplayerMode('coop'), 100);
-    });
-    
     document.getElementById('timed-mode-btn').addEventListener('click', () => {
         showScreen('timed');
         setupTimedMode();
@@ -308,6 +294,16 @@ document.addEventListener('DOMContentLoaded', () => {
         loadSettings();
     });
     
+    document.getElementById('profile-btn').addEventListener('click', () => {
+        if (!authClient.currentUser) {
+            alert('Please log in to view your profile!');
+            document.getElementById('login-modal').classList.remove('hidden');
+            return;
+        }
+        showScreen('profile');
+        loadPlayerProfile();
+    });
+    
     document.getElementById('achievements-btn').addEventListener('click', () => {
         showScreen('achievements');
         window.loadAchievements();
@@ -416,6 +412,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function showScreen(screen) {
         const settingsMenu = document.getElementById('settings-menu');
         const achievementsScreen = document.getElementById('achievements-screen');
+        const profileScreen = document.getElementById('profile-screen');
         const coopGameScreen = document.getElementById('coop-game-screen');
         const endlessModeScreen = document.getElementById('endless-mode-screen');
         
@@ -430,6 +427,10 @@ document.addEventListener('DOMContentLoaded', () => {
         settingsMenu.classList.remove('active');
         achievementsScreen.classList.add('hidden');
         achievementsScreen.classList.remove('active');
+        if (profileScreen) {
+            profileScreen.classList.add('hidden');
+            profileScreen.classList.remove('active');
+        }
         if (coopGameScreen) {
             coopGameScreen.classList.add('hidden');
             coopGameScreen.classList.remove('active');
@@ -463,9 +464,16 @@ document.addEventListener('DOMContentLoaded', () => {
         } else if (screen === 'achievements') {
             achievementsScreen.classList.remove('hidden');
             achievementsScreen.classList.add('active');
+        } else if (screen === 'profile') {
+            if (profileScreen) {
+                profileScreen.classList.remove('hidden');
+                profileScreen.classList.add('active');
+            }
         } else if (screen === 'coop') {
-            coopModeScreen.classList.remove('hidden');
-            coopModeScreen.classList.add('active');
+            if (coopGameScreen) {
+                coopGameScreen.classList.remove('hidden');
+                coopGameScreen.classList.add('active');
+            }
         }
     }
     
@@ -1164,6 +1172,133 @@ document.addEventListener('DOMContentLoaded', () => {
         showScreen('menu');
         loadMainMenuLeaderboard();
     });
+    
+    document.getElementById('back-from-profile-btn').addEventListener('click', () => {
+        showScreen('menu');
+        loadMainMenuLeaderboard();
+    });
+    
+    // Profile tab switching
+    document.querySelectorAll('.profile-tab').forEach(tab => {
+        tab.addEventListener('click', (e) => {
+            document.querySelectorAll('.profile-tab').forEach(t => t.classList.remove('active'));
+            e.target.classList.add('active');
+            const mode = e.target.dataset.tab;
+            loadProfileHistory(mode);
+        });
+    });
+    
+    // Profile loading function
+    async function loadPlayerProfile() {
+        if (!authClient.currentUser) {
+            return;
+        }
+        
+        const user = authClient.currentUser;
+        document.getElementById('profile-username').textContent = user.username;
+        
+        // Load ELO rating
+        try {
+            const response = await fetch(`https://neontypefighter-production.up.railway.app/api/elo/stats`, {
+                headers: {
+                    'Authorization': `Bearer ${user.token}`
+                }
+            });
+            if (response.ok) {
+                const data = await response.json();
+                document.getElementById('profile-elo').textContent = `ELO: ${data.rating || 1000}`;
+            }
+        } catch (error) {
+            console.error('Failed to load ELO:', error);
+            document.getElementById('profile-elo').textContent = 'ELO: N/A';
+        }
+        
+        // Load initial history (timed mode)
+        loadProfileHistory('timed');
+    }
+    
+    async function loadProfileHistory(mode) {
+        const historyContainer = document.getElementById('profile-history');
+        historyContainer.innerHTML = '<div class="loading-message">Loading history...</div>';
+        
+        if (!authClient.currentUser) {
+            historyContainer.innerHTML = '<div class="loading-message">Please log in to view history</div>';
+            return;
+        }
+        
+        try {
+            let endpoint = '';
+            const userId = authClient.currentUser.id;
+            
+            if (mode === 'timed') {
+                endpoint = `https://neontypefighter-production.up.railway.app/api/scores/user/${userId}`;
+            } else if (mode === 'pvp') {
+                endpoint = `https://neontypefighter-production.up.railway.app/api/elo/history`;
+            } else if (mode === 'endless') {
+                endpoint = `https://neontypefighter-production.up.railway.app/api/endless-scores/user/${userId}`;
+            } else {
+                historyContainer.innerHTML = '<div class="loading-message">History not available for this mode yet</div>';
+                return;
+            }
+            
+            const response = await fetch(endpoint, {
+                headers: {
+                    'Authorization': `Bearer ${authClient.currentUser.token}`
+                }
+            });
+            
+            if (!response.ok) {
+                throw new Error('Failed to fetch history');
+            }
+            
+            const history = await response.json();
+            
+            if (!history || history.length === 0) {
+                historyContainer.innerHTML = '<div class="loading-message">No games played yet in this mode</div>';
+                return;
+            }
+            
+            // Display history based on mode
+            historyContainer.innerHTML = history.map(entry => {
+                const date = new Date(entry.created_at || entry.match_date).toLocaleDateString();
+                
+                if (mode === 'timed') {
+                    return `
+                        <div class="history-entry">
+                            <div class="history-date">${date}</div>
+                            <div class="history-mode">Timed Challenge</div>
+                            <div class="history-score">Score: ${entry.score}</div>
+                            <div class="history-result">${entry.words_completed} words</div>
+                        </div>
+                    `;
+                } else if (mode === 'pvp') {
+                    const result = entry.result === 'win' ? 'WIN' : 'LOSS';
+                    const resultClass = entry.result === 'win' ? 'win' : 'loss';
+                    return `
+                        <div class="history-entry">
+                            <div class="history-date">${date}</div>
+                            <div class="history-mode">vs ${entry.opponent_name}</div>
+                            <div class="history-score">±${entry.rating_change} ELO</div>
+                            <div class="history-result ${resultClass}">${result}</div>
+                        </div>
+                    `;
+                } else if (mode === 'endless') {
+                    return `
+                        <div class="history-entry">
+                            <div class="history-date">${date}</div>
+                            <div class="history-mode">Endless Mode</div>
+                            <div class="history-score">Wave ${entry.wave}</div>
+                            <div class="history-result">${entry.words_typed} words</div>
+                        </div>
+                    `;
+                }
+            }).join('');
+            
+        } catch (error) {
+            console.error('Failed to load profile history:', error);
+            historyContainer.innerHTML = '<div class="loading-message">Failed to load history</div>';
+        }
+    }
     
     // Co-op mode handlers are now in CoopMode class (setupUI method)
     

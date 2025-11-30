@@ -19,6 +19,7 @@
             </div>
             <div class="corner-buttons top-right">
                 <button class="icon-button" id="themes-btn" title="Themes">🎨</button>
+                <button class="icon-button" id="profile-btn" title="Profile">👤</button>
                 <button class="icon-button" id="achievements-btn" title="Achievements">🏆</button>
             </div>
             
@@ -32,7 +33,6 @@
                 <div class="main-menu-center">
                     <div class="menu-buttons">
                         <button class="neon-button" id="solo-mode-btn">SOLO VS AI</button>
-                        <button class="neon-button" id="coop-mode-btn">CO-OP</button>
                         <button class="neon-button" id="timed-mode-btn">TIMED</button>
                         <button class="neon-button" id="endless-mode-btn">ENDLESS</button>
                         <button class="neon-button" id="multiplayer-mode-btn">MULTIPLAYER</button>
@@ -487,6 +487,30 @@
                     <!-- Achievement cards will be inserted here -->
                 </div>
                 <button class="neon-button secondary" id="back-from-achievements-btn">BACK</button>
+            </div>
+        </div>
+
+        <!-- Profile Screen -->
+        <div id="profile-screen" class="menu-screen hidden">
+            <h2 class="neon-text">PLAYER PROFILE</h2>
+            <div class="profile-content">
+                <div class="profile-header" id="profile-header">
+                    <div class="profile-username" id="profile-username">Guest</div>
+                    <div class="profile-elo" id="profile-elo">ELO: N/A</div>
+                </div>
+                
+                <div class="profile-tabs">
+                    <button class="profile-tab active" data-tab="timed">TIMED MODE</button>
+                    <button class="profile-tab" data-tab="solo">SOLO MODE</button>
+                    <button class="profile-tab" data-tab="endless">ENDLESS MODE</button>
+                    <button class="profile-tab" data-tab="pvp">PVP MATCHES</button>
+                </div>
+                
+                <div class="profile-history" id="profile-history">
+                    <div class="loading-message">Loading your game history...</div>
+                </div>
+                
+                <button class="neon-button secondary" id="back-from-profile-btn">BACK</button>
             </div>
         </div>
 

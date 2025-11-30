@@ -97,6 +97,7 @@ class WordManager {
         this.currentWord = null;
         this.nextWord = null;
         this.wordQueue = [];
+        this.maxWordLength = null; // For timed mode restriction
         this.initializeQueue();
     }
     
@@ -114,10 +115,17 @@ class WordManager {
         // Filter out recently used words
         let availableWords = WORD_POOL.filter(word => !this.usedWords.includes(word));
         
+        // Apply max length filter if set (for timed mode)
+        if (this.maxWordLength) {
+            availableWords = availableWords.filter(word => word.length <= this.maxWordLength);
+        }
+        
         // Reset if we've used most words
         if (availableWords.length < 5) {
             this.usedWords = [];
-            availableWords = [...WORD_POOL];
+            availableWords = this.maxWordLength 
+                ? WORD_POOL.filter(word => word.length <= this.maxWordLength)
+                : [...WORD_POOL];
         }
         
         const word = availableWords[Math.floor(Math.random() * availableWords.length)];
