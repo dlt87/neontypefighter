@@ -500,11 +500,11 @@ class CoopMode {
         this.elements.player2Word.textContent = this.currentWord;
         
         // Disable my input, enable teammate's
-        const myInputElement = this.playerNumber === 1 ? this.elements.player1Input : this.elements.player2Input;
-        myInputElement.value = '';
-        myInputElement.classList.remove('correct', 'error');
-        myInputElement.disabled = true;
-        myInputElement.placeholder = `Waiting for Player ${this.currentTurn}...`;
+        const turnInputElement = this.playerNumber === 1 ? this.elements.player1Input : this.elements.player2Input;
+        turnInputElement.value = '';
+        turnInputElement.classList.remove('correct', 'error');
+        turnInputElement.disabled = true;
+        turnInputElement.placeholder = `Waiting for Player ${this.currentTurn}...`;
         this.myInput = '';
         
         // Notify server about turn change
