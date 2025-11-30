@@ -8,8 +8,8 @@ class CoopMode {
         this.isActive = false;
         this.bossHealth = CONFIG.BOSS_MAX_HEALTH;
         this.teamHealth = CONFIG.COOP_TEAM_MAX_HEALTH;
-        this.bossTypingTimer = null;
-        this.bossAttackDelay = CONFIG.BOSS_ATTACK_DELAY;
+        this.maxBossHealth = CONFIG.BOSS_MAX_HEALTH;
+        this.maxTeamHealth = CONFIG.COOP_TEAM_MAX_HEALTH;
         
         // WebSocket connection
         this.ws = null;
@@ -28,8 +28,29 @@ class CoopMode {
         // Stats
         this.totalDamageDealt = 0;
         this.criticalHits = 0;
+        this.wordsTyped = 0;
         
-        // DOM elements
+        this.setupUI();
+        this.connectToServer();
+    }
+    
+    setupUI() {
+        // Menu elements
+        this.matchmakingMenu = document.getElementById('coop-matchmaking-menu');
+        this.matchmakingStatus = document.getElementById('coop-matchmaking-status');
+        this.findMatchBtn = document.getElementById('coop-find-match-btn');
+        this.cancelMatchBtn = document.getElementById('coop-cancel-match-btn');
+        this.backBtn = document.getElementById('coop-back-btn');
+        this.playAgainBtn = document.getElementById('coop-play-again-btn');
+        
+        // Countdown elements
+        this.countdownOverlay = document.getElementById('coop-countdown-overlay');
+        this.teammateFoundText = document.getElementById('coop-teammate-found-text');
+        this.teammateNameDisplay = document.getElementById('coop-teammate-name-display');
+        this.countdownNumber = document.getElementById('coop-countdown-number');
+        
+        // Game elements
+        this.gameArea = document.getElementById('coop-game-area');
         this.elements = {
             bossHealth: document.getElementById('coop-boss-health'),
             bossHealthText: document.getElementById('coop-boss-health-text'),
@@ -42,19 +63,99 @@ class CoopMode {
             player1Feedback: document.getElementById('coop-player1-feedback'),
             player2Feedback: document.getElementById('coop-player2-feedback'),
             bossName: document.getElementById('coop-boss-name'),
-            bossStatus: document.getElementById('coop-boss-status')
+            bossStatus: document.getElementById('coop-boss-status'),
+            gameOver: document.getElementById('coop-game-over'),
+            gameOverTitle: document.getElementById('coop-game-over-title'),
+            gameOverStats: document.getElementById('coop-game-over-stats')
         };
         
-        // Verify all elements exist
-        const missingElements = [];
-        for (const [key, element] of Object.entries(this.elements)) {
-            if (!element) {
-                missingElements.push(key);
-            }
+        // Event listeners
+        this.findMatchBtn.addEventListener('click', () => this.startMatchmaking());
+        this.cancelMatchBtn.addEventListener('click', () => this.cancelMatchmaking());
+        this.backBtn.addEventListener('click', () => this.returnToMenu());
+        this.playAgainBtn.addEventListener('click', () => this.playAgain());
+    }
+    
+    startMatchmaking() {
+        if (!this.connected) {
+            this.matchmakingStatus.innerHTML = `
+                <div class="status-icon">⚠️</div>
+                <div class="status-text">Connecting to server...</div>
+            `;
+            setTimeout(() => this.startMatchmaking(), 1000);
+            return;
         }
-        if (missingElements.length > 0) {
-            console.error('❌ Co-op mode missing elements:', missingElements);
+        
+        const playerName = window.authClient?.currentUser?.username || 'Player';
+        
+        this.inQueue = true;
+        this.findMatchBtn.classList.add('hidden');
+        this.cancelMatchBtn.classList.remove('hidden');
+        
+        this.matchmakingStatus.innerHTML = `
+            <div class="status-icon spinning">🔍</div>
+            <div class="status-text">Finding teammate...</div>
+        `;
+        
+        this.send({
+            type: 'findCoopMatch',
+            playerName: playerName
+        });
+    }
+    
+    cancelMatchmaking() {
+        this.inQueue = false;
+        this.findMatchBtn.classList.remove('hidden');
+        this.cancelMatchBtn.classList.add('hidden');
+        
+        this.matchmakingStatus.innerHTML = `
+            <div class="status-icon">🔍</div>
+            <div class="status-text">Ready to find a teammate!</div>
+        `;
+        
+        this.send({ type: 'cancelCoopMatch' });
+    }
+    
+    returnToMenu() {
+        if (this.inQueue) {
+            this.cancelMatchmaking();
         }
+        if (this.inMatch) {
+            this.send({ type: 'coopGameOver', reason: 'left' });
+        }
+        this.reset();
+        showScreen('main');
+    }
+    
+    playAgain() {
+        this.reset();
+        this.startMatchmaking();
+    }
+    
+    reset() {
+        this.isActive = false;
+        this.inQueue = false;
+        this.inMatch = false;
+        this.playerNumber = 0;
+        this.teammateName = '';
+        this.totalDamageDealt = 0;
+        this.criticalHits = 0;
+        this.wordsTyped = 0;
+        this.bossHealth = this.maxBossHealth;
+        this.teamHealth = this.maxTeamHealth;
+        
+        // Reset UI
+        this.matchmakingMenu.classList.remove('hidden');
+        this.gameArea.classList.add('hidden');
+        this.countdownOverlay.classList.add('hidden');
+        this.elements.gameOver.classList.add('hidden');
+        this.findMatchBtn.classList.remove('hidden');
+        this.cancelMatchBtn.classList.add('hidden');
+        
+        this.matchmakingStatus.innerHTML = `
+            <div class="status-icon">🔍</div>
+            <div class="status-text">Ready to find a teammate!</div>
+        `;
     }
     
     connectToServer() {
@@ -106,29 +207,18 @@ class CoopMode {
         
         switch (data.type) {
             case 'coopMatchFound':
-                console.log('✅ Match found! Starting game...');
                 this.onMatchFound(data);
                 break;
                 
             case 'coopQueuePosition':
-                console.log(`🔍 In queue position: ${data.position}`);
-                this.elements.bossStatus.textContent = `🔍 Finding Teammate... (${data.position} in queue)`;
-                break;
-                
-            case 'teammateTyping':
-                this.onTeammateTyping(data);
-                break;
-                
-            case 'teammateNewWord':
-                this.onTeammateNewWord(data);
+                this.matchmakingStatus.innerHTML = `
+                    <div class="status-icon spinning">🔍</div>
+                    <div class="status-text">Finding teammate... (${data.position} in queue)</div>
+                `;
                 break;
                 
             case 'teammateAction':
                 this.onTeammateAction(data);
-                break;
-                
-            case 'teammatePenalty':
-                this.onteammatePenalty(data);
                 break;
                 
             case 'bossAttack':
@@ -151,469 +241,309 @@ class CoopMode {
         }
     }
     
-    findMatch(playerName) {
-        this.connectToServer();
-        
-        // Wait for connection, then send match request
-        const checkConnection = setInterval(() => {
-            if (this.connected) {
-                clearInterval(checkConnection);
-                this.inQueue = true;
-                this.send({
-                    type: 'findCoopMatch',
-                    playerName: playerName || 'Player'
-                });
-                this.showMatchmaking();
-            }
-        }, 100);
-    }
-    
-    cancelMatch() {
-        if (this.inQueue) {
-            this.send({ type: 'cancelCoopMatch' });
-            this.inQueue = false;
-        }
-    }
-    
-    showMatchmaking() {
-        this.elements.bossStatus.textContent = '🔍 Finding Teammate...';
-        this.elements.player1Input.disabled = true;
-        this.elements.player2Input.disabled = true;
-    }
-    
     onMatchFound(data) {
         console.log('🎮 Co-op match found!', data);
         this.inQueue = false;
         this.inMatch = true;
         this.playerNumber = data.playerNumber;
         this.teammateName = data.teammateName;
-        this.bossHealth = data.bossHealth;
-        this.teamHealth = data.teamHealth;
+        this.bossHealth = data.bossHealth || this.maxBossHealth;
+        this.teamHealth = data.teamHealth || this.maxTeamHealth;
         
-        // Start the game
-        this.startMatch();
+        // Show countdown
+        this.showCountdown();
     }
     
-    startMatch() {
+    showCountdown() {
+        this.matchmakingMenu.classList.add('hidden');
+        this.countdownOverlay.classList.remove('hidden');
+        
+        this.teammateFoundText.textContent = 'TEAMMATE FOUND!';
+        this.teammateNameDisplay.textContent = this.teammateName;
+        
+        let count = 3;
+        this.countdownNumber.textContent = count;
+        
+        const countdownInterval = setInterval(() => {
+            count--;
+            if (count > 0) {
+                this.countdownNumber.textContent = count;
+                this.game.soundManager.playTypingSound();
+            } else {
+                clearInterval(countdownInterval);
+                this.countdownNumber.textContent = 'FIGHT!';
+                this.game.soundManager.playCriticalSound();
+                
+                setTimeout(() => {
+                    this.countdownOverlay.classList.add('hidden');
+                    this.startGame();
+                }, 1000);
+            }
+        }, 1000);
+    }
+    
+    startGame() {
         this.isActive = true;
+        this.gameArea.classList.remove('hidden');
+        this.elements.gameOver.classList.add('hidden');
         
         // Reset stats
         this.totalDamageDealt = 0;
         this.criticalHits = 0;
+        this.wordsTyped = 0;
         this.myCritical = true;
         
-        // Setup UI based on player number
+        // Update health bars
+        this.updateBossHealth();
+        this.updateTeamHealth();
+        
+        // Set up words
+        this.myWord = this.game.wordManager.getRandomWord();
+        this.teammateWord = this.game.wordManager.getRandomWord();
+        
+        // Set up UI based on player number
         if (this.playerNumber === 1) {
-            // I'm player 1
+            this.elements.player1Word.textContent = this.myWord;
+            this.elements.player2Word.textContent = this.teammateWord;
             this.elements.player1Input.disabled = false;
             this.elements.player2Input.disabled = true;
-            setTimeout(() => this.elements.player1Input.focus(), 100);
+            this.elements.player1Input.value = '';
+            this.elements.player1Input.focus();
+            this.elements.player1Input.addEventListener('input', (e) => this.handleMyInput(e));
         } else {
-            // I'm player 2
-            this.elements.player1Input.disabled = true;
+            this.elements.player2Word.textContent = this.myWord;
+            this.elements.player1Word.textContent = this.teammateWord;
             this.elements.player2Input.disabled = false;
-            setTimeout(() => this.elements.player2Input.focus(), 100);
+            this.elements.player1Input.disabled = true;
+            this.elements.player2Input.value = '';
+            this.elements.player2Input.focus();
+            this.elements.player2Input.addEventListener('input', (e) => this.handleMyInput(e));
         }
         
-        // Setup input handler
-        this.setupInputHandler();
+        this.elements.bossName.textContent = 'CYBER BOSS';
+        this.elements.bossStatus.textContent = `vs ${this.teammateName}`;
         
-        // Get first word
-        this.game.wordManager.reset();
-        this.assignNewWord();
-        
-        // Update UI
-        this.updateHealthBars();
-        this.elements.bossName.textContent = 'MEGA BOSS';
-        this.elements.bossStatus.textContent = `🤝 ${this.teammateName}`;
-        
-        console.log('🤝 Co-op match started!');
+        console.log('🎮 Co-op game started!');
     }
     
-    setupInputHandler() {
-        const myInput = this.playerNumber === 1 ? this.elements.player1Input : this.elements.player2Input;
+    handleMyInput(e) {
+        if (!this.isActive) return;
         
-        // Remove old listener if exists
-        const newInput = myInput.cloneNode(true);
-        myInput.parentNode.replaceChild(newInput, myInput);
-        
-        // Update reference
-        if (this.playerNumber === 1) {
-            this.elements.player1Input = newInput;
-        } else {
-            this.elements.player2Input = newInput;
-        }
-        
-        // Add new listener
-        newInput.addEventListener('input', (e) => {
-            this.myInput = e.target.value.toLowerCase();
-            this.checkMyWord();
-            
-            // Send typing progress to teammate
-            this.send({
-                type: 'coopTyping',
-                input: this.myInput,
-                word: this.myWord
-            });
-        });
-    }
-    
-    assignNewWord() {
-        this.myWord = this.game.wordManager.getNextWord();
-        this.myCritical = true;
-        
-        const myWordElement = this.playerNumber === 1 ? this.elements.player1Word : this.elements.player2Word;
-        myWordElement.textContent = this.myWord;
-        
-        // Send new word to teammate
-        this.send({
-            type: 'coopNewWord',
-            word: this.myWord
-        });
-    }
-    
-    checkMyWord() {
-        const target = this.myWord;
-        const input = this.myInput;
-        const myInput = this.playerNumber === 1 ? this.elements.player1Input : this.elements.player2Input;
+        this.myInput = e.target.value.toLowerCase();
+        const myInputElement = this.playerNumber === 1 ? this.elements.player1Input : this.elements.player2Input;
         const myFeedback = this.playerNumber === 1 ? this.elements.player1Feedback : this.elements.player2Feedback;
         
-        if (input.length > 0) {
-            if (target.startsWith(input)) {
-                myInput.classList.remove('error');
-                myInput.classList.add('correct');
+        if (this.myInput.length > 0) {
+            if (this.myWord.startsWith(this.myInput)) {
+                myInputElement.classList.remove('error');
+                myInputElement.classList.add('correct');
                 myFeedback.textContent = '';
                 
-                if (input === target) {
+                if (this.myInput === this.myWord) {
                     this.completeWord();
                 }
             } else {
-                myInput.classList.remove('correct');
-                myInput.classList.add('error');
+                myInputElement.classList.remove('correct');
+                myInputElement.classList.add('error');
                 
-                // Only apply penalty once per mistake
                 if (this.myCritical) {
                     this.myCritical = false;
-                    this.penalizeTeam();
                 }
                 
                 myFeedback.textContent = '❌';
                 this.game.soundManager.playErrorSound();
             }
         } else {
-            myInput.classList.remove('correct', 'error');
+            myInputElement.classList.remove('correct', 'error');
             myFeedback.textContent = '';
-        }
-    }
-    
-    penalizeTeam() {
-        const MISTAKE_DAMAGE = 10; // Penalty for typing mistakes
-        
-        this.teamHealth = Math.max(0, this.teamHealth - MISTAKE_DAMAGE);
-        this.updateHealthBars();
-        
-        // Send penalty to server to sync with teammate
-        this.send({
-            type: 'coopPenalty',
-            damage: MISTAKE_DAMAGE
-        });
-        
-        // Check defeat
-        if (this.teamHealth <= 0) {
-            this.defeat();
         }
     }
     
     completeWord() {
-        const isCritical = this.myCritical;
-        let damage = CONFIG.BASE_DAMAGE;
+        const damage = this.myCritical ? CONFIG.BASE_DAMAGE * CONFIG.CRITICAL_MULTIPLIER : CONFIG.BASE_DAMAGE;
         
-        if (isCritical) {
-            damage = Math.floor(damage * CONFIG.CRITICAL_MULTIPLIER);
+        // Update boss health
+        this.bossHealth = Math.max(0, this.bossHealth - damage);
+        this.updateBossHealth();
+        
+        // Update stats
+        this.totalDamageDealt += damage;
+        this.wordsTyped++;
+        if (this.myCritical) {
             this.criticalHits++;
+        }
+        
+        // Show feedback
+        const myFeedback = this.playerNumber === 1 ? this.elements.player1Feedback : this.elements.player2Feedback;
+        const myInputElement = this.playerNumber === 1 ? this.elements.player1Input : this.elements.player2Input;
+        
+        if (this.myCritical) {
+            myFeedback.textContent = `🔥 CRITICAL! -${damage}`;
+            myFeedback.classList.add('critical');
             this.game.soundManager.playCriticalSound();
         } else {
-            this.game.soundManager.playHitSound();
+            myFeedback.textContent = `✓ -${damage}`;
+            myFeedback.classList.remove('critical');
+            this.game.soundManager.playSuccessSound();
         }
         
-        // Update local boss health immediately
-        this.bossHealth = Math.max(0, this.bossHealth - damage);
-        this.totalDamageDealt += damage;
-        this.updateHealthBars();
+        // Particles
+        this.game.particleSystem.createBurst(
+            window.innerWidth / 2,
+            window.innerHeight / 3,
+            this.myCritical ? 'critical' : 'hit'
+        );
         
-        // Visual effect
-        const bossHealthBar = this.elements.bossHealth.parentElement;
-        const rect = bossHealthBar.getBoundingClientRect();
-        const x = rect.left + rect.width / 2;
-        const y = rect.top + rect.height / 2;
-        
-        if (isCritical) {
-            this.game.particleSystem.createCriticalHit(x, y);
-        } else {
-            this.game.particleSystem.createHit(x, y);
-        }
-        
-        // Send action to server (to update teammate)
+        // Send action to server
         this.send({
             type: 'coopAction',
             word: this.myWord,
             damage: damage,
-            isCritical: isCritical
+            isCritical: this.myCritical
         });
         
-        // Check victory
+        // Check if boss is defeated
         if (this.bossHealth <= 0) {
-            this.victory();
+            this.endGame(true);
+            return;
         }
         
-        // Update local UI
-        const myInput = this.playerNumber === 1 ? this.elements.player1Input : this.elements.player2Input;
-        const myFeedback = this.playerNumber === 1 ? this.elements.player1Feedback : this.elements.player2Feedback;
-        
-        myFeedback.textContent = isCritical ? '💥 CRITICAL!' : '✓ HIT';
-        myInput.value = '';
-        this.myInput = '';
-        myInput.classList.remove('correct', 'error');
-        
         // Get new word
-        this.assignNewWord();
+        this.myWord = this.game.wordManager.getRandomWord();
+        const myWordElement = this.playerNumber === 1 ? this.elements.player1Word : this.elements.player2Word;
+        myWordElement.textContent = this.myWord;
+        
+        // Reset input
+        myInputElement.value = '';
+        myInputElement.classList.remove('correct', 'error');
+        this.myInput = '';
+        this.myCritical = true;
         
         setTimeout(() => {
             myFeedback.textContent = '';
+            myFeedback.classList.remove('critical');
         }, 1000);
-    }
-    
-    onTeammateTyping(data) {
-        // Show teammate's current typing progress
-        const teammateInput = this.playerNumber === 1 ? this.elements.player2Input : this.elements.player1Input;
-        teammateInput.value = data.input;
-    }
-    
-    onTeammateNewWord(data) {
-        // Update teammate's word display
-        const teammateWordElement = this.playerNumber === 1 ? this.elements.player2Word : this.elements.player1Word;
-        teammateWordElement.textContent = data.word;
-        this.teammateWord = data.word;
     }
     
     onTeammateAction(data) {
-        console.log('👥 Teammate action:', data);
-        
-        // Show teammate's word
         const teammateWordElement = this.playerNumber === 1 ? this.elements.player2Word : this.elements.player1Word;
         const teammateFeedback = this.playerNumber === 1 ? this.elements.player2Feedback : this.elements.player1Feedback;
         
-        teammateWordElement.textContent = data.word;
-        teammateFeedback.textContent = data.isCritical ? '💥 CRITICAL!' : '✓ HIT';
-        
         // Update boss health
         this.bossHealth = Math.max(0, this.bossHealth - data.damage);
-        this.totalDamageDealt += data.damage;
-        this.updateHealthBars();
+        this.updateBossHealth();
         
-        // Visual effect
-        const bossHealthBar = this.elements.bossHealth.parentElement;
-        const rect = bossHealthBar.getBoundingClientRect();
-        const x = rect.left + rect.width / 2;
-        const y = rect.top + rect.height / 2;
-        
+        // Show feedback
         if (data.isCritical) {
-            this.game.particleSystem.createCriticalHit(x, y);
+            teammateFeedback.textContent = `🔥 CRITICAL! -${data.damage}`;
+            teammateFeedback.classList.add('critical');
         } else {
-            this.game.particleSystem.createHit(x, y);
+            teammateFeedback.textContent = `✓ -${data.damage}`;
+            teammateFeedback.classList.remove('critical');
         }
         
-        // Check victory
-        if (this.bossHealth <= 0) {
-            this.victory();
-        }
+        // Particles
+        this.game.particleSystem.createBurst(
+            window.innerWidth / 2,
+            window.innerHeight / 3,
+            data.isCritical ? 'critical' : 'hit'
+        );
+        
+        // Get new word for teammate
+        this.teammateWord = this.game.wordManager.getRandomWord();
+        teammateWordElement.textContent = this.teammateWord;
         
         setTimeout(() => {
             teammateFeedback.textContent = '';
+            teammateFeedback.classList.remove('critical');
         }, 1000);
-    }
-    
-    onteammatePenalty(data) {
-        console.log('⚠️ Teammate made a mistake!');
         
-        // Update team health based on teammate's mistake
-        this.teamHealth = Math.max(0, data.teamHealth);
-        this.updateHealthBars();
-        
-        // Visual feedback
-        this.elements.teamHealth.parentElement.style.animation = 'none';
-        setTimeout(() => {
-            this.elements.teamHealth.parentElement.style.animation = 'pulse 0.5s';
-        }, 10);
-        
-        // Check defeat
-        if (this.teamHealth <= 0) {
-            this.defeat();
+        // Check if boss is defeated
+        if (this.bossHealth <= 0) {
+            this.endGame(true);
         }
     }
     
     handleBossAttack(data) {
-        if (!this.isActive) return;
+        this.teamHealth = Math.max(0, this.teamHealth - data.damage);
+        this.updateTeamHealth();
         
-        this.teamHealth = Math.max(0, data.teamHealth);
-        
-        // Visual feedback
-        this.elements.bossStatus.textContent = '⚡ ATTACKING!';
-        this.game.soundManager.playDamageSound();
-        this.updateHealthBars();
-        
-        // Flash health bar
-        this.elements.teamHealth.parentElement.style.animation = 'none';
-        setTimeout(() => {
-            this.elements.teamHealth.parentElement.style.animation = 'pulse 0.5s';
-        }, 10);
+        this.elements.bossStatus.textContent = `💥 BOSS ATTACKED! -${data.damage}`;
         
         setTimeout(() => {
-            if (this.isActive) {
-                this.elements.bossStatus.textContent = `🤝 ${this.teammateName}`;
-            }
-        }, 500);
+            this.elements.bossStatus.textContent = `vs ${this.teammateName}`;
+        }, 2000);
         
-        // Check defeat
+        // Check if team is defeated
         if (this.teamHealth <= 0) {
-            this.defeat();
+            this.endGame(false);
         }
+    }
+    
+    updateBossHealth() {
+        const percentage = (this.bossHealth / this.maxBossHealth) * 100;
+        this.elements.bossHealth.style.width = `${percentage}%`;
+        this.elements.bossHealthText.textContent = `${Math.round(this.bossHealth)} / ${this.maxBossHealth}`;
+    }
+    
+    updateTeamHealth() {
+        const percentage = (this.teamHealth / this.maxTeamHealth) * 100;
+        this.elements.teamHealth.style.width = `${percentage}%`;
+        this.elements.teamHealthText.textContent = `${Math.round(this.teamHealth)} / ${this.maxTeamHealth}`;
+    }
+    
+    endGame(victory) {
+        this.isActive = false;
+        this.inMatch = false;
+        
+        // Disable inputs
+        this.elements.player1Input.disabled = true;
+        this.elements.player2Input.disabled = true;
+        
+        // Show game over screen
+        this.elements.gameOver.classList.remove('hidden');
+        
+        if (victory) {
+            this.elements.gameOverTitle.textContent = '🏆 VICTORY!';
+            this.elements.gameOverTitle.style.color = 'var(--neon-green)';
+            this.game.soundManager.playVictorySound();
+        } else {
+            this.elements.gameOverTitle.textContent = '💀 DEFEATED!';
+            this.elements.gameOverTitle.style.color = 'var(--neon-red)';
+        }
+        
+        // Show stats
+        this.elements.gameOverStats.innerHTML = `
+            <div class="stat-row">Words Typed: ${this.wordsTyped}</div>
+            <div class="stat-row">Damage Dealt: ${Math.round(this.totalDamageDealt)}</div>
+            <div class="stat-row">Critical Hits: ${this.criticalHits}</div>
+            <div class="stat-row">Teammate: ${this.teammateName}</div>
+        `;
+        
+        // Send game over to server
+        this.send({
+            type: 'coopGameOver',
+            victory: victory,
+            stats: {
+                wordsTyped: this.wordsTyped,
+                damageDealt: this.totalDamageDealt,
+                criticalHits: this.criticalHits
+            }
+        });
     }
     
     handleGameOver(data) {
-        console.log('🎮 Co-op game over:', data);
-        this.showResults(data.victory, data.stats);
+        if (!this.isActive) return;
+        this.endGame(data.victory);
     }
     
     handleTeammateDisconnected() {
-        if (!this.isActive) return;
+        if (!this.inMatch) return;
         
         this.isActive = false;
         this.inMatch = false;
         
-        alert('Your teammate disconnected! Returning to menu...');
-        this.stop();
-        document.getElementById('coop-mode-screen').classList.remove('active');
-        document.getElementById('main-menu').classList.add('active');
-    }
-    
-    updateHealthBars() {
-        // Boss health
-        const bossPercent = (this.bossHealth / CONFIG.BOSS_MAX_HEALTH) * 100;
-        this.elements.bossHealth.style.width = bossPercent + '%';
-        this.elements.bossHealthText.textContent = `${this.bossHealth} / ${CONFIG.BOSS_MAX_HEALTH}`;
-        
-        // Change boss health bar color based on health
-        if (bossPercent > 60) {
-            this.elements.bossHealth.style.background = 'linear-gradient(90deg, #ff0000, #ff6600)';
-        } else if (bossPercent > 30) {
-            this.elements.bossHealth.style.background = 'linear-gradient(90deg, #ff6600, #ffaa00)';
-        } else {
-            this.elements.bossHealth.style.background = 'linear-gradient(90deg, #ffaa00, #ff0000)';
-        }
-        
-        // Team health
-        const teamPercent = (this.teamHealth / CONFIG.COOP_TEAM_MAX_HEALTH) * 100;
-        this.elements.teamHealth.style.width = teamPercent + '%';
-        this.elements.teamHealthText.textContent = `${this.teamHealth} / ${CONFIG.COOP_TEAM_MAX_HEALTH}`;
-        
-        // Change team health bar color
-        if (teamPercent > 60) {
-            this.elements.teamHealth.style.background = 'linear-gradient(90deg, #00ff00, #00ffff)';
-        } else if (teamPercent > 30) {
-            this.elements.teamHealth.style.background = 'linear-gradient(90deg, #ffff00, #00ff00)';
-        } else {
-            this.elements.teamHealth.style.background = 'linear-gradient(90deg, #ff6600, #ffff00)';
-        }
-    }
-    
-    victory() {
-        this.isActive = false;
-        this.inMatch = false;
-        
-        const myInput = this.playerNumber === 1 ? this.elements.player1Input : this.elements.player2Input;
-        myInput.disabled = true;
-        
-        this.elements.bossStatus.textContent = '💀 DEFEATED';
-        this.game.soundManager.playVictorySound();
-        
-        // Notify server
-        this.send({
-            type: 'coopGameOver',
-            victory: true,
-            stats: {
-                totalDamage: this.totalDamageDealt,
-                criticalHits: this.criticalHits
-            }
-        });
-    }
-    
-    defeat() {
-        this.isActive = false;
-        this.inMatch = false;
-        
-        const myInput = this.playerNumber === 1 ? this.elements.player1Input : this.elements.player2Input;
-        myInput.disabled = true;
-        
-        this.game.soundManager.playDefeatSound();
-        
-        // Notify server
-        this.send({
-            type: 'coopGameOver',
-            victory: false,
-            stats: {
-                totalDamage: this.totalDamageDealt,
-                criticalHits: this.criticalHits
-            }
-        });
-    }
-    
-    showResults(victory, stats = {}) {
-        setTimeout(() => {
-            const resultsHtml = `
-                <div class="coop-results">
-                    <h2 class="neon-text">${victory ? '🏆 VICTORY! 🏆' : '💀 DEFEATED 💀'}</h2>
-                    <div class="coop-stats">
-                        <p><span class="stat-label">Teammate:</span> <span class="stat-value">${this.teammateName}</span></p>
-                        <p><span class="stat-label">Total Damage:</span> <span class="stat-value">${this.totalDamageDealt}</span></p>
-                        <p><span class="stat-label">Critical Hits:</span> <span class="stat-value">${this.criticalHits}</span></p>
-                        <p><span class="stat-label">Boss Remaining HP:</span> <span class="stat-value">${this.bossHealth}</span></p>
-                        <p><span class="stat-label">Team HP:</span> <span class="stat-value">${this.teamHealth}</span></p>
-                    </div>
-                    <button class="neon-button" id="coop-play-again-btn">PLAY AGAIN</button>
-                    <button class="neon-button secondary" id="coop-back-to-menu-btn">MAIN MENU</button>
-                </div>
-            `;
-            
-            const resultsDiv = document.createElement('div');
-            resultsDiv.className = 'coop-results-overlay';
-            resultsDiv.innerHTML = resultsHtml;
-            document.getElementById('coop-mode-screen').appendChild(resultsDiv);
-            
-            // Button handlers
-            document.getElementById('coop-play-again-btn').addEventListener('click', () => {
-                resultsDiv.remove();
-                this.findMatch(window.authClient?.currentUser?.username || 'Player');
-            });
-            
-            document.getElementById('coop-back-to-menu-btn').addEventListener('click', () => {
-                resultsDiv.remove();
-                this.stop();
-                document.getElementById('coop-mode-screen').classList.remove('active');
-                document.getElementById('main-menu').classList.add('active');
-            });
-        }, 1000);
-    }
-    
-    stop() {
-        this.isActive = false;
-        this.inMatch = false;
-        clearTimeout(this.bossTypingTimer);
-        
-        if (this.ws && this.connected) {
-            this.ws.close();
-            this.ws = null;
-            this.connected = false;
-        }
+        alert('Teammate disconnected!');
+        this.reset();
     }
 }

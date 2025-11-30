@@ -379,12 +379,31 @@
 
         <!-- Co-op Mode Screen -->
         <div id="coop-mode-screen" class="menu-screen hidden">
-            <div class="coop-header">
+            <!-- Matchmaking Menu -->
+            <div id="coop-matchmaking-menu" class="matchmaking-menu">
                 <h2 class="neon-text">CO-OP MODE</h2>
                 <div class="coop-subtitle">TEAM VS BOSS</div>
+                <div class="matchmaking-status" id="coop-matchmaking-status">
+                    <div class="status-icon">🔍</div>
+                    <div class="status-text">Ready to find a teammate!</div>
+                </div>
+                <div class="matchmaking-buttons">
+                    <button class="neon-button" id="coop-find-match-btn">FIND TEAMMATE</button>
+                    <button class="neon-button secondary hidden" id="coop-cancel-match-btn">CANCEL</button>
+                    <button class="neon-button secondary" id="coop-back-btn">BACK TO MENU</button>
+                </div>
+            </div>
+
+            <!-- Countdown Overlay -->
+            <div id="coop-countdown-overlay" class="countdown-overlay hidden">
+                <div class="countdown-content">
+                    <div id="coop-teammate-found-text" class="opponent-found-text">TEAMMATE FOUND!</div>
+                    <div id="coop-teammate-name-display" class="opponent-name-display"></div>
+                    <div id="coop-countdown-number" class="countdown-number">3</div>
+                </div>
             </div>
             
-            <div class="coop-game-area">
+            <div class="coop-game-area hidden" id="coop-game-area">
                 <!-- Boss Section -->
                 <div class="boss-section">
                     <div class="boss-info">
@@ -447,10 +466,11 @@
                     </div>
                 </div>
 
-                <!-- Control Buttons -->
-                <div class="coop-controls">
-                    <button class="neon-button" id="coop-start-btn">START BATTLE</button>
-                    <button class="neon-button secondary" id="coop-back-btn">BACK TO MENU</button>
+                <!-- Game Over Stats -->
+                <div class="coop-game-over hidden" id="coop-game-over">
+                    <h3 id="coop-game-over-title">VICTORY!</h3>
+                    <div id="coop-game-over-stats"></div>
+                    <button class="neon-button" id="coop-play-again-btn">PLAY AGAIN</button>
                 </div>
             </div>
         </div>

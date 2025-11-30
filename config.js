@@ -30,7 +30,9 @@ const CONFIG = {
     WORD_QUEUE_SIZE: 3,
     
     // Multiplayer
-    WEBSOCKET_URL: 'wss://neontypefighter-production.up.railway.app', // WebSocket server URL
+    WEBSOCKET_URL: window.location.hostname === 'localhost' 
+        ? 'ws://localhost:8080' 
+        : 'wss://neontypefighter-production.up.railway.app',
     RECONNECT_DELAY: 3000,
     
     // Difficulty Settings
