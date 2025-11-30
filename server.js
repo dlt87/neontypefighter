@@ -517,22 +517,30 @@ function findCoopMatch(ws, playerName) {
             type: 'coopMatchFound',
             matchId: matchId,
             teammateName: teammate.playerName,
-            playerNumber: 1
+            playerNumber: 1,
+            bossHealth: match.bossHealth,
+            teamHealth: match.teamHealth
         }));
         
         teammate.send(JSON.stringify({
             type: 'coopMatchFound',
             matchId: matchId,
             teammateName: ws.playerName,
-            playerNumber: 2
+            playerNumber: 2,
+            bossHealth: match.bossHealth,
+            teamHealth: match.teamHealth
         }));
         
         console.log(`Co-op match created: ${ws.playerName} + ${teammate.playerName} vs Boss`);
+        
+        // Start boss attack timer
+        startBossAttackTimer(matchId);
+        
         broadcastLobbyStats();
     } else {
         // Add to waiting queue
         waitingCoopPlayers.push(ws);
-        console.log(`${playerName} added to co-op waiting queue`);
+        console.log(`${playerName} added to co-op waiting queue (position ${waitingCoopPlayers.length})`);
         
         ws.send(JSON.stringify({
             type: 'coopQueuePosition',
@@ -540,9 +548,6 @@ function findCoopMatch(ws, playerName) {
         }));
         
         broadcastLobbyStats();
-        
-        // Start boss attack timer
-        startBossAttackTimer(matchId);
     }
 }
 

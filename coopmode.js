@@ -102,11 +102,17 @@ class CoopMode {
     }
     
     handleMessage(data) {
-        console.log('📨 Co-op message:', data);
+        console.log('📨 Co-op message:', data.type, data);
         
         switch (data.type) {
             case 'coopMatchFound':
+                console.log('✅ Match found! Starting game...');
                 this.onMatchFound(data);
+                break;
+                
+            case 'coopQueuePosition':
+                console.log(`🔍 In queue position: ${data.position}`);
+                this.elements.bossStatus.textContent = `🔍 Finding Teammate... (${data.position} in queue)`;
                 break;
                 
             case 'teammateAction':
