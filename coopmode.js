@@ -521,9 +521,9 @@ class CoopMode {
         
         // Clear feedback after delay
         setTimeout(() => {
-            myFeedback.textContent = '';
-            myFeedback.classList.remove('critical');
-        }, 1000);
+            this.elements.typingFeedback.textContent = '';
+            this.elements.typingFeedback.classList.remove('critical');
+        }, 1500);
     }
     
     onTurnChange(data) {
