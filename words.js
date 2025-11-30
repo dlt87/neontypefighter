@@ -7,18 +7,36 @@ const CYBERPUNK_WORDS = [
     'flare', 'pulse', 'void', 'nova', 'surge', 'byte', 'hack', 'fire',
     'bolt', 'zap', 'rush', 'dash', 'slam', 'rage', 'fury', 'glow',
     'neon', 'grid', 'wave', 'beam', 'tech', 'core', 'link', 'sync',
+    'data', 'code', 'port', 'node', 'ram', 'rom', 'cpu', 'gpu',
+    'disk', 'chip', 'pixel', 'scan', 'ping', 'boot', 'load', 'save',
     
     // Medium words (6-8 letters)
     'fracture', 'spire', 'blaze', 'quantum', 'phantom', 'cipher', 'reactor',
     'voltage', 'gravity', 'impulse', 'crimson', 'velvet', 'shadow', 'nexus',
     'matrix', 'vector', 'plasma', 'vortex', 'prism', 'chrome', 'signal',
     'neural', 'binary', 'fusion', 'photon', 'laser', 'cyber', 'turbo',
+    'network', 'system', 'server', 'client', 'socket', 'packet', 'router',
+    'daemon', 'kernel', 'buffer', 'cache', 'thread', 'process', 'memory',
+    'storage', 'backup', 'restore', 'compile', 'execute', 'runtime', 'digital',
+    'virtual', 'augment', 'enhance', 'upgrade', 'decrypt', 'encrypt', 'secure',
     
     // Long words (9+ letters)
     'cybernetic', 'hologram', 'algorithm', 'firewall', 'bandwidth', 'protocol',
     'interface', 'digitize', 'synthetic', 'mainframe', 'overload', 'terminal',
     'accelerate', 'frequency', 'resonance', 'dimension', 'cascade', 'velocity',
-    'electric', 'magnetic', 'radiation', 'disruptor', 'generator', 'amplifier'
+    'electric', 'magnetic', 'radiation', 'disruptor', 'generator', 'amplifier',
+    'cyberdeck', 'netrunner', 'datasphere', 'cyberspace', 'holonet', 'virtuality',
+    'datastream', 'megacorp', 'technomancer', 'biomech', 'nanotech', 'darknet',
+    'blackice', 'firewall', 'backdoor', 'rootkit', 'exploit', 'debugger',
+    'emulator', 'simulator', 'framework', 'compiler', 'interpreter', 'optimizer',
+    'processor', 'multitask', 'multithreading', 'encryption', 'decryption', 'compression',
+    'decompression', 'transmission', 'bandwidth', 'latency', 'throughput', 'uplink',
+    'downlink', 'crosslink', 'feedback', 'response', 'request', 'handshake',
+    'authentication', 'authorization', 'verification', 'validation', 'certificate', 'credential',
+    'blockchain', 'cryptocurrency', 'artificial', 'intelligence', 'machinelearning', 'deeplearning',
+    'neuralnetwork', 'cybersecurity', 'penetration', 'vulnerability', 'malicious', 'antimalware',
+    'ransomware', 'trojan', 'worm', 'botnet', 'phishing', 'spoofing',
+    'sniffing', 'injection', 'overflow', 'shellcode', 'payload', 'backdoor'
 ];
 
 const NAME_WORDS = [

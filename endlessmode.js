@@ -113,10 +113,15 @@ class EndlessMode {
         // Start timer
         this.startTimer();
         
-        // Enable input
+        // Enable input and force focus
         this.elements.typingInput.disabled = false;
         this.elements.typingInput.value = '';
         this.elements.typingInput.focus();
+        
+        // Force focus again after a short delay to ensure it works
+        setTimeout(() => {
+            this.elements.typingInput.focus();
+        }, 100);
         
         console.log(`🌊 Wave ${this.currentWave} started - ${this.wordsRequired} words, ${this.timePerWave}s`);
     }
@@ -134,22 +139,34 @@ class EndlessMode {
     }
     
     getWordPoolForDifficulty() {
-        // Easy words for early waves
+        // Easy words for early waves (3-6 letters)
         if (this.currentWave <= 3) {
-            return ['cyber', 'neon', 'pixel', 'digital', 'matrix', 'chrome', 'glitch'];
+            return ['cyber', 'neon', 'pixel', 'digital', 'matrix', 'chrome', 'glitch', 'byte', 'hack', 'fire',
+                    'bolt', 'beam', 'tech', 'core', 'link', 'sync', 'grid', 'wave', 'data', 'code',
+                    'node', 'port', 'ram', 'rom', 'cpu', 'gpu', 'usb', 'lan', 'wifi', 'cloud'];
         }
-        // Medium words
+        // Medium words (6-8 letters)
         else if (this.currentWave <= 7) {
-            return ['quantum', 'protocol', 'algorithm', 'interface', 'terminal', 'firewall', 'encrypted'];
+            return ['quantum', 'protocol', 'algorithm', 'interface', 'terminal', 'firewall', 'encrypted',
+                    'network', 'system', 'server', 'client', 'socket', 'packet', 'router', 'daemon',
+                    'kernel', 'buffer', 'cache', 'thread', 'process', 'memory', 'storage', 'backup',
+                    'restore', 'compile', 'execute', 'runtime', 'binary', 'hexcode', 'decrypt'];
         }
-        // Hard words
+        // Hard words (8-10 letters)
         else if (this.currentWave <= 12) {
-            return ['bandwidth', 'mainframe', 'synthwave', 'wavelength', 'frequency', 'amplifier', 'override'];
+            return ['bandwidth', 'mainframe', 'synthwave', 'wavelength', 'frequency', 'amplifier', 'override',
+                    'cyberdeck', 'holonet', 'datastream', 'netrunner', 'firewall', 'cyberpunk', 'hologram',
+                    'database', 'backtrack', 'overclock', 'processor', 'multitask', 'firmware', 'software',
+                    'hardware', 'malware', 'spyware', 'ransomware', 'antivirus', 'defender', 'intrusion'];
         }
-        // Very hard words
+        // Very hard words (10+ letters)
         else {
             return ['electromagnetic', 'telecommunication', 'cybersecurity', 'virtualization', 'cryptocurrency', 
-                    'decentralized', 'authentication', 'synchronization', 'infrastructure', 'unprecedented'];
+                    'decentralized', 'authentication', 'synchronization', 'infrastructure', 'unprecedented',
+                    'biotechnology', 'nanotechnology', 'consciousness', 'augmentation', 'transhuman',
+                    'singularity', 'posthuman', 'cyberwarfare', 'surveillance', 'blockchain',
+                    'neuralnetwork', 'machinelearning', 'artificialintelligence', 'quantumcomputing',
+                    'biometrics', 'holographic', 'dimensional', 'multiversal', 'transcendent'];
         }
     }
     
@@ -424,6 +441,10 @@ class EndlessMode {
     show() {
         this.screen.classList.remove('hidden');
         this.loadLeaderboard();
+        // Focus on start button initially
+        if (this.elements.startBtn && !this.elements.startBtn.classList.contains('hidden')) {
+            this.elements.startBtn.focus();
+        }
     }
     
     hide() {
