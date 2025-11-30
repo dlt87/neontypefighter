@@ -206,6 +206,15 @@ document.addEventListener('DOMContentLoaded', () => {
         loadAchievements();
     });
     
+    // FAQ button
+    document.getElementById('faq-btn').addEventListener('click', () => {
+        document.getElementById('faq-modal').classList.remove('hidden');
+    });
+    
+    document.getElementById('faq-close').addEventListener('click', () => {
+        document.getElementById('faq-modal').classList.add('hidden');
+    });
+    
     // Word bank selector in settings
     const wordBankSelect = document.getElementById('word-bank-select');
     if (wordBankSelect) {

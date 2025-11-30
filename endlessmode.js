@@ -38,6 +38,9 @@ class EndlessMode {
         // Next word preview
         this.nextWord = '';
         
+        // Wave complete timeout
+        this.waveCompleteTimeout = null;
+        
         this.setupUI();
     }
     
@@ -345,7 +348,7 @@ class EndlessMode {
         }
         
         // Advance to next wave after delay
-        setTimeout(() => {
+        this.waveCompleteTimeout = setTimeout(() => {
             overlay.remove();
             this.elements.typingFeedback.textContent = '';
             this.elements.typingFeedback.style.color = '';
@@ -395,6 +398,9 @@ class EndlessMode {
         if (this.isPaused) {
             // Pause game
             clearInterval(this.timerInterval);
+            if (this.waveCompleteTimeout) {
+                clearTimeout(this.waveCompleteTimeout);
+            }
             this.elements.typingInput.disabled = true;
             
             // Create pause overlay

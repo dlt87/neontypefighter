@@ -15,6 +15,7 @@
             <!-- Top Corner Buttons -->
             <div class="corner-buttons top-left">
                 <button class="icon-button" id="settings-btn" title="Settings">⚙️</button>
+                <button class="icon-button" id="faq-btn" title="FAQ">❓</button>
             </div>
             <div class="corner-buttons top-right">
                 <button class="icon-button" id="themes-btn" title="Themes">🎨</button>
@@ -119,6 +120,31 @@
                         <button type="button" class="neon-button secondary" id="register-cancel">CANCEL</button>
                     </div>
                 </form>
+            </div>
+        </div>
+        
+        <!-- FAQ Modal -->
+        <div id="faq-modal" class="modal hidden">
+            <div class="modal-content faq-content">
+                <h2 class="neon-text">❓ FAQ</h2>
+                <div class="faq-section">
+                    <h3>What is Neon Typing Fighter?</h3>
+                    <p>A cyberpunk-themed typing game where your keyboard skills are your weapon. Battle AI opponents, race against time, or survive endless waves of words.</p>
+                    
+                    <h3>Who made this?</h3>
+                    <p>Created by David to combine typing practice with gaming. Built with vanilla JavaScript, no frameworks needed.</p>
+                    
+                    <h3>Why does this exist?</h3>
+                    <p>To make typing practice actually fun. Traditional typing tutors are boring – this turns it into a competitive, neon-soaked cyberpunk battle.</p>
+                    
+                    <h3>Game Modes</h3>
+                    <p><strong>Solo:</strong> Fight an AI opponent<br>
+                    <strong>Co-op:</strong> Team up to defeat a boss<br>
+                    <strong>Timed:</strong> 15-second typing challenge<br>
+                    <strong>Endless:</strong> Survive infinite waves<br>
+                    <strong>Multiplayer:</strong> Compete against other players</p>
+                </div>
+                <button class="neon-button" id="faq-close">CLOSE</button>
             </div>
         </div>
         <!-- Timed Mode Screen -->

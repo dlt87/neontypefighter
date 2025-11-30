@@ -486,6 +486,38 @@ body::before {
     box-shadow: 0 0 30px var(--neon-cyan);
 }
 
+.modal-content.faq-content {
+    max-width: 650px;
+}
+
+.faq-section {
+    text-align: left;
+    margin: 20px 0;
+}
+
+.faq-section h3 {
+    color: var(--neon-magenta);
+    font-size: 1.3em;
+    margin: 20px 0 10px 0;
+    text-shadow: 0 0 10px var(--neon-magenta);
+}
+
+.faq-section h3:first-child {
+    margin-top: 0;
+}
+
+.faq-section p {
+    color: var(--text-color);
+    line-height: 1.6;
+    margin: 10px 0;
+    font-size: 1.05em;
+}
+
+.faq-section strong {
+    color: var(--neon-cyan);
+    text-shadow: 0 0 5px var(--neon-cyan);
+}
+
 .modal-content h2 {
     margin-top: 0;
     text-align: center;
