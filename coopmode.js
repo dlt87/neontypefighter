@@ -70,10 +70,24 @@ class CoopMode {
         };
         
         // Event listeners
-        this.findMatchBtn.addEventListener('click', () => this.startMatchmaking());
-        this.cancelMatchBtn.addEventListener('click', () => this.cancelMatchmaking());
-        this.backBtn.addEventListener('click', () => this.returnToMenu());
-        this.playAgainBtn.addEventListener('click', () => this.playAgain());
+        if (this.findMatchBtn) {
+            this.findMatchBtn.addEventListener('click', () => this.startMatchmaking());
+        }
+        if (this.cancelMatchBtn) {
+            this.cancelMatchBtn.addEventListener('click', () => this.cancelMatchmaking());
+        }
+        if (this.backBtn) {
+            this.backBtn.addEventListener('click', () => this.returnToMenu());
+        }
+        if (this.playAgainBtn) {
+            this.playAgainBtn.addEventListener('click', () => this.playAgain());
+        }
+        
+        console.log('✅ Co-op UI setup complete', {
+            gameArea: !!this.gameArea,
+            player1Input: !!this.elements.player1Input,
+            player2Input: !!this.elements.player2Input
+        });
     }
     
     startMatchmaking() {
@@ -283,6 +297,14 @@ class CoopMode {
     }
     
     startGame() {
+        console.log('🎮 Starting co-op game...', {
+            playerNumber: this.playerNumber,
+            teammateName: this.teammateName,
+            gameArea: !!this.gameArea,
+            player1Input: !!this.elements.player1Input,
+            player2Input: !!this.elements.player2Input
+        });
+        
         this.isActive = true;
         this.gameArea.classList.remove('hidden');
         this.elements.gameOver.classList.add('hidden');
@@ -301,6 +323,21 @@ class CoopMode {
         this.myWord = this.game.wordManager.getRandomWord();
         this.teammateWord = this.game.wordManager.getRandomWord();
         
+        console.log('Words assigned:', { myWord: this.myWord, teammateWord: this.teammateWord });
+        
+        // Remove old event listeners by cloning and replacing
+        const player1Input = this.elements.player1Input;
+        const player2Input = this.elements.player2Input;
+        
+        const newPlayer1Input = player1Input.cloneNode(true);
+        const newPlayer2Input = player2Input.cloneNode(true);
+        
+        player1Input.parentNode.replaceChild(newPlayer1Input, player1Input);
+        player2Input.parentNode.replaceChild(newPlayer2Input, player2Input);
+        
+        this.elements.player1Input = newPlayer1Input;
+        this.elements.player2Input = newPlayer2Input;
+        
         // Set up UI based on player number
         if (this.playerNumber === 1) {
             this.elements.player1Word.textContent = this.myWord;
@@ -308,22 +345,34 @@ class CoopMode {
             this.elements.player1Input.disabled = false;
             this.elements.player2Input.disabled = true;
             this.elements.player1Input.value = '';
-            this.elements.player1Input.focus();
-            this.elements.player1Input.addEventListener('input', (e) => this.handleMyInput(e));
+            
+            // Add event listener
+            this.elements.player1Input.addEventListener('input', (e) => {
+                console.log('Player 1 input:', e.target.value);
+                this.handleMyInput(e);
+            });
+            
+            setTimeout(() => this.elements.player1Input.focus(), 100);
         } else {
             this.elements.player2Word.textContent = this.myWord;
             this.elements.player1Word.textContent = this.teammateWord;
             this.elements.player2Input.disabled = false;
             this.elements.player1Input.disabled = true;
             this.elements.player2Input.value = '';
-            this.elements.player2Input.focus();
-            this.elements.player2Input.addEventListener('input', (e) => this.handleMyInput(e));
+            
+            // Add event listener
+            this.elements.player2Input.addEventListener('input', (e) => {
+                console.log('Player 2 input:', e.target.value);
+                this.handleMyInput(e);
+            });
+            
+            setTimeout(() => this.elements.player2Input.focus(), 100);
         }
         
         this.elements.bossName.textContent = 'CYBER BOSS';
         this.elements.bossStatus.textContent = `vs ${this.teammateName}`;
         
-        console.log('🎮 Co-op game started!');
+        console.log('✅ Co-op game started!');
     }
     
     handleMyInput(e) {
