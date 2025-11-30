@@ -221,7 +221,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('endless-home-btn').addEventListener('click', () => {
         if (confirm('Are you sure you want to quit and return to the menu?')) {
             if (game.endlessMode) {
-                game.endlessMode.endGame();
+                game.endlessMode.gameOver();
             }
             showScreen('menu');
         }
