@@ -540,6 +540,12 @@ class CoopMode {
         console.log(`Turn changed. Current turn: Player ${this.currentTurn}, My turn: ${this.isMyTurn}`);
         
         if (this.isMyTurn) {
+            // Remove old event listener by cloning and replacing
+            const oldInput = this.elements.sharedInput;
+            const newInput = oldInput.cloneNode(true);
+            oldInput.parentNode.replaceChild(newInput, oldInput);
+            this.elements.sharedInput = newInput;
+            
             // Enable my input
             this.elements.sharedInput.disabled = false;
             this.elements.sharedInput.value = '';
@@ -547,6 +553,14 @@ class CoopMode {
             this.elements.turnText.textContent = 'Your Turn';
             this.elements.turnIndicator.style.borderColor = 'var(--neon-cyan)';
             this.elements.turnIndicator.style.boxShadow = '0 0 10px var(--neon-cyan)';
+            
+            // Add event listener for input and typing preview
+            this.elements.sharedInput.addEventListener('input', (e) => {
+                console.log('My input:', e.target.value);
+                this.handleMyInput(e);
+                this.sendTypingPreview(e.target.value);
+            });
+            
             this.elements.sharedInput.focus();
         } else {
             // Not my turn, keep disabled
