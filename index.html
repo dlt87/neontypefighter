@@ -334,10 +334,33 @@
             </div>
         </div>
 
-        <!-- Multiplayer Lobby -->
+        <!-- Multiplayer Lobby (Combined PvP and Co-op) -->
         <div id="multiplayer-lobby" class="menu-screen hidden">
-            <h2 class="neon-text">MULTIPLAYER LOBBY</h2>
-            <div class="lobby-content">
+            <h2 class="neon-text">ONLINE MULTIPLAYER</h2>
+            
+            <!-- Mode Selection -->
+            <div class="multiplayer-mode-selection" id="multiplayer-mode-selection">
+                <div class="mode-card" id="pvp-mode-card">
+                    <div class="mode-icon">⚔️</div>
+                    <h3 class="mode-title">PLAYER VS PLAYER</h3>
+                    <p class="mode-description">Battle against another player! First to zero health loses.</p>
+                    <button class="neon-button" id="select-pvp-btn">SELECT PvP</button>
+                </div>
+                <div class="mode-card" id="coop-mode-card">
+                    <div class="mode-icon">🤝</div>
+                    <h3 class="mode-title">CO-OP MODE</h3>
+                    <p class="mode-description">Team up with another player to defeat a powerful boss!</p>
+                    <button class="neon-button" id="select-coop-btn">SELECT CO-OP</button>
+                </div>
+            </div>
+            
+            <!-- Matchmaking Area (Hidden until mode selected) -->
+            <div class="lobby-content hidden" id="lobby-matchmaking">
+                <div class="selected-mode-header">
+                    <h3 class="neon-text" id="selected-mode-title">PLAYER VS PLAYER</h3>
+                    <button class="neon-button small secondary" id="change-mode-btn">CHANGE MODE</button>
+                </div>
+                
                 <div class="connection-status" id="connection-status">Connecting...</div>
                 <div class="lobby-stats hidden" id="lobby-stats">
                     <div class="stat-item">
@@ -349,15 +372,17 @@
                         <span class="stat-value" id="queue-position">0</span>
                     </div>
                 </div>
+                
                 <button class="neon-button" id="find-match-btn">FIND MATCH</button>
                 <button class="neon-button secondary" id="cancel-match-btn" style="display:none;">CANCEL</button>
-                <button class="neon-button secondary" id="back-to-menu-btn">BACK</button>
+                <button class="neon-button secondary" id="back-to-menu-btn">BACK TO MENU</button>
+                
                 <div class="waiting-message hidden" id="waiting-message">
                     <div class="searching-animation">
                         <div class="searching-dots">
                             <span></span><span></span><span></span>
                         </div>
-                        <div class="searching-text">Searching for opponent...</div>
+                        <div class="searching-text" id="searching-text">Searching for opponent...</div>
                     </div>
                 </div>
             </div>
@@ -577,23 +602,8 @@
             </div>
         </div>
 
-        <!-- Co-op Mode Screen -->
-        <div id="coop-mode-screen" class="menu-screen hidden">
-            <!-- Matchmaking Menu -->
-            <div id="coop-matchmaking-menu" class="matchmaking-menu">
-                <h2 class="neon-text">CO-OP MODE</h2>
-                <div class="coop-subtitle">TEAM VS BOSS</div>
-                <div class="matchmaking-status" id="coop-matchmaking-status">
-                    <div class="status-icon">🔍</div>
-                    <div class="status-text">Ready to find a teammate!</div>
-                </div>
-                <div class="matchmaking-buttons">
-                    <button class="neon-button" id="coop-find-match-btn">FIND TEAMMATE</button>
-                    <button class="neon-button secondary hidden" id="coop-cancel-match-btn">CANCEL</button>
-                    <button class="neon-button secondary" id="coop-back-btn">BACK TO MENU</button>
-                </div>
-            </div>
-
+        <!-- Co-op Game Screen (Separate from lobby) -->
+        <div id="coop-game-screen" class="hidden">
             <!-- Countdown Overlay -->
             <div id="coop-countdown-overlay" class="countdown-overlay hidden">
                 <div class="countdown-content">
@@ -603,7 +613,7 @@
                 </div>
             </div>
             
-            <div class="coop-game-area hidden" id="coop-game-area">
+            <div class="coop-game-area" id="coop-game-area">
                 <!-- Boss Section -->
                 <div class="boss-section">
                     <div class="boss-info">

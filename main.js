@@ -166,13 +166,17 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     
     document.getElementById('coop-mode-btn').addEventListener('click', () => {
-        showScreen('coop');
-        // Initialize co-op mode when screen is shown to ensure DOM elements exist
-        if (!game.coopMode) {
-            setTimeout(() => {
-                game.coopMode = new CoopMode(game);
-            }, 50);
+        // Require login for multiplayer
+        if (!authClient.currentUser) {
+            alert('Please log in to play co-op and multiplayer modes!');
+            document.getElementById('login-modal').classList.remove('hidden');
+            return;
         }
+        
+        showScreen('multiplayer');
+        initMultiplayer();
+        // Auto-select co-op mode
+        setTimeout(() => selectMultiplayerMode('coop'), 100);
     });
     
     document.getElementById('timed-mode-btn').addEventListener('click', () => {
@@ -255,6 +259,25 @@ document.addEventListener('DOMContentLoaded', () => {
         
         showScreen('multiplayer');
         initMultiplayer();
+    });
+    
+    // Mode selection handlers
+    document.getElementById('select-pvp-btn').addEventListener('click', () => {
+        selectMultiplayerMode('pvp');
+    });
+    
+    document.getElementById('select-coop-btn').addEventListener('click', () => {
+        selectMultiplayerMode('coop');
+    });
+    
+    document.getElementById('change-mode-btn').addEventListener('click', () => {
+        // Return to mode selection
+        document.getElementById('multiplayer-mode-selection').classList.remove('hidden');
+        document.getElementById('lobby-matchmaking').classList.add('hidden');
+        // Cancel any active matchmaking
+        if (window.multiplayerClient && window.multiplayerClient.isSearching) {
+            window.multiplayerClient.cancelSearch();
+        }
     });
     
     document.getElementById('themes-btn').addEventListener('click', () => {
@@ -591,7 +614,49 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
     
+    function selectMultiplayerMode(mode) {
+        // Hide mode selection, show matchmaking area
+        document.getElementById('multiplayer-mode-selection').classList.add('hidden');
+        document.getElementById('lobby-matchmaking').classList.remove('hidden');
+        
+        // Update UI based on selected mode
+        const titleEl = document.getElementById('selected-mode-title');
+        const searchingTextEl = document.getElementById('searching-text');
+        const findMatchBtn = document.getElementById('find-match-btn');
+        
+        if (mode === 'pvp') {
+            titleEl.textContent = 'PLAYER VS PLAYER';
+            searchingTextEl.textContent = 'Searching for opponent...';
+            findMatchBtn.textContent = 'FIND MATCH';
+            
+            // Set matchmaking mode for WebSocket
+            if (window.multiplayerClient) {
+                window.multiplayerClient.matchmakingMode = 'pvp';
+            }
+        } else if (mode === 'coop') {
+            titleEl.textContent = 'CO-OP MODE';
+            searchingTextEl.textContent = 'Searching for teammate...';
+            findMatchBtn.textContent = 'FIND TEAMMATE';
+            
+            // Initialize co-op mode if not already
+            if (!game.coopMode) {
+                setTimeout(() => {
+                    game.coopMode = new CoopMode(game);
+                }, 50);
+            }
+            
+            // Set matchmaking mode for WebSocket
+            if (window.multiplayerClient) {
+                window.multiplayerClient.matchmakingMode = 'coop';
+            }
+        }
+    }
+    
     function initMultiplayer() {
+        // Show mode selection by default
+        document.getElementById('multiplayer-mode-selection').classList.remove('hidden');
+        document.getElementById('lobby-matchmaking').classList.add('hidden');
+        
         if (!multiplayerClient) {
             multiplayerClient = new MultiplayerClient();
             game.multiplayerClient = multiplayerClient;
