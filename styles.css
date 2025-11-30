@@ -83,8 +83,17 @@ body::before {
         0 0 40px var(--neon-cyan),
         0 0 80px var(--neon-magenta),
         0 0 120px var(--neon-magenta);
-    animation: glow-pulse 2s ease-in-out infinite;
+    animation: title-bounce 2s ease-in-out infinite, glow-pulse 2s ease-in-out infinite;
     margin-bottom: 1rem;
+}
+
+@keyframes title-bounce {
+    0%, 100% { 
+        transform: translateY(0px);
+    }
+    50% { 
+        transform: translateY(-15px);
+    }
 }
 
 .subtitle {
@@ -193,27 +202,27 @@ body::before {
 
 .main-menu-container {
     display: flex;
-    gap: 60px;
+    gap: 40px;
     align-items: flex-start;
     justify-content: center;
     width: 100%;
     max-width: 1400px;
-    margin: 20px auto;
+    margin: 0 auto;
     padding: 0 40px;
 }
 
-.main-menu-left {
+.main-menu-center {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 20px;
+    gap: 30px;
     flex: 0 0 auto;
 }
 
 .main-menu-right {
-    min-width: 400px;
-    flex: 1 1 auto;
-    max-width: 500px;
+    min-width: 350px;
+    flex: 0 0 auto;
+    max-width: 400px;
 }
 
 .menu-buttons {
@@ -312,17 +321,69 @@ body::before {
     padding: 0.75rem 1.5rem;
 }
 
+/* Corner Buttons */
+.corner-buttons {
+    position: absolute;
+    display: flex;
+    gap: 10px;
+    z-index: 100;
+}
+
+.corner-buttons.top-left {
+    top: 20px;
+    left: 20px;
+}
+
+.corner-buttons.top-right {
+    top: 20px;
+    right: 20px;
+}
+
+.icon-button {
+    font-size: 2rem;
+    width: 60px;
+    height: 60px;
+    background: rgba(0, 0, 0, 0.7);
+    border: 2px solid var(--neon-cyan);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+}
+
+.icon-button:hover {
+    background: rgba(0, 255, 255, 0.2);
+    box-shadow: 0 0 25px rgba(0, 255, 255, 0.6);
+    transform: translateY(-3px);
+}
+
+/* User Panel - Move to Bottom */
+.user-panel {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 100;
+}
+
 .user-info {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
-    gap: 10px;
-    padding: 15px 25px;
+    gap: 15px;
+    padding: 12px 25px;
     background: rgba(0, 255, 255, 0.1);
     border: 2px solid var(--neon-cyan);
     border-radius: 10px;
     box-shadow: 0 0 20px rgba(0, 255, 255, 0.4);
-    width: 100%;
+}
+
+.auth-buttons {
+    display: flex;
+    gap: 10px;
 }
 
 .user-name {
@@ -571,6 +632,7 @@ body::before {
     gap: 1rem;
     justify-content: center;
     width: 100%;
+    max-width: 400px;
 }
 
 .audio-toggle-btn {

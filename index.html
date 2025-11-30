@@ -12,47 +12,40 @@
     <div id="game-container">
         <!-- Main Menu -->
         <div id="main-menu" class="menu-screen active">
+            <!-- Top Corner Buttons -->
+            <div class="corner-buttons top-left">
+                <button class="icon-button" id="settings-btn" title="Settings">⚙️</button>
+            </div>
+            <div class="corner-buttons top-right">
+                <button class="icon-button" id="themes-btn" title="Themes">🎨</button>
+                <button class="icon-button" id="achievements-btn" title="Achievements">🏆</button>
+            </div>
+            
             <div class="neon-title">
                 <h1>NEON TYPING FIGHTER</h1>
                 <div class="subtitle">CYBERPUNK TYPING DUEL</div>
             </div>
             
             <div class="main-menu-container">
-                <div class="main-menu-left">
+                <!-- Center: Game Modes -->
+                <div class="main-menu-center">
                     <div class="menu-buttons">
                         <button class="neon-button" id="solo-mode-btn">SOLO MODE</button>
                         <button class="neon-button" id="coop-mode-btn">CO-OP MODE</button>
                         <button class="neon-button" id="timed-mode-btn">TIMED MODE</button>
                         <button class="neon-button" id="endless-mode-btn">ENDLESS MODE</button>
                         <button class="neon-button" id="multiplayer-mode-btn">MULTIPLAYER</button>
-                        <button class="neon-button" id="achievements-btn">ACHIEVEMENTS</button>
-                        <button class="neon-button" id="themes-btn">THEMES</button>
-                        <button class="neon-button" id="settings-btn">SETTINGS</button>
                     </div>
                     
+                    <!-- Audio Controls Below Game Modes -->
                     <div class="audio-controls">
                         <button class="audio-toggle-btn" id="sound-toggle" title="Toggle Sound Effects">🔊 SFX</button>
                         <button class="audio-toggle-btn" id="music-toggle" title="Toggle Background Music">🎵 MUSIC</button>
                     </div>
-                    
-                    <div class="user-panel" id="user-panel">
-                        <div class="user-info hidden" id="user-info">
-                            <span class="user-name" id="user-name-display"></span>
-                            <span class="verification-status hidden" id="verification-status">
-                                <span class="unverified-badge" id="unverified-badge">⚠️ Email Not Verified</span>
-                                <button class="resend-verification-btn" id="resend-verification-btn">Resend Email</button>
-                            </span>
-                            <button class="logout-btn" id="logout-btn">LOGOUT</button>
-                        </div>
-                        <div class="auth-buttons" id="auth-buttons">
-                            <button class="neon-button small" id="login-btn">LOGIN</button>
-                            <button class="neon-button small secondary" id="register-btn">REGISTER</button>
-                        </div>
-                    </div>
                 </div>
                 
+                <!-- Right: Leaderboard -->
                 <div class="main-menu-right">
-                    <!-- Main Menu Leaderboard -->
                     <div class="main-menu-leaderboard" id="main-menu-leaderboard">
                         <div class="leaderboard-header">
                             <h3 class="neon-text">🏆 TOP 10 🏆</h3>
@@ -66,6 +59,22 @@
                             <div class="loading-message">Loading...</div>
                         </div>
                     </div>
+                </div>
+            </div>
+            
+            <!-- Bottom: User Panel -->
+            <div class="user-panel" id="user-panel">
+                <div class="user-info hidden" id="user-info">
+                    <span class="user-name" id="user-name-display"></span>
+                    <span class="verification-status hidden" id="verification-status">
+                        <span class="unverified-badge" id="unverified-badge">⚠️ Email Not Verified</span>
+                        <button class="resend-verification-btn" id="resend-verification-btn">Resend Email</button>
+                    </span>
+                    <button class="logout-btn" id="logout-btn">LOGOUT</button>
+                </div>
+                <div class="auth-buttons" id="auth-buttons">
+                    <button class="neon-button small" id="login-btn">LOGIN</button>
+                    <button class="neon-button small secondary" id="register-btn">REGISTER</button>
                 </div>
             </div>
         </div>
