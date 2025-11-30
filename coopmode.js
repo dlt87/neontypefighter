@@ -282,15 +282,17 @@ class CoopMode {
             count--;
             if (count > 0) {
                 this.countdownNumber.textContent = count;
-                this.game.soundManager.playTypingSound();
+                this.game.soundManager.play('typing');
             } else {
                 clearInterval(countdownInterval);
                 this.countdownNumber.textContent = 'FIGHT!';
-                this.game.soundManager.playCriticalSound();
+                this.game.soundManager.play('critical');
                 
                 setTimeout(() => {
                     this.countdownOverlay.classList.add('hidden');
                     this.startGame();
+                    // Notify server that we're ready to start
+                    this.send({ type: 'coopGameReady' });
                 }, 1000);
             }
         }, 1000);
@@ -400,7 +402,7 @@ class CoopMode {
                 }
                 
                 myFeedback.textContent = '❌';
-                this.game.soundManager.playErrorSound();
+                this.game.soundManager.play('error');
             }
         } else {
             myInputElement.classList.remove('correct', 'error');
@@ -429,11 +431,11 @@ class CoopMode {
         if (this.myCritical) {
             myFeedback.textContent = `🔥 CRITICAL! -${damage}`;
             myFeedback.classList.add('critical');
-            this.game.soundManager.playCriticalSound();
+            this.game.soundManager.play('critical');
         } else {
             myFeedback.textContent = `✓ -${damage}`;
             myFeedback.classList.remove('critical');
-            this.game.soundManager.playSuccessSound();
+            this.game.soundManager.play('hit');
         }
         
         // Particles
@@ -555,10 +557,11 @@ class CoopMode {
         if (victory) {
             this.elements.gameOverTitle.textContent = '🏆 VICTORY!';
             this.elements.gameOverTitle.style.color = 'var(--neon-green)';
-            this.game.soundManager.playVictorySound();
+            this.game.soundManager.play('victory');
         } else {
             this.elements.gameOverTitle.textContent = '💀 DEFEATED!';
             this.elements.gameOverTitle.style.color = 'var(--neon-red)';
+            this.game.soundManager.play('defeat');
         }
         
         // Show stats

@@ -932,31 +932,7 @@ document.addEventListener('DOMContentLoaded', () => {
         loadMainMenuLeaderboard();
     });
     
-    // Co-op mode handlers
-    document.getElementById('coop-start-btn').addEventListener('click', () => {
-        console.log('🎮 Starting co-op matchmaking...');
-        if (!game.coopMode) {
-            console.log('Creating new CoopMode instance...');
-            game.coopMode = new CoopMode(game);
-        }
-        if (game.coopMode) {
-            const playerName = authClient?.currentUser?.username || 'Player';
-            game.coopMode.findMatch(playerName);
-        } else {
-            console.error('❌ Failed to create CoopMode instance');
-        }
-    });
-    
-    document.getElementById('coop-back-btn').addEventListener('click', () => {
-        if (game.coopMode && game.coopMode.isActive) {
-            if (confirm('Are you sure you want to quit the co-op battle?')) {
-                game.coopMode.stop();
-                showScreen('menu');
-            }
-        } else {
-            showScreen('menu');
-        }
-    });
+    // Co-op mode handlers are now in CoopMode class (setupUI method)
     
     // Add keyboard shortcut to return to menu (ESC key)
     document.addEventListener('keydown', (e) => {

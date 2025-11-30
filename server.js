@@ -273,6 +273,10 @@ async function handleMessage(ws, data) {
         case 'coopAction':
             relayCoopAction(ws, data);
             break;
+        
+        case 'coopGameReady':
+            handleCoopGameReady(ws);
+            break;
             
         case 'coopTyping':
             relayCoopTyping(ws, data);
@@ -517,7 +521,10 @@ function findCoopMatch(ws, playerName) {
             player1: ws,
             player2: teammate,
             bossHealth: 300,
-            teamHealth: 200
+            teamHealth: 200,
+            player1Ready: false,
+            player2Ready: false,
+            gameStarted: false
         };
         
         activeCoopMatches.set(matchId, match);
@@ -545,8 +552,7 @@ function findCoopMatch(ws, playerName) {
         
         console.log(`Co-op match created: ${ws.playerName} + ${teammate.playerName} vs Boss`);
         
-        // Start boss attack timer
-        startBossAttackTimer(matchId);
+        // Don't start boss attacks yet - wait for both players to be ready after countdown
         
         broadcastLobbyStats();
     } else {
@@ -569,6 +575,30 @@ function cancelCoopMatch(ws) {
         waitingCoopPlayers.splice(waitingIndex, 1);
         console.log(`${ws.playerName} cancelled co-op matchmaking`);
         broadcastLobbyStats();
+    }
+}
+
+function handleCoopGameReady(ws) {
+    const matchId = ws.coopMatchId;
+    if (!matchId) return;
+    
+    const match = activeCoopMatches.get(matchId);
+    if (!match || match.gameStarted) return;
+    
+    // Mark player as ready
+    if (match.player1 === ws) {
+        match.player1Ready = true;
+    } else if (match.player2 === ws) {
+        match.player2Ready = true;
+    }
+    
+    console.log(`Co-op player ready in match ${matchId}. P1: ${match.player1Ready}, P2: ${match.player2Ready}`);
+    
+    // Start boss attacks when both players are ready
+    if (match.player1Ready && match.player2Ready && !match.gameStarted) {
+        match.gameStarted = true;
+        startBossAttackTimer(matchId);
+        console.log(`✅ Co-op game started for match ${matchId} - boss attacks enabled`);
     }
 }
 
