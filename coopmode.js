@@ -281,6 +281,7 @@ class CoopMode {
         this.teammateName = data.teammateName;
         this.bossHealth = data.bossHealth || this.maxBossHealth;
         this.teamHealth = data.teamHealth || this.maxTeamHealth;
+        this.startWord = data.startWord; // Store initial word from server
         
         // Show countdown
         this.showCountdown();
@@ -342,7 +343,7 @@ class CoopMode {
         // Initialize turn-based system - Player 1 always starts
         this.currentTurn = 1;
         this.isMyTurn = (this.playerNumber === 1);
-        this.currentWord = this.game.wordManager.getRandomWord();
+        this.currentWord = this.startWord; // Use word from server
         this.myCritical = true;
         
         // Update health bars to 100%

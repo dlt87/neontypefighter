@@ -524,6 +524,7 @@ function findCoopMatch(ws, playerName) {
         
         // Create co-op match
         const matchId = generateId();
+        const startWord = generateRandomWord(); // Generate initial word on server
         const match = {
             id: matchId,
             player1: ws,
@@ -532,7 +533,8 @@ function findCoopMatch(ws, playerName) {
             teamHealth: 200,
             player1Ready: false,
             player2Ready: false,
-            gameStarted: false
+            gameStarted: false,
+            currentWord: startWord
         };
         
         activeCoopMatches.set(matchId, match);
@@ -546,7 +548,8 @@ function findCoopMatch(ws, playerName) {
             teammateName: teammate.playerName,
             playerNumber: 1,
             bossHealth: match.bossHealth,
-            teamHealth: match.teamHealth
+            teamHealth: match.teamHealth,
+            startWord: startWord
         }));
         
         teammate.send(JSON.stringify({
@@ -555,7 +558,8 @@ function findCoopMatch(ws, playerName) {
             teammateName: ws.playerName,
             playerNumber: 2,
             bossHealth: match.bossHealth,
-            teamHealth: match.teamHealth
+            teamHealth: match.teamHealth,
+            startWord: startWord
         }));
         
         console.log(`Co-op match created: ${ws.playerName} + ${teammate.playerName} vs Boss`);
@@ -915,6 +919,19 @@ function cleanupMatch(ws) {
 
 function generateId() {
     return Math.random().toString(36).substring(2, 15);
+}
+
+// Word pool for co-op mode
+const WORD_POOL = [
+    'cyber', 'neon', 'matrix', 'chrome', 'digital', 'virtual', 'glitch',
+    'pixel', 'algorithm', 'quantum', 'photon', 'electron', 'circuit', 'neural',
+    'override', 'protocol', 'interface', 'terminal', 'firewall', 'encrypted',
+    'daemon', 'mainframe', 'bandwidth', 'hacker', 'kernel', 'runtime',
+    'cascade', 'amplifier', 'synthwave', 'voltage', 'wavelength', 'frequency', 'zap'
+];
+
+function generateRandomWord() {
+    return WORD_POOL[Math.floor(Math.random() * WORD_POOL.length)];
 }
 
 // ========================================
