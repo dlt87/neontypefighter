@@ -118,8 +118,8 @@ class EndlessMode {
     startWave() {
         // Calculate wave difficulty (more gradual progression)
         this.difficultyMultiplier = 1 + (this.currentWave - 1) * 0.05;
-        this.wordsRequired = Math.floor(this.wordsPerWave + (this.currentWave - 1) * 0.8);
-        this.timePerWave = Math.max(25, 35 - Math.floor((this.currentWave - 1) * 0.3));
+        this.wordsRequired = Math.floor(this.wordsPerWave + (this.currentWave - 1) * 0.3);
+        this.timePerWave = Math.max(25, 30 - Math.floor((this.currentWave - 1) * 0.3));
         this.timeRemaining = this.timePerWave;
         this.wordsCompleted = 0;
         
@@ -150,33 +150,42 @@ class EndlessMode {
     getNewWord() {
         // Get word based on difficulty
         const wordPool = this.getWordPoolForDifficulty();
-        let newWord;
-        let attempts = 0;
-        const maxAttempts = 50;
         
-        // Keep trying until we get a word not in recent history
-        do {
-            newWord = wordPool[Math.floor(Math.random() * wordPool.length)];
-            attempts++;
-        } while (this.wordHistory.includes(newWord) && attempts < maxAttempts);
+        // If we have a next word queued, use it
+        if (this.nextWord) {
+            this.currentWord = this.nextWord;
+        } else {
+            // First time, generate a word
+            let newWord;
+            let attempts = 0;
+            const maxAttempts = 50;
+            
+            do {
+                newWord = wordPool[Math.floor(Math.random() * wordPool.length)];
+                attempts++;
+            } while (this.wordHistory.includes(newWord) && attempts < maxAttempts);
+            
+            this.currentWord = newWord;
+        }
         
-        this.currentWord = newWord;
         this.currentInput = '';
         this.isCritical = true;
         
-        // Add to history and keep only last 3 words
-        this.wordHistory.push(newWord);
+        // Add current word to history and keep only last 3 words
+        this.wordHistory.push(this.currentWord);
         if (this.wordHistory.length > 3) {
             this.wordHistory.shift();
         }
         
-        // Generate next word preview
+        // Generate the NEXT word preview (what will come after this one)
         let nextWordCandidate;
-        attempts = 0;
+        let attempts = 0;
+        const maxAttempts = 50;
+        
         do {
             nextWordCandidate = wordPool[Math.floor(Math.random() * wordPool.length)];
             attempts++;
-        } while (this.wordHistory.includes(nextWordCandidate) && nextWordCandidate === newWord && attempts < maxAttempts);
+        } while ((this.wordHistory.includes(nextWordCandidate) || nextWordCandidate === this.currentWord) && attempts < maxAttempts);
         
         this.nextWord = nextWordCandidate;
         
