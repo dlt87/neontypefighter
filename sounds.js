@@ -251,12 +251,45 @@ class SoundManager {
         if (this.customMusic) {
             this.customMusic.pause();
             this.customMusic.currentTime = 0;
+            // Remove old event listeners
+            this.customMusic.onended = null;
+            this.customMusic.onerror = null;
         }
         
         // Load new track
         this.customMusic = new Audio(`music/${trackName}.wav`);
         this.customMusic.volume = this.musicVolume;
         this.customMusic.loop = true;
+        this.customMusic.preload = 'auto';
+        
+        // Add event listeners to handle playback issues
+        this.customMusic.onended = () => {
+            // Restart if it ends unexpectedly (even though loop is true)
+            if (this.musicEnabled) {
+                console.log('🎵 Music ended unexpectedly, restarting...');
+                this.customMusic.currentTime = 0;
+                this.customMusic.play().catch(err => console.log('Restart failed:', err));
+            }
+        };
+        
+        this.customMusic.onerror = (e) => {
+            console.error('🎵 Music loading error:', e);
+            // Try to continue playing despite error
+            if (this.musicEnabled) {
+                setTimeout(() => {
+                    this.customMusic.play().catch(err => console.log('Retry failed:', err));
+                }, 1000);
+            }
+        };
+        
+        // Add stalled event handler
+        this.customMusic.onstalled = () => {
+            console.log('🎵 Music stalled, attempting to resume...');
+            this.customMusic.load();
+            if (this.musicEnabled && wasPlaying) {
+                this.customMusic.play().catch(err => console.log('Resume failed:', err));
+            }
+        };
         
         // Resume playing if music was playing before
         if (wasPlaying && this.musicEnabled) {
@@ -277,6 +310,18 @@ class SoundManager {
             }
             this.customMusic.volume = this.musicVolume;
             this.customMusic.loop = true;
+            
+            // Ensure event listeners are attached
+            if (!this.customMusic.onended) {
+                this.customMusic.onended = () => {
+                    if (this.musicEnabled) {
+                        console.log('🎵 Music ended unexpectedly, restarting...');
+                        this.customMusic.currentTime = 0;
+                        this.customMusic.play().catch(err => console.log('Restart failed:', err));
+                    }
+                };
+            }
+            
             this.customMusic.play().catch(err => console.log('Music autoplay blocked:', err));
             return;
         }

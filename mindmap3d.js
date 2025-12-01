@@ -20,8 +20,6 @@ class TechMindMap3D {
         this.nodeMeshes = [];
         this.connections = [];
         this.lineMeshes = [];
-        this.depthLines = []; // Vertical lines to ground plane
-        this.groundPlane = null; // Ground reference plane
         
         // Interaction state
         this.selectedNode = null;
@@ -56,26 +54,7 @@ class TechMindMap3D {
         // Scene
         this.scene = new THREE.Scene();
         this.scene.background = new THREE.Color(0x0a0a1a);
-        // Reduced fog for better visibility
-        this.scene.fog = new THREE.Fog(0x0a0a1a, 800, 2000);
-        
-        // Add a ground plane for shadow/depth reference
-        const groundSize = 1000;
-        const groundGeometry = new THREE.PlaneGeometry(groundSize, groundSize, 20, 20);
-        const groundMaterial = new THREE.MeshBasicMaterial({
-            color: 0x1a1a2e,
-            transparent: true,
-            opacity: 0.3,
-            wireframe: true,
-            side: THREE.DoubleSide
-        });
-        this.groundPlane = new THREE.Mesh(groundGeometry, groundMaterial);
-        this.groundPlane.rotation.x = -Math.PI / 2;
-        this.groundPlane.position.y = -400;
-        this.scene.add(this.groundPlane);
-        
-        // Add vertical reference lines from nodes to ground
-        this.depthLines = [];
+        this.scene.fog = new THREE.Fog(0x0a0a1a, 500, 2000);
         
         // Camera
         const aspect = this.container.clientWidth / this.container.clientHeight;
@@ -189,22 +168,6 @@ class TechMindMap3D {
             });
             const glowMesh = new THREE.Mesh(glowGeometry, glowMaterial);
             mesh.add(glowMesh);
-            
-            // Create depth indicator line to ground plane
-            const lineGeometry = new THREE.BufferGeometry();
-            const lineVertices = new Float32Array([
-                node.x, node.y, node.z,
-                node.x, -400, node.z
-            ]);
-            lineGeometry.setAttribute('position', new THREE.BufferAttribute(lineVertices, 3));
-            const lineMaterial = new THREE.LineBasicMaterial({
-                color: color,
-                transparent: true,
-                opacity: 0.15
-            });
-            const depthLine = new THREE.Line(lineGeometry, lineMaterial);
-            this.scene.add(depthLine);
-            this.depthLines.push(depthLine);
         });
     }
     
@@ -296,28 +259,8 @@ class TechMindMap3D {
             node.z = pos.z;
         });
         
-        // Update depth indicator lines after rotation
-        this.updateDepthLines();
-        
         // Update connections
         this.updateConnections();
-    }
-    
-    updateDepthLines() {
-        // Update the vertical lines from nodes to ground plane
-        this.depthLines.forEach((line, index) => {
-            const node = this.nodes[index];
-            const positions = line.geometry.attributes.position.array;
-            
-            positions[0] = node.x;
-            positions[1] = node.y;
-            positions[2] = node.z;
-            positions[3] = node.x;
-            positions[4] = -400;
-            positions[5] = node.z;
-            
-            line.geometry.attributes.position.needsUpdate = true;
-        });
     }
     
     updateConnections() {

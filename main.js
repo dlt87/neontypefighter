@@ -37,63 +37,15 @@ document.addEventListener('DOMContentLoaded', () => {
     // Auto-play music on page load
     game.soundManager.startBackgroundMusic();
     
-    // Leaderboard autoscroll when idle on main menu
-    let leaderboardAutoScrollInterval = null;
-    const startLeaderboardAutoScroll = () => {
-        if (leaderboardAutoScrollInterval) return; // Already running
-        
-        leaderboardAutoScrollInterval = setInterval(() => {
-            // Only autoscroll if on main menu
-            const mainMenuVisible = !document.getElementById('main-menu').classList.contains('hidden');
-            if (!mainMenuVisible) {
-                stopLeaderboardAutoScroll();
-                return;
-            }
-            
-            const tabs = ['timed', 'elo', 'endless'];
-            const currentTab = document.querySelector('.leaderboard-tab.active');
-            const currentTabType = currentTab ? currentTab.getAttribute('data-tab') : 'timed';
-            const currentIndex = tabs.indexOf(currentTabType);
-            const nextIndex = (currentIndex + 1) % tabs.length;
-            const nextTab = tabs[nextIndex];
-            
-            // Switch to next tab
-            document.querySelectorAll('.leaderboard-tab').forEach(t => t.classList.remove('active'));
-            const nextTabElement = document.querySelector(`.leaderboard-tab[data-tab="${nextTab}"]`);
-            if (nextTabElement) {
-                nextTabElement.classList.add('active');
-                loadMainMenuLeaderboard();
-            }
-        }, 8000); // Switch every 8 seconds
-    };
-    
-    const stopLeaderboardAutoScroll = () => {
-        if (leaderboardAutoScrollInterval) {
-            clearInterval(leaderboardAutoScrollInterval);
-            leaderboardAutoScrollInterval = null;
-        }
-    };
-    
-    // Start autoscroll when on main menu
-    startLeaderboardAutoScroll();
-    
     // Leaderboard tab switching
     document.querySelectorAll('.leaderboard-tab').forEach(tab => {
         tab.addEventListener('click', () => {
-            // Stop autoscroll when user manually clicks
-            stopLeaderboardAutoScroll();
-            
             // Update active tab
             document.querySelectorAll('.leaderboard-tab').forEach(t => t.classList.remove('active'));
             tab.classList.add('active');
             
             // Reload leaderboard
             loadMainMenuLeaderboard();
-            
-            // Restart autoscroll after 15 seconds of inactivity
-            setTimeout(() => {
-                startLeaderboardAutoScroll();
-            }, 15000);
         });
     });
     
