@@ -175,11 +175,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
     
-    // Timed mode start screen back button
-    document.getElementById('timed-start-back-btn').addEventListener('click', () => {
-        showScreen('menu');
-    });
-    
     // Home button handlers
     document.getElementById('game-home-btn').addEventListener('click', () => {
         if (confirm('Are you sure you want to quit and return to the menu?')) {
