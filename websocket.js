@@ -138,17 +138,11 @@ class MultiplayerClient {
                 break;
                 
             case 'coopMatchFound':
+                // Co-op matches are handled by CoopMode directly
+                // Don't route through main multiplayer client callback
+                console.log('Co-op match found - handled by CoopMode');
                 this.inMatch = true;
                 this.inQueue = false;
-                this.opponentName = data.teammateName;
-                // Treat coop match found same as regular match found
-                if (this.callbacks.onMatchFound) {
-                    // Convert teammateName to opponentName for consistency
-                    this.callbacks.onMatchFound({
-                        ...data,
-                        opponentName: data.teammateName
-                    });
-                }
                 break;
                 
             case 'opponentAction':

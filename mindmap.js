@@ -66,7 +66,7 @@ class TechMindMap {
                 y: centerY + Math.sin(angle) * distance,
                 vx: 0,
                 vy: 0,
-                radius: 8,
+                radius: 12,
                 data: this.glossary[word]
             });
         });
@@ -173,7 +173,7 @@ class TechMindMap {
             const dy = y - node.y;
             const distance = Math.sqrt(dx * dx + dy * dy);
             
-            if (distance < node.radius + 15) {
+            if (distance < node.radius + 20) {
                 return node;
             }
         }
@@ -338,16 +338,16 @@ class TechMindMap {
             this.ctx.stroke();
             
             // Label (only for selected, hovered, or zoomed in)
-            if (isSelected || isHovered || this.camera.zoom > 1.5) {
+            if (isSelected || isHovered || this.camera.zoom > 0.8) {
                 this.ctx.fillStyle = color;
-                this.ctx.font = `${12 + (isSelected ? 2 : 0)}px Orbitron, monospace`;
+                this.ctx.font = `${16 + (isSelected ? 3 : 0)}px Orbitron, monospace`;
                 this.ctx.textAlign = 'center';
                 this.ctx.textBaseline = 'middle';
                 
                 // Text shadow
                 this.ctx.shadowColor = color;
                 this.ctx.shadowBlur = isSelected ? 15 : 10;
-                this.ctx.fillText(node.word, node.x, node.y + node.radius + 15);
+                this.ctx.fillText(node.word, node.x, node.y + node.radius + 20);
                 this.ctx.shadowBlur = 0;
             }
         });
