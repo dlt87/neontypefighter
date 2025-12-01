@@ -56,6 +56,19 @@ class TechMindMap3D {
         this.scene.background = new THREE.Color(0x0a0a1a);
         this.scene.fog = new THREE.Fog(0x0a0a1a, 500, 2000);
         
+        // Add grid helper for depth perception
+        const gridHelper = new THREE.GridHelper(1000, 20, 0x00ffff, 0xff00ff);
+        gridHelper.material.opacity = 0.2;
+        gridHelper.material.transparent = true;
+        this.scene.add(gridHelper);
+        
+        // Add vertical grid plane
+        const gridHelperVertical = new THREE.GridHelper(1000, 20, 0x00ffff, 0xff00ff);
+        gridHelperVertical.rotation.x = Math.PI / 2;
+        gridHelperVertical.material.opacity = 0.15;
+        gridHelperVertical.material.transparent = true;
+        this.scene.add(gridHelperVertical);
+        
         // Camera
         const aspect = this.container.clientWidth / this.container.clientHeight;
         this.camera = new THREE.PerspectiveCamera(75, aspect, 0.1, 3000);
@@ -213,7 +226,8 @@ class TechMindMap3D {
                 const deltaX = e.clientX - previousMousePosition.x;
                 const deltaY = e.clientY - previousMousePosition.y;
                 
-                this.rotateScene(deltaX * 0.005, deltaY * 0.005);
+                // Reverse direction by negating
+                this.rotateScene(-deltaX * 0.005, -deltaY * 0.005);
             }
             
             previousMousePosition = {
@@ -462,9 +476,10 @@ class TechMindMap3D {
             cancelAnimationFrame(this.animationId);
             this.animationId = null;
         }
-        if (this.renderer) {
+        if (this.renderer && this.renderer.domElement && this.renderer.domElement.parentNode === this.container) {
             this.renderer.dispose();
             this.container.removeChild(this.renderer.domElement);
+            this.renderer = null;
         }
     }
     

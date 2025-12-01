@@ -1386,6 +1386,9 @@ document.addEventListener('DOMContentLoaded', () => {
             
             if (!window.techMindMap3D) {
                 window.techMindMap3D = new TechMindMap3D('mindmap-3d-container', TECH_GLOSSARY, CATEGORY_COLORS);
+            } else {
+                // Restart if already exists
+                window.techMindMap3D.start();
             }
             
             e.target.textContent = 'Switch to 2D';
