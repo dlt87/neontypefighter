@@ -353,7 +353,8 @@ async function authenticateWebSocket(ws, token) {
 function findMatch(ws, playerName) {
     // Use authenticated username if available, otherwise use provided name
     ws.playerName = ws.username || playerName;
-    console.log(`🎮 Finding match for ${ws.playerName} (ws.username: ${ws.username}, provided: ${playerName})`);
+    ws.matchmakingMode = 'pvp'; // Mark as PvP matchmaking
+    console.log(`🎮 Finding PvP match for ${ws.playerName} (ws.username: ${ws.username}, provided: ${playerName})`);
     
     // Remove from queue first if already in it (prevents duplicates)
     const existingIndex = waitingPlayers.indexOf(ws);
@@ -361,7 +362,7 @@ function findMatch(ws, playerName) {
         waitingPlayers.splice(existingIndex, 1);
     }
     
-    // Check if there's a waiting player that isn't this player
+    // Check if there's a waiting player in PvP mode that isn't this player
     if (waitingPlayers.length > 0) {
         const opponent = waitingPlayers.shift();
         
@@ -509,6 +510,7 @@ function handleGameOver(ws, data) {
 // Co-op matchmaking functions
 function findCoopMatch(ws, playerName) {
     ws.playerName = ws.username || playerName;
+    ws.matchmakingMode = 'coop'; // Mark as Co-op matchmaking
     console.log(`🤝 Finding co-op match for ${ws.playerName}`);
     
     // Remove from queue first if already in it
@@ -517,7 +519,7 @@ function findCoopMatch(ws, playerName) {
         waitingCoopPlayers.splice(existingIndex, 1);
     }
     
-    // Check if there's a waiting player
+    // Check if there's a waiting player in Co-op mode
     if (waitingCoopPlayers.length > 0) {
         const teammate = waitingCoopPlayers.shift();
         

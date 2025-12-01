@@ -1338,8 +1338,9 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             if (response.ok) {
                 const data = await response.json();
-                const currentElo = data.rating || 1000;
-                const bestElo = data.peak_rating || currentElo;
+                console.log('📊 ELO Stats received:', data);
+                const currentElo = data.eloRating || data.elo || data.rating || 1000;
+                const bestElo = data.peak_rating || data.peakRating || currentElo;
                 document.getElementById('profile-elo').textContent = `Current ELO: ${currentElo}`;
                 document.getElementById('pvp-highscore').textContent = bestElo;
             } else {

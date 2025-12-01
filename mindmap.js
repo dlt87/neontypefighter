@@ -73,18 +73,64 @@ class TechMindMap {
     }
     
     generateConnections() {
+        this.connections = [];
+        
+        // Create connections based on related words
         this.nodes.forEach(node => {
             const related = node.data.related || [];
             related.forEach(relatedWord => {
                 const targetNode = this.nodes.find(n => n.word === relatedWord);
                 if (targetNode) {
-                    this.connections.push({
-                        from: node,
-                        to: targetNode
-                    });
+                    // Check if connection already exists
+                    const exists = this.connections.some(
+                        conn => (conn.from === node && conn.to === targetNode) ||
+                                (conn.from === targetNode && conn.to === node)
+                    );
+                    
+                    if (!exists) {
+                        this.connections.push({
+                            from: node,
+                            to: targetNode
+                        });
+                    }
                 }
             });
         });
+        
+        // Ensure all nodes have at least 2 connections to prevent isolation
+        this.nodes.forEach(node => {
+            const nodeConnections = this.connections.filter(
+                conn => conn.from === node || conn.to === node
+            );
+            
+            // If node has fewer than 2 connections, connect to nearest nodes
+            if (nodeConnections.length < 2) {
+                const needed = 2 - nodeConnections.length;
+                const sortedByDistance = this.nodes
+                    .filter(other => other !== node)
+                    .map(other => ({
+                        node: other,
+                        distance: Math.hypot(other.x - node.x, other.y - node.y)
+                    }))
+                    .sort((a, b) => a.distance - b.distance);
+                
+                for (let i = 0; i < needed && i < sortedByDistance.length; i++) {
+                    const nearest = sortedByDistance[i].node;
+                    const exists = this.connections.some(
+                        conn => (conn.from === node && conn.to === nearest) ||
+                                (conn.from === nearest && conn.to === node)
+                    );
+                    if (!exists) {
+                        this.connections.push({
+                            from: node,
+                            to: nearest
+                        });
+                    }
+                }
+            }
+        });
+        
+        console.log(`Generated ${this.connections.length} connections`);
     }
     
     setupEventListeners() {
@@ -151,8 +197,28 @@ class TechMindMap {
     
     handleWheel(e) {
         e.preventDefault();
+        const rect = this.canvas.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+        
+        // Get world position before zoom
+        const worldXBefore = (mouseX - this.camera.x) / this.camera.zoom;
+        const worldYBefore = (mouseY - this.camera.y) / this.camera.zoom;
+        
+        // Apply zoom
         const zoomFactor = e.deltaY > 0 ? 0.9 : 1.1;
-        this.targetZoom = Math.max(0.3, Math.min(3, this.camera.zoom * zoomFactor));
+        const newZoom = Math.max(0.3, Math.min(3, this.camera.zoom * zoomFactor));
+        
+        // Get world position after zoom
+        const worldXAfter = (mouseX - this.camera.x) / newZoom;
+        const worldYAfter = (mouseY - this.camera.y) / newZoom;
+        
+        // Adjust camera to keep cursor position fixed
+        this.camera.x += (worldXAfter - worldXBefore) * newZoom;
+        this.camera.y += (worldYAfter - worldYBefore) * newZoom;
+        
+        this.targetZoom = newZoom;
+        this.camera.zoom = newZoom;
     }
     
     handleClick(e) {
