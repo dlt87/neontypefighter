@@ -34,6 +34,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // Load main menu leaderboard
     loadMainMenuLeaderboard();
     
+    // Auto-play music on page load
+    game.soundManager.startBackgroundMusic();
+    
     // Leaderboard autoscroll when idle on main menu
     let leaderboardAutoScrollInterval = null;
     const startLeaderboardAutoScroll = () => {
@@ -468,6 +471,7 @@ document.addEventListener('DOMContentLoaded', () => {
         };
         const currentTrack = game.soundManager.currentTrack;
         document.getElementById('now-playing-title').textContent = trackNames[currentTrack] || 'Unknown Track';
+        document.getElementById('now-playing-artist').textContent = 'by David';
     }
     
     document.getElementById('return-menu-btn').addEventListener('click', () => {

@@ -897,6 +897,15 @@ body::before {
     text-shadow: 0 0 10px var(--primary-color);
 }
 
+.now-playing-artist {
+    font-size: 0.85rem;
+    color: var(--text-color);
+    opacity: 0.7;
+    font-family: 'Orbitron', monospace;
+    font-style: italic;
+    margin-top: 2px;
+}
+
 .now-playing-controls {
     display: flex;
     gap: 0.5rem;

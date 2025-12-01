@@ -158,8 +158,10 @@ class Game {
         // Play round start sound
         this.soundManager.play('roundStart');
         
-        // Start background music
-        this.soundManager.startBackgroundMusic();
+        // Only start background music if it's not paused by user
+        if (this.soundManager.musicEnabled && (!this.soundManager.customMusic || this.soundManager.customMusic.paused === false || this.soundManager.customMusic.currentTime === 0)) {
+            this.soundManager.startBackgroundMusic();
+        }
     }
     
     displayNextWord() {
