@@ -20,7 +20,8 @@ class SoundManager {
         
         // Custom background music (HTML5 Audio)
         this.customMusic = null;
-        this.useCustomMusic = false;
+        this.useCustomMusic = true; // Default to custom music
+        this.currentTrack = 'NEON1'; // Default track
         
         this.init();
     }
@@ -241,12 +242,39 @@ class SoundManager {
         oscillator.stop(ctx.currentTime + 0.1);
     }
     
+    // Load a specific music track
+    loadMusicTrack(trackName) {
+        this.currentTrack = trackName;
+        const wasPlaying = this.customMusic && !this.customMusic.paused;
+        
+        // Stop current music
+        if (this.customMusic) {
+            this.customMusic.pause();
+            this.customMusic.currentTime = 0;
+        }
+        
+        // Load new track
+        this.customMusic = new Audio(`music/${trackName}.wav`);
+        this.customMusic.volume = this.musicVolume;
+        this.customMusic.loop = true;
+        
+        // Resume playing if music was playing before
+        if (wasPlaying && this.musicEnabled) {
+            this.customMusic.play().catch(err => console.log('Music autoplay blocked:', err));
+        }
+        
+        console.log(`🎵 Loaded music track: ${trackName}`);
+    }
+    
     // Background synthwave music loop
     startBackgroundMusic() {
         if (!this.musicEnabled) return;
         
         // Use custom music if available
-        if (this.useCustomMusic && this.customMusic) {
+        if (this.useCustomMusic) {
+            if (!this.customMusic) {
+                this.loadMusicTrack(this.currentTrack);
+            }
             this.customMusic.volume = this.musicVolume;
             this.customMusic.loop = true;
             this.customMusic.play().catch(err => console.log('Music autoplay blocked:', err));
