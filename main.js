@@ -361,7 +361,63 @@ document.addEventListener('DOMContentLoaded', () => {
         const enabled = game.soundManager.toggleMusic();
         e.target.classList.toggle('disabled', !enabled);
         e.target.textContent = enabled ? '🎵 MUSIC' : '🎵 MUSIC';
+        
+        // Update pause button state
+        if (enabled && game.soundManager.customMusic && !game.soundManager.customMusic.paused) {
+            document.getElementById('music-pause-btn').textContent = '⏸️';
+        } else {
+            document.getElementById('music-pause-btn').textContent = '▶️';
+        }
     });
+    
+    // Now Playing Widget Controls
+    document.getElementById('music-pause-btn').addEventListener('click', () => {
+        if (game.soundManager.customMusic) {
+            if (game.soundManager.customMusic.paused) {
+                game.soundManager.customMusic.play();
+                document.getElementById('music-pause-btn').textContent = '⏸️';
+            } else {
+                game.soundManager.customMusic.pause();
+                document.getElementById('music-pause-btn').textContent = '▶️';
+            }
+        }
+    });
+    
+    document.getElementById('music-next-btn').addEventListener('click', () => {
+        const tracks = ['NEON1', 'NEON2', 'NEON3'];
+        const trackNames = {
+            'NEON1': 'Neon Dreams',
+            'NEON2': 'Cyber Nights',
+            'NEON3': 'Digital Horizon'
+        };
+        const currentIndex = tracks.indexOf(game.soundManager.currentTrack);
+        const nextIndex = (currentIndex + 1) % tracks.length;
+        const nextTrack = tracks[nextIndex];
+        
+        game.soundManager.loadMusicTrack(nextTrack);
+        if (game.soundManager.musicEnabled) {
+            game.soundManager.customMusic.play();
+        }
+        
+        // Update now playing display
+        document.getElementById('now-playing-title').textContent = trackNames[nextTrack];
+        document.getElementById('music-pause-btn').textContent = '⏸️';
+        
+        // Update settings dropdown
+        document.getElementById('music-track').value = nextTrack;
+        localStorage.setItem('musicTrack', nextTrack);
+    });
+    
+    // Update now playing display on page load
+    function updateNowPlaying() {
+        const trackNames = {
+            'NEON1': 'Neon Dreams',
+            'NEON2': 'Cyber Nights',
+            'NEON3': 'Digital Horizon'
+        };
+        const currentTrack = game.soundManager.currentTrack;
+        document.getElementById('now-playing-title').textContent = trackNames[currentTrack] || 'Unknown Track';
+    }
     
     document.getElementById('return-menu-btn').addEventListener('click', () => {
         game.reset();
@@ -1171,6 +1227,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('music-track').value = musicTrack;
 
         applySettings();
+        updateNowPlaying(); // Update now playing widget
     }
 
     function saveSettings() {
@@ -1198,6 +1255,7 @@ document.addEventListener('DOMContentLoaded', () => {
             game.soundManager.setMusicVolume(muteSounds ? 0 : musicVolume / 100);
             game.soundManager.currentTrack = musicTrack;
             game.soundManager.loadMusicTrack(musicTrack);
+            updateNowPlaying(); // Update now playing widget when track changes
         }
 
         // Apply AI difficulty

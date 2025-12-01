@@ -45,6 +45,21 @@
                         <button class="audio-toggle-btn" id="sound-toggle" title="Toggle Sound Effects">🔊 SFX</button>
                         <button class="audio-toggle-btn" id="music-toggle" title="Toggle Background Music">🎵 MUSIC</button>
                     </div>
+                    
+                    <!-- Now Playing Widget -->
+                    <div class="now-playing" id="now-playing">
+                        <div class="now-playing-content">
+                            <div class="now-playing-icon">🎵</div>
+                            <div class="now-playing-info">
+                                <div class="now-playing-label">NOW PLAYING</div>
+                                <div class="now-playing-title" id="now-playing-title">Digital Horizon</div>
+                            </div>
+                            <div class="now-playing-controls">
+                                <button class="now-playing-btn" id="music-pause-btn" title="Pause/Play">⏸️</button>
+                                <button class="now-playing-btn" id="music-next-btn" title="Next Track">⏭️</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 
                 <!-- Right: Leaderboard -->
@@ -734,22 +749,177 @@
                 
                 <!-- Category Selection -->
                 <div class="learn-category-select" id="learn-category-select">
-                    <h3 class="category-title">Choose a Category:</h3>
+                    <h3 class="category-title">Select Your Path</h3>
+                    <p class="category-subtitle">Choose a category to begin your journey</p>
                     <div class="category-grid">
-                        <button class="category-btn" data-category="all">🌐 All Categories</button>
-                        <button class="category-btn" data-category="fundamentals">🔵 Fundamentals</button>
-                        <button class="category-btn" data-category="hardware">💜 Hardware</button>
-                        <button class="category-btn" data-category="datastructures">💛 Data Structures</button>
-                        <button class="category-btn" data-category="networking">💚 Networking</button>
-                        <button class="category-btn" data-category="security">🔴 Security</button>
-                        <button class="category-btn" data-category="ai">💗 AI/ML</button>
-                        <button class="category-btn" data-category="web">🔷 Web Dev</button>
-                        <button class="category-btn" data-category="cyberpunk">🟣 Cyberpunk</button>
-                        <button class="category-btn" data-category="system">🟠 System</button>
-                        <button class="category-btn" data-category="programming">🟢 Programming</button>
-                        <button class="category-btn" data-category="data">🟡 Data</button>
-                        <button class="category-btn" data-category="graphics">🟪 Graphics</button>
-                        <button class="category-btn" data-category="tools">🔧 Tools</button>
+                        <button class="category-btn" data-category="all">
+                            <div class="category-circle">
+                                <svg class="progress-ring" width="140" height="140">
+                                    <circle class="progress-ring-bg" cx="70" cy="70" r="60" />
+                                    <circle class="progress-ring-circle" cx="70" cy="70" r="60" />
+                                </svg>
+                                <div class="category-content">
+                                    <div class="category-icon">🌐</div>
+                                    <div class="category-name">All</div>
+                                </div>
+                            </div>
+                        </button>
+                        <button class="category-btn" data-category="fundamentals">
+                            <div class="category-circle">
+                                <svg class="progress-ring" width="140" height="140">
+                                    <circle class="progress-ring-bg" cx="70" cy="70" r="60" />
+                                    <circle class="progress-ring-circle" cx="70" cy="70" r="60" />
+                                </svg>
+                                <div class="category-content">
+                                    <div class="category-icon">🔵</div>
+                                    <div class="category-name">Fundamentals</div>
+                                </div>
+                            </div>
+                        </button>
+                        <button class="category-btn" data-category="hardware">
+                            <div class="category-circle">
+                                <svg class="progress-ring" width="140" height="140">
+                                    <circle class="progress-ring-bg" cx="70" cy="70" r="60" />
+                                    <circle class="progress-ring-circle" cx="70" cy="70" r="60" />
+                                </svg>
+                                <div class="category-content">
+                                    <div class="category-icon">💜</div>
+                                    <div class="category-name">Hardware</div>
+                                </div>
+                            </div>
+                        </button>
+                        <button class="category-btn" data-category="datastructures">
+                            <div class="category-circle">
+                                <svg class="progress-ring" width="140" height="140">
+                                    <circle class="progress-ring-bg" cx="70" cy="70" r="60" />
+                                    <circle class="progress-ring-circle" cx="70" cy="70" r="60" />
+                                </svg>
+                                <div class="category-content">
+                                    <div class="category-icon">💛</div>
+                                    <div class="category-name">Data Structures</div>
+                                </div>
+                            </div>
+                        </button>
+                        <button class="category-btn" data-category="networking">
+                            <div class="category-circle">
+                                <svg class="progress-ring" width="140" height="140">
+                                    <circle class="progress-ring-bg" cx="70" cy="70" r="60" />
+                                    <circle class="progress-ring-circle" cx="70" cy="70" r="60" />
+                                </svg>
+                                <div class="category-content">
+                                    <div class="category-icon">💚</div>
+                                    <div class="category-name">Networking</div>
+                                </div>
+                            </div>
+                        </button>
+                        <button class="category-btn" data-category="security">
+                            <div class="category-circle">
+                                <svg class="progress-ring" width="140" height="140">
+                                    <circle class="progress-ring-bg" cx="70" cy="70" r="60" />
+                                    <circle class="progress-ring-circle" cx="70" cy="70" r="60" />
+                                </svg>
+                                <div class="category-content">
+                                    <div class="category-icon">🔴</div>
+                                    <div class="category-name">Security</div>
+                                </div>
+                            </div>
+                        </button>
+                        <button class="category-btn" data-category="ai">
+                            <div class="category-circle">
+                                <svg class="progress-ring" width="140" height="140">
+                                    <circle class="progress-ring-bg" cx="70" cy="70" r="60" />
+                                    <circle class="progress-ring-circle" cx="70" cy="70" r="60" />
+                                </svg>
+                                <div class="category-content">
+                                    <div class="category-icon">💗</div>
+                                    <div class="category-name">AI/ML</div>
+                                </div>
+                            </div>
+                        </button>
+                        <button class="category-btn" data-category="web">
+                            <div class="category-circle">
+                                <svg class="progress-ring" width="140" height="140">
+                                    <circle class="progress-ring-bg" cx="70" cy="70" r="60" />
+                                    <circle class="progress-ring-circle" cx="70" cy="70" r="60" />
+                                </svg>
+                                <div class="category-content">
+                                    <div class="category-icon">🔷</div>
+                                    <div class="category-name">Web Dev</div>
+                                </div>
+                            </div>
+                        </button>
+                        <button class="category-btn" data-category="cyberpunk">
+                            <div class="category-circle">
+                                <svg class="progress-ring" width="140" height="140">
+                                    <circle class="progress-ring-bg" cx="70" cy="70" r="60" />
+                                    <circle class="progress-ring-circle" cx="70" cy="70" r="60" />
+                                </svg>
+                                <div class="category-content">
+                                    <div class="category-icon">🟣</div>
+                                    <div class="category-name">Cyberpunk</div>
+                                </div>
+                            </div>
+                        </button>
+                        <button class="category-btn" data-category="system">
+                            <div class="category-circle">
+                                <svg class="progress-ring" width="140" height="140">
+                                    <circle class="progress-ring-bg" cx="70" cy="70" r="60" />
+                                    <circle class="progress-ring-circle" cx="70" cy="70" r="60" />
+                                </svg>
+                                <div class="category-content">
+                                    <div class="category-icon">🟠</div>
+                                    <div class="category-name">System</div>
+                                </div>
+                            </div>
+                        </button>
+                        <button class="category-btn" data-category="programming">
+                            <div class="category-circle">
+                                <svg class="progress-ring" width="140" height="140">
+                                    <circle class="progress-ring-bg" cx="70" cy="70" r="60" />
+                                    <circle class="progress-ring-circle" cx="70" cy="70" r="60" />
+                                </svg>
+                                <div class="category-content">
+                                    <div class="category-icon">🟢</div>
+                                    <div class="category-name">Programming</div>
+                                </div>
+                            </div>
+                        </button>
+                        <button class="category-btn" data-category="data">
+                            <div class="category-circle">
+                                <svg class="progress-ring" width="140" height="140">
+                                    <circle class="progress-ring-bg" cx="70" cy="70" r="60" />
+                                    <circle class="progress-ring-circle" cx="70" cy="70" r="60" />
+                                </svg>
+                                <div class="category-content">
+                                    <div class="category-icon">🟡</div>
+                                    <div class="category-name">Data</div>
+                                </div>
+                            </div>
+                        </button>
+                        <button class="category-btn" data-category="graphics">
+                            <div class="category-circle">
+                                <svg class="progress-ring" width="140" height="140">
+                                    <circle class="progress-ring-bg" cx="70" cy="70" r="60" />
+                                    <circle class="progress-ring-circle" cx="70" cy="70" r="60" />
+                                </svg>
+                                <div class="category-content">
+                                    <div class="category-icon">🟪</div>
+                                    <div class="category-name">Graphics</div>
+                                </div>
+                            </div>
+                        </button>
+                        <button class="category-btn" data-category="tools">
+                            <div class="category-circle">
+                                <svg class="progress-ring" width="140" height="140">
+                                    <circle class="progress-ring-bg" cx="70" cy="70" r="60" />
+                                    <circle class="progress-ring-circle" cx="70" cy="70" r="60" />
+                                </svg>
+                                <div class="category-content">
+                                    <div class="category-icon">🔧</div>
+                                    <div class="category-name">Tools</div>
+                                </div>
+                            </div>
+                        </button>
                     </div>
                 </div>
                 

@@ -21,7 +21,7 @@ class SoundManager {
         // Custom background music (HTML5 Audio)
         this.customMusic = null;
         this.useCustomMusic = true; // Default to custom music
-        this.currentTrack = 'NEON1'; // Default track
+        this.currentTrack = 'NEON3'; // Default track
         
         this.init();
     }

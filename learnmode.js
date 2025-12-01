@@ -45,33 +45,14 @@ class LearnMode {
             const learned = learnedInCategory.length;
             const percentage = total > 0 ? Math.round((learned / total) * 100) : 0;
             
-            // Add progress indicator to button
-            let progressEl = btn.querySelector('.progress-indicator');
-            if (!progressEl) {
-                progressEl = document.createElement('div');
-                progressEl.className = 'progress-indicator';
-                btn.appendChild(progressEl);
+            // Update the progress ring circle
+            const progressCircle = btn.querySelector('.progress-ring-circle');
+            if (progressCircle) {
+                // Calculate stroke-dashoffset (377 is the circumference for r=60)
+                const circumference = 377;
+                const offset = circumference - (percentage / 100) * circumference;
+                progressCircle.style.strokeDashoffset = offset;
             }
-            
-            // Update progress circle and text
-            progressEl.innerHTML = `
-                <svg class="progress-circle" viewBox="0 0 36 36">
-                    <path class="progress-bg"
-                        d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                        fill="none"
-                        stroke="rgba(255, 255, 255, 0.1)"
-                        stroke-width="3"
-                    />
-                    <path class="progress-fill"
-                        d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                        fill="none"
-                        stroke="var(--primary-color)"
-                        stroke-width="3"
-                        stroke-dasharray="${percentage}, 100"
-                    />
-                    <text x="18" y="21" class="progress-text">${percentage}%</text>
-                </svg>
-            `;
         });
     }
     
