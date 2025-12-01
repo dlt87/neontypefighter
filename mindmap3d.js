@@ -20,7 +20,8 @@ class TechMindMap3D {
         this.nodeMeshes = [];
         this.connections = [];
         this.lineMeshes = [];
-        this.referenceGroup = null; // Depth reference spheres
+        this.depthLines = []; // Vertical lines to ground plane
+        this.groundPlane = null; // Ground reference plane
         
         // Interaction state
         this.selectedNode = null;
@@ -55,29 +56,26 @@ class TechMindMap3D {
         // Scene
         this.scene = new THREE.Scene();
         this.scene.background = new THREE.Color(0x0a0a1a);
-        // Enhanced fog for depth perception
-        this.scene.fog = new THREE.Fog(0x0a0a1a, 300, 1200);
+        // Reduced fog for better visibility
+        this.scene.fog = new THREE.Fog(0x0a0a1a, 800, 2000);
         
-        // Create subtle depth reference spheres (concentric shells)
-        const referenceGroup = new THREE.Group();
-        const sphereSizes = [200, 350, 500];
-        const sphereOpacities = [0.03, 0.02, 0.01];
-        
-        sphereSizes.forEach((radius, index) => {
-            const geometry = new THREE.SphereGeometry(radius, 32, 32);
-            const material = new THREE.MeshBasicMaterial({
-                color: 0x00ffff,
-                transparent: true,
-                opacity: sphereOpacities[index],
-                wireframe: true,
-                side: THREE.BackSide
-            });
-            const sphere = new THREE.Mesh(geometry, material);
-            referenceGroup.add(sphere);
+        // Add a ground plane for shadow/depth reference
+        const groundSize = 1000;
+        const groundGeometry = new THREE.PlaneGeometry(groundSize, groundSize, 20, 20);
+        const groundMaterial = new THREE.MeshBasicMaterial({
+            color: 0x1a1a2e,
+            transparent: true,
+            opacity: 0.3,
+            wireframe: true,
+            side: THREE.DoubleSide
         });
+        this.groundPlane = new THREE.Mesh(groundGeometry, groundMaterial);
+        this.groundPlane.rotation.x = -Math.PI / 2;
+        this.groundPlane.position.y = -400;
+        this.scene.add(this.groundPlane);
         
-        this.scene.add(referenceGroup);
-        this.referenceGroup = referenceGroup;
+        // Add vertical reference lines from nodes to ground
+        this.depthLines = [];
         
         // Camera
         const aspect = this.container.clientWidth / this.container.clientHeight;
@@ -166,23 +164,13 @@ class TechMindMap3D {
         this.nodes.forEach(node => {
             const color = new THREE.Color(this.categoryColors[node.data.category] || '#00ffff');
             
-            // Calculate distance from camera for depth effects
-            const distanceFromCamera = Math.sqrt(node.x * node.x + node.y * node.y + (node.z - 600) * (node.z - 600));
-            const normalizedDistance = Math.min(distanceFromCamera / 800, 1);
-            
-            // Size based on depth - closer nodes are larger
-            const depthScale = 1 - (normalizedDistance * 0.5); // Scale from 1.0 to 0.5
-            const scaledRadius = node.radius * depthScale;
-            
-            // Sphere geometry
-            const geometry = new THREE.SphereGeometry(scaledRadius, 16, 16);
+            // Sphere geometry - uniform size
+            const geometry = new THREE.SphereGeometry(node.radius, 16, 16);
             const material = new THREE.MeshPhongMaterial({
                 color: color,
                 emissive: color,
-                emissiveIntensity: 0.5 * depthScale, // Dimmer when further away
-                shininess: 100,
-                transparent: true,
-                opacity: 0.7 + (0.3 * (1 - normalizedDistance)) // More opaque when closer
+                emissiveIntensity: 0.5,
+                shininess: 100
             });
             
             const mesh = new THREE.Mesh(geometry, material);
@@ -192,15 +180,31 @@ class TechMindMap3D {
             this.scene.add(mesh);
             this.nodeMeshes.push(mesh);
             
-            // Add glow effect - also scaled by depth
-            const glowGeometry = new THREE.SphereGeometry(scaledRadius * 1.5, 16, 16);
+            // Add glow effect
+            const glowGeometry = new THREE.SphereGeometry(node.radius * 1.5, 16, 16);
             const glowMaterial = new THREE.MeshBasicMaterial({
                 color: color,
                 transparent: true,
-                opacity: 0.15 * (1 - normalizedDistance) // Glow fades with distance
+                opacity: 0.2
             });
             const glowMesh = new THREE.Mesh(glowGeometry, glowMaterial);
             mesh.add(glowMesh);
+            
+            // Create depth indicator line to ground plane
+            const lineGeometry = new THREE.BufferGeometry();
+            const lineVertices = new Float32Array([
+                node.x, node.y, node.z,
+                node.x, -400, node.z
+            ]);
+            lineGeometry.setAttribute('position', new THREE.BufferAttribute(lineVertices, 3));
+            const lineMaterial = new THREE.LineBasicMaterial({
+                color: color,
+                transparent: true,
+                opacity: 0.15
+            });
+            const depthLine = new THREE.Line(lineGeometry, lineMaterial);
+            this.scene.add(depthLine);
+            this.depthLines.push(depthLine);
         });
     }
     
@@ -211,21 +215,11 @@ class TechMindMap3D {
                 new THREE.Vector3(conn.to.x, conn.to.y, conn.to.z)
             ];
             
-            // Calculate average distance for this connection
-            const avgZ = (conn.from.z + conn.to.z) / 2;
-            const avgDistance = Math.sqrt(
-                ((conn.from.x + conn.to.x) / 2) ** 2 + 
-                ((conn.from.y + conn.to.y) / 2) ** 2 + 
-                (avgZ - 600) ** 2
-            );
-            const normalizedDistance = Math.min(avgDistance / 800, 1);
-            const depthOpacity = 0.15 * (1 - normalizedDistance * 0.7); // Fade with distance
-            
             const geometry = new THREE.BufferGeometry().setFromPoints(points);
             const material = new THREE.LineBasicMaterial({ 
                 color: 0x00ffff, 
                 transparent: true, 
-                opacity: depthOpacity
+                opacity: 0.15
             });            const line = new THREE.Line(geometry, material);
             this.scene.add(line);
             this.lineMeshes.push(line);
@@ -302,53 +296,27 @@ class TechMindMap3D {
             node.z = pos.z;
         });
         
-        // Update depth-based visuals after rotation
-        this.updateDepthEffects();
+        // Update depth indicator lines after rotation
+        this.updateDepthLines();
         
         // Update connections
         this.updateConnections();
     }
     
-    updateDepthEffects() {
-        // Update visual properties based on distance from camera
-        this.nodeMeshes.forEach((mesh, index) => {
+    updateDepthLines() {
+        // Update the vertical lines from nodes to ground plane
+        this.depthLines.forEach((line, index) => {
             const node = this.nodes[index];
+            const positions = line.geometry.attributes.position.array;
             
-            // Calculate distance from camera
-            const distanceFromCamera = Math.sqrt(
-                node.x * node.x + 
-                node.y * node.y + 
-                (node.z - this.camera.position.z) * (node.z - this.camera.position.z)
-            );
-            const normalizedDistance = Math.min(distanceFromCamera / 800, 1);
+            positions[0] = node.x;
+            positions[1] = node.y;
+            positions[2] = node.z;
+            positions[3] = node.x;
+            positions[4] = -400;
+            positions[5] = node.z;
             
-            // Size based on depth
-            const depthScale = 1 - (normalizedDistance * 0.5);
-            const scaledRadius = mesh.userData.baseRadius * depthScale;
-            mesh.scale.set(depthScale, depthScale, depthScale);
-            
-            // Opacity and brightness based on depth
-            mesh.material.opacity = 0.7 + (0.3 * (1 - normalizedDistance));
-            mesh.material.emissiveIntensity = 0.5 * depthScale;
-            
-            // Update glow
-            if (mesh.children.length > 0) {
-                const glow = mesh.children[0];
-                glow.material.opacity = 0.15 * (1 - normalizedDistance);
-            }
-        });
-        
-        // Update connection line opacity based on depth
-        this.connections.forEach((conn, index) => {
-            const line = this.lineMeshes[index];
-            const avgZ = (conn.from.z + conn.to.z) / 2;
-            const avgDistance = Math.sqrt(
-                ((conn.from.x + conn.to.x) / 2) ** 2 + 
-                ((conn.from.y + conn.to.y) / 2) ** 2 + 
-                (avgZ - this.camera.position.z) ** 2
-            );
-            const normalizedDistance = Math.min(avgDistance / 800, 1);
-            line.material.opacity = 0.15 * (1 - normalizedDistance * 0.7);
+            line.geometry.attributes.position.needsUpdate = true;
         });
     }
     
@@ -379,25 +347,14 @@ class TechMindMap3D {
         
         // Reset previous hover
         if (this.hoveredNode && this.hoveredNode !== this.selectedNode) {
-            // Reset to depth-based intensity instead of fixed value
-            const node = this.nodes[this.nodeMeshes.indexOf(this.hoveredNode)];
-            const distanceFromCamera = Math.sqrt(
-                node.x * node.x + 
-                node.y * node.y + 
-                (node.z - this.camera.position.z) * (node.z - this.camera.position.z)
-            );
-            const normalizedDistance = Math.min(distanceFromCamera / 800, 1);
-            const depthScale = 1 - (normalizedDistance * 0.5);
-            this.hoveredNode.material.emissiveIntensity = 0.5 * depthScale;
-            // Don't reset scale - it's managed by updateDepthEffects
+            this.hoveredNode.material.emissiveIntensity = 0.5;
+            this.hoveredNode.scale.set(1, 1, 1);
         }
         
         if (intersects.length > 0) {
             this.hoveredNode = intersects[0].object;
             this.hoveredNode.material.emissiveIntensity = 1.0;
-            // Add slight scale boost on hover
-            const currentScale = this.hoveredNode.scale.x;
-            this.hoveredNode.scale.set(currentScale * 1.2, currentScale * 1.2, currentScale * 1.2);
+            this.hoveredNode.scale.set(1.3, 1.3, 1.3);
             this.renderer.domElement.style.cursor = 'pointer';
         } else {
             this.hoveredNode = null;
