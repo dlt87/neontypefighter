@@ -556,16 +556,13 @@ class LearnMode {
         const definition = this.currentQuestion.definition;
         const glossary = window.TECH_GLOSSARY || {};
         const relatedTerms = glossary[word]?.related || [];
+        const category = this.currentQuestion.category;
         
-        // Create explanation text
+        // Create intelligent explanation based on context
         let explanation = `✓ The correct answer is "${word}".\n\n`;
-        explanation += `📖 Definition: ${definition}\n\n`;
         
-        if (relatedTerms.length > 0) {
-            explanation += `🔗 Related concepts: ${relatedTerms.join(', ')}\n\n`;
-        }
-        
-        explanation += `💡 This term is in the "${this.currentQuestion.category}" category.`;
+        // Add contextual explanation based on category and related terms
+        explanation += this.generateContextualExplanation(word, definition, category, relatedTerms);
         
         // Show in feedback area
         const feedback = document.getElementById('learn-feedback');
@@ -578,6 +575,54 @@ class LearnMode {
             icon.textContent = '💡';
             text.innerHTML = explanation.replace(/\n/g, '<br>');
         }
+    }
+    
+    generateContextualExplanation(word, definition, category, relatedTerms) {
+        let explanation = '';
+        
+        // Category-specific context
+        const categoryContext = {
+            'security': `🛡️ In cybersecurity, "${word}" is crucial for understanding threats and protection mechanisms. `,
+            'networking': `🌐 This networking concept "${word}" is fundamental to how data travels across the internet. `,
+            'fundamentals': `💻 "${word}" is a core computing concept that forms the foundation of modern technology. `,
+            'hardware': `🔧 Understanding "${word}" helps you grasp how physical computer components work together. `,
+            'datastructures': `📊 "${word}" is a way programmers organize and store data efficiently. `,
+            'ai': `🤖 In artificial intelligence and machine learning, "${word}" plays a key role in how systems learn and adapt. `,
+            'web': `🌍 "${word}" is essential for building and understanding modern web applications. `,
+            'cyberpunk': `⚡ This term "${word}" represents the intersection of technology and digital culture. `,
+            'system': `⚙️ "${word}" is a system-level concept that affects how operating systems function. `,
+            'programming': `👨‍💻 "${word}" is a programming concept developers use to write efficient code. `,
+            'data': `📈 "${word}" relates to how we manage, analyze, and extract value from information. `,
+            'graphics': `🎨 In computer graphics, "${word}" helps create visual content and rendering. `,
+            'tools': `🔨 "${word}" is a tool or utility that developers and engineers use in their workflow. `
+        };
+        
+        explanation += categoryContext[category] || `📖 "${word}" is an important technical concept. `;
+        explanation += `${definition}.\n\n`;
+        
+        // Add real-world context based on the term
+        if (relatedTerms.length > 0) {
+            explanation += `🔗 This concept connects to: ${relatedTerms.slice(0, 3).join(', ')}. `;
+            explanation += `Understanding these relationships helps you see how different technologies work together.\n\n`;
+        }
+        
+        // Add practical insight
+        const practicalInsights = {
+            'security': 'Security professionals encounter this daily when protecting systems from threats.',
+            'networking': 'Network engineers use this when designing and troubleshooting network infrastructure.',
+            'fundamentals': 'This is foundational knowledge for anyone pursuing a career in technology.',
+            'ai': 'Data scientists and ML engineers apply this when building intelligent systems.',
+            'web': 'Web developers implement this when creating interactive online experiences.',
+            'programming': 'Software engineers leverage this when solving complex coding challenges.'
+        };
+        
+        if (practicalInsights[category]) {
+            explanation += `💼 ${practicalInsights[category]}\n\n`;
+        }
+        
+        explanation += `🎯 Category: ${category}`;
+        
+        return explanation;
     }
     
     viewInGlossary() {
