@@ -260,10 +260,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     
     // Mode selection handlers
-    document.getElementById('multiplayer-back-btn').addEventListener('click', () => {
-        showScreen('menu');
-    });
-    
     document.getElementById('select-pvp-btn').addEventListener('click', () => {
         // Show matchmaking lobby directly
         document.getElementById('multiplayer-mode-selection').classList.add('hidden');

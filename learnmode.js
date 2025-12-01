@@ -289,10 +289,21 @@ class LearnMode {
             }
         });
         
-        // Hide feedback
+        // Hide feedback and buttons for new question
         const feedback = document.getElementById('learn-feedback');
         if (feedback) {
             feedback.classList.add('hidden');
+        }
+        
+        // Hide action buttons until answer is given
+        const nextBtn = document.getElementById('next-question-btn');
+        if (nextBtn) {
+            nextBtn.classList.add('hidden');
+        }
+        
+        const explainBtn = document.getElementById('explain-why-btn');
+        if (explainBtn) {
+            explainBtn.classList.add('hidden');
         }
         
         // Clear and focus input
@@ -356,7 +367,7 @@ class LearnMode {
             
             // Particle effect
             if (this.game.particleSystem) {
-                this.game.particleSystem.createBurst(
+                this.game.particleSystem.createExplosion(
                     window.innerWidth / 2,
                     window.innerHeight / 2,
                     '#00ff00',
