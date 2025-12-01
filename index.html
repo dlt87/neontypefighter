@@ -586,12 +586,14 @@
                         <option value="graphics">Graphics</option>
                         <option value="tools">Tools</option>
                     </select>
+                    <button class="neon-button small" id="toggle-3d-btn">Switch to 3D</button>
                     <button class="neon-button small" id="reset-view-btn">Reset View</button>
                     <button class="neon-button small" id="toggle-physics-btn">Physics: ON</button>
                 </div>
                 
                 <div class="glossary-container">
                     <canvas id="mindmap-canvas"></canvas>
+                    <div id="mindmap-3d-container" style="display: none; width: 100%; height: 100%; position: absolute; top: 0; left: 0;"></div>
                     
                     <div id="word-definition-panel" class="definition-panel hidden">
                         <button class="close-btn" id="close-definition-btn">✕</button>
@@ -1021,11 +1023,15 @@
         </div>
     </div>
 
+    <!-- Three.js for 3D visualization -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    
     <script src="config.js"></script>
     <script src="themes.js"></script>
     <script src="words.js"></script>
     <script src="glossary-data.js"></script>
     <script src="mindmap.js"></script>
+    <script src="mindmap3d.js"></script>
     <script src="particle.js"></script>
     <script src="sounds.js"></script>
     <script src="auth.js"></script>

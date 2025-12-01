@@ -3759,6 +3759,18 @@ body::before {
     cursor: grabbing;
 }
 
+#mindmap-3d-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+#mindmap-3d-container canvas {
+    display: block;
+}
+
 .definition-panel {
     position: absolute;
     top: 20px;

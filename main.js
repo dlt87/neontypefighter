@@ -386,8 +386,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // Glossary button
     document.getElementById('glossary-btn').addEventListener('click', () => {
         showScreen('glossary');
-        if (!window.techMindMap) {
+        if (!window.techMindMap && !window.techMindMap3D) {
             window.techMindMap = new TechMindMap('mindmap-canvas', TECH_GLOSSARY, CATEGORY_COLORS);
+            window.is3DMode = false;
         }
     });
     
@@ -1362,31 +1363,78 @@ document.addEventListener('DOMContentLoaded', () => {
     // Glossary controls
     document.getElementById('close-definition-btn').addEventListener('click', () => {
         document.getElementById('word-definition-panel').classList.add('hidden');
-        if (window.techMindMap) {
+        if (window.is3DMode && window.techMindMap3D) {
+            window.techMindMap3D.selectedNode = null;
+        } else if (window.techMindMap) {
             window.techMindMap.selectedNode = null;
         }
     });
     
+    document.getElementById('toggle-3d-btn').addEventListener('click', (e) => {
+        const canvas2D = document.getElementById('mindmap-canvas');
+        const container3D = document.getElementById('mindmap-3d-container');
+        
+        window.is3DMode = !window.is3DMode;
+        
+        if (window.is3DMode) {
+            // Switch to 3D
+            if (window.techMindMap) {
+                window.techMindMap.stop();
+            }
+            canvas2D.style.display = 'none';
+            container3D.style.display = 'block';
+            
+            if (!window.techMindMap3D) {
+                window.techMindMap3D = new TechMindMap3D('mindmap-3d-container', TECH_GLOSSARY, CATEGORY_COLORS);
+            }
+            
+            e.target.textContent = 'Switch to 2D';
+        } else {
+            // Switch to 2D
+            if (window.techMindMap3D) {
+                window.techMindMap3D.stop();
+            }
+            canvas2D.style.display = 'block';
+            container3D.style.display = 'none';
+            
+            if (!window.techMindMap) {
+                window.techMindMap = new TechMindMap('mindmap-canvas', TECH_GLOSSARY, CATEGORY_COLORS);
+            } else {
+                window.techMindMap.start();
+            }
+            
+            e.target.textContent = 'Switch to 3D';
+        }
+    });
+    
     document.getElementById('reset-view-btn').addEventListener('click', () => {
-        if (window.techMindMap) {
+        if (window.is3DMode && window.techMindMap3D) {
+            window.techMindMap3D.reset();
+        } else if (window.techMindMap) {
             window.techMindMap.reset();
         }
     });
     
     document.getElementById('toggle-physics-btn').addEventListener('click', (e) => {
-        if (window.techMindMap) {
+        let physicsEnabled;
+        if (window.is3DMode && window.techMindMap3D) {
+            physicsEnabled = window.techMindMap3D.togglePhysics();
+        } else if (window.techMindMap) {
             window.techMindMap.physicsEnabled = !window.techMindMap.physicsEnabled;
-            e.target.textContent = `Physics: ${window.techMindMap.physicsEnabled ? 'ON' : 'OFF'}`;
+            physicsEnabled = window.techMindMap.physicsEnabled;
         }
+        e.target.textContent = `Physics: ${physicsEnabled ? 'ON' : 'OFF'}`;
     });
     
     document.getElementById('glossary-search').addEventListener('input', (e) => {
         const query = e.target.value.trim();
         const suggestionsContainer = document.getElementById('search-suggestions');
         
-        if (window.techMindMap && query) {
+        const mindmap = window.is3DMode ? window.techMindMap3D : window.techMindMap;
+        
+        if (mindmap && query) {
             // Get suggestions
-            const suggestions = window.techMindMap.getSuggestions(query);
+            const suggestions = mindmap.getSuggestions ? mindmap.getSuggestions(query) : [];
             
             if (suggestions.length > 0) {
                 suggestionsContainer.innerHTML = suggestions.map(word => 
@@ -1405,8 +1453,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const categoryFilter = document.getElementById('glossary-category-filter');
     if (categoryFilter) {
         categoryFilter.addEventListener('change', (e) => {
-            if (window.techMindMap) {
-                window.techMindMap.setCategory(e.target.value);
+            const mindmap = window.is3DMode ? window.techMindMap3D : window.techMindMap;
+            if (mindmap && mindmap.setCategory) {
+                mindmap.setCategory(e.target.value);
             }
         });
     }
@@ -1417,8 +1466,12 @@ document.addEventListener('DOMContentLoaded', () => {
             const word = e.target.dataset.word;
             document.getElementById('glossary-search').value = word;
             document.getElementById('search-suggestions').classList.add('hidden');
-            if (window.techMindMap) {
-                window.techMindMap.searchWord(word);
+            
+            const mindmap = window.is3DMode ? window.techMindMap3D : window.techMindMap;
+            if (mindmap && mindmap.searchWord) {
+                mindmap.searchWord(word);
+            } else if (mindmap && mindmap.focusWord) {
+                mindmap.focusWord(word);
             }
         }
     });
