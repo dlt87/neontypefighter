@@ -958,7 +958,17 @@ function generateRandomWord() {
 
 function handleRegister(req, res) {
     let body = '';
+    let bodySize = 0;
+    const MAX_BODY_SIZE = 1024 * 10; // 10KB limit
+    
     req.on('data', chunk => {
+        bodySize += chunk.length;
+        if (bodySize > MAX_BODY_SIZE) {
+            res.writeHead(413, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'Request too large' }));
+            req.connection.destroy();
+            return;
+        }
         body += chunk.toString();
     });
     
@@ -973,9 +983,11 @@ function handleRegister(req, res) {
                 return;
             }
             
-            if (username.length < 3 || username.length > 20) {
+            // Sanitize and validate username - only alphanumeric and underscore
+            const sanitizedUsername = username.trim().replace(/[^\w]/g, '');
+            if (sanitizedUsername.length < 3 || sanitizedUsername.length > 20) {
                 res.writeHead(400, { 'Content-Type': 'application/json' });
-                res.end(JSON.stringify({ error: 'Username must be between 3 and 20 characters' }));
+                res.end(JSON.stringify({ error: 'Username must be between 3 and 20 alphanumeric characters' }));
                 return;
             }
             
@@ -1054,7 +1066,17 @@ function handleRegister(req, res) {
 
 function handleLogin(req, res) {
     let body = '';
+    let bodySize = 0;
+    const MAX_BODY_SIZE = 1024 * 10; // 10KB limit
+    
     req.on('data', chunk => {
+        bodySize += chunk.length;
+        if (bodySize > MAX_BODY_SIZE) {
+            res.writeHead(413, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'Request too large' }));
+            req.connection.destroy();
+            return;
+        }
         body += chunk.toString();
     });
     

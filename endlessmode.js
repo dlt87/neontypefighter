@@ -86,8 +86,8 @@ class EndlessMode {
             this.elements.typingInput.addEventListener('input', (e) => this.handleInput(e));
         }
         
-        // ESC key to pause
-        document.addEventListener('keydown', (e) => {
+        // ESC key to pause - store handler for cleanup
+        this.escapeHandler = (e) => {
             if (e.key === 'Escape' && this.isActive && !this.elements.gameOverScreen.classList.contains('hidden')) {
                 // Don't pause if game over screen is visible
                 return;
@@ -95,7 +95,8 @@ class EndlessMode {
             if (e.key === 'Escape' && this.isActive) {
                 this.togglePause();
             }
-        });
+        };
+        document.addEventListener('keydown', this.escapeHandler);
         
         console.log('✅ Endless Mode initialized');
     }
@@ -569,6 +570,10 @@ class EndlessMode {
         if (this.timerInterval) {
             clearInterval(this.timerInterval);
         }
+        // Clean up event listener
+        if (this.escapeHandler) {
+            document.removeEventListener('keydown', this.escapeHandler);
+        }
         if (window.showScreen) {
             window.showScreen('menu');
         }
@@ -587,6 +592,10 @@ class EndlessMode {
         this.screen.classList.add('hidden');
         if (this.timerInterval) {
             clearInterval(this.timerInterval);
+        }
+        // Clean up event listener
+        if (this.escapeHandler) {
+            document.removeEventListener('keydown', this.escapeHandler);
         }
     }
 }

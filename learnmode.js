@@ -59,8 +59,6 @@ class LearnMode {
     setupUI() {
         // Update category buttons with progress indicators
         this.updateCategoryProgress();
-        // Update category buttons with progress indicators
-        this.updateCategoryProgress();
         
         // Category selection buttons
         const categoryButtons = document.querySelectorAll('.category-btn');

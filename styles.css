@@ -410,29 +410,50 @@ body::before {
 }
 
 .logout-btn-compact {
-    font-size: 1.5rem;
-    width: 36px;
-    height: 36px;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.9rem;
+    font-weight: bold;
+    padding: 8px 16px;
     background: rgba(255, 0, 0, 0.2);
     border: 2px solid rgba(255, 0, 0, 0.5);
     border-radius: 8px;
+    color: var(--neon-orange);
     cursor: pointer;
     transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    text-shadow: 0 0 10px var(--neon-orange);
 }
 
 .logout-btn-compact:hover {
     background: rgba(255, 0, 0, 0.4);
     border-color: rgba(255, 0, 0, 0.8);
     box-shadow: 0 0 15px rgba(255, 0, 0, 0.5);
-    transform: scale(1.05);
+    transform: translateY(-2px);
 }
 
 .auth-buttons-compact {
     display: flex;
     gap: 10px;
+}
+
+.text-button {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.9rem;
+    font-weight: bold;
+    padding: 8px 16px;
+    background: rgba(0, 0, 0, 0.7);
+    border: 2px solid var(--neon-cyan);
+    border-radius: 10px;
+    color: var(--neon-cyan);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-shadow: 0 0 10px var(--neon-cyan);
+    box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+}
+
+.text-button:hover {
+    background: rgba(0, 255, 255, 0.2);
+    box-shadow: 0 0 25px rgba(0, 255, 255, 0.6);
+    transform: translateY(-2px);
 }
 
 .icon-button {
@@ -2194,6 +2215,7 @@ body::before {
     border-radius: 5px;
     outline: none;
     -webkit-appearance: none;
+    appearance: none;
 }
 
 .setting-item input[type="range"]::-webkit-slider-thumb {
@@ -2660,10 +2682,10 @@ body::before {
         white-space: nowrap;
     }
     
-    .logout-btn-compact {
-        width: 32px;
-        height: 32px;
-        font-size: 1.3rem;
+    .logout-btn-compact,
+    .text-button {
+        font-size: 0.75rem;
+        padding: 6px 10px;
     }
     
     .corner-buttons {

@@ -383,11 +383,6 @@ document.addEventListener('DOMContentLoaded', () => {
         loadPlayerProfile();
     });
     
-    document.getElementById('achievements-btn').addEventListener('click', () => {
-        showScreen('achievements');
-        window.loadAchievements();
-    });
-    
     // Glossary button
     document.getElementById('glossary-btn').addEventListener('click', () => {
         showScreen('glossary');
