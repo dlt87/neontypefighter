@@ -4111,12 +4111,16 @@ body::before {
     display: flex;
     gap: 1rem;
     margin-top: 1.5rem;
+    justify-content: center;
+    align-items: center;
 }
 
 #next-question-btn,
 #explain-why-btn {
     flex: 1;
-    padding: 1rem;
+    padding: 1rem !important;
+    display: inline-block !important;
+    min-width: 200px;
 }
 
 .neon-button.small {

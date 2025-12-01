@@ -380,7 +380,7 @@ class LearnMode {
         } else {
             this.streakCount = 0;
             this.showFeedback('wrong', this.currentQuestion.correctWord);
-            this.game.soundManager.playErrorSound();
+            this.game.soundManager.play('error');
         }
         
         // Update category stats
