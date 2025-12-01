@@ -19,9 +19,68 @@ class LearnMode {
         
         // Track category-specific progress
         this.categoryStats = {};
+        this.categoryProgress = {}; // Track learned terms per category
+    }
+    
+    updateCategoryProgress() {
+        const glossary = window.TECH_GLOSSARY || {};
+        const categoryButtons = document.querySelectorAll('.category-btn');
+        
+        categoryButtons.forEach(btn => {
+            const category = btn.getAttribute('data-category');
+            
+            // Get all terms in this category
+            let categoryTerms;
+            if (category === 'all') {
+                categoryTerms = Object.keys(glossary);
+            } else {
+                categoryTerms = Object.keys(glossary).filter(word => glossary[word].category === category);
+            }
+            
+            // Get learned terms from localStorage
+            const learnedData = JSON.parse(localStorage.getItem('learnedTerms') || '{}');
+            const learnedInCategory = categoryTerms.filter(term => learnedData[term]);
+            
+            const total = categoryTerms.length;
+            const learned = learnedInCategory.length;
+            const percentage = total > 0 ? Math.round((learned / total) * 100) : 0;
+            
+            // Add progress indicator to button
+            let progressEl = btn.querySelector('.progress-indicator');
+            if (!progressEl) {
+                progressEl = document.createElement('div');
+                progressEl.className = 'progress-indicator';
+                btn.appendChild(progressEl);
+            }
+            
+            // Update progress circle and text
+            progressEl.innerHTML = `
+                <svg class="progress-circle" viewBox="0 0 36 36">
+                    <path class="progress-bg"
+                        d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                        fill="none"
+                        stroke="rgba(255, 255, 255, 0.1)"
+                        stroke-width="3"
+                    />
+                    <path class="progress-fill"
+                        d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                        fill="none"
+                        stroke="var(--primary-color)"
+                        stroke-width="3"
+                        stroke-dasharray="${percentage}, 100"
+                    />
+                    <text x="18" y="21" class="progress-text">${percentage}%</text>
+                </svg>
+            `;
+        });
     }
     
     setupUI() {
+        // Update category buttons with progress indicators
+        this.updateCategoryProgress();
+        // Update category buttons with progress indicators
+        this.updateCategoryProgress();
+        
         // Category selection buttons
         const categoryButtons = document.querySelectorAll('.category-btn');
         categoryButtons.forEach(btn => {
@@ -233,6 +292,7 @@ class LearnMode {
     
     generateWrongAnswers(correctItem, pool, count) {
         const wrongAnswers = [];
+        const usedWords = new Set([correctItem.word]); // Track correct word to avoid duplicates
         
         // Filter out the correct answer
         let candidates = pool.filter(item => item.word !== correctItem.word);
@@ -245,17 +305,23 @@ class LearnMode {
             sameCategoryCandidates = candidates;
         }
         
-        // Shuffle and pick
+        // Shuffle and pick unique words only
         const shuffled = this.shuffleArray(sameCategoryCandidates);
-        for (let i = 0; i < count && i < shuffled.length; i++) {
-            wrongAnswers.push(shuffled[i]);
+        for (let i = 0; i < shuffled.length && wrongAnswers.length < count; i++) {
+            if (!usedWords.has(shuffled[i].word)) {
+                wrongAnswers.push(shuffled[i]);
+                usedWords.add(shuffled[i].word);
+            }
         }
         
-        // If still not enough, fill with any remaining
-        while (wrongAnswers.length < count && candidates.length > wrongAnswers.length) {
-            const random = candidates[Math.floor(Math.random() * candidates.length)];
-            if (!wrongAnswers.includes(random)) {
-                wrongAnswers.push(random);
+        // If still not enough, fill with any remaining unique words
+        if (wrongAnswers.length < count) {
+            const remainingCandidates = this.shuffleArray(candidates);
+            for (let i = 0; i < remainingCandidates.length && wrongAnswers.length < count; i++) {
+                if (!usedWords.has(remainingCandidates[i].word)) {
+                    wrongAnswers.push(remainingCandidates[i]);
+                    usedWords.add(remainingCandidates[i].word);
+                }
             }
         }
         
@@ -403,6 +469,11 @@ class LearnMode {
             if (!this.learnedTerms.includes(this.currentQuestion.correctWord)) {
                 this.learnedTerms.push(this.currentQuestion.correctWord);
                 this.updateTermsSidebar();
+                
+                // Save to localStorage
+                const learnedData = JSON.parse(localStorage.getItem('learnedTerms') || '{}');
+                learnedData[this.currentQuestion.correctWord] = true;
+                localStorage.setItem('learnedTerms', JSON.stringify(learnedData));
             }
         }
         
