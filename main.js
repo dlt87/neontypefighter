@@ -114,10 +114,13 @@ document.addEventListener('DOMContentLoaded', () => {
         authClient.signOut();
     });
     
-    document.getElementById('resend-verification-btn').addEventListener('click', async () => {
-        const btn = document.getElementById('resend-verification-btn');
-        btn.disabled = true;
-        btn.textContent = 'Sending...';
+    // Handle verification badge click (compact design)
+    document.getElementById('verification-status').addEventListener('click', async () => {
+        const badge = document.getElementById('unverified-badge');
+        if (!badge || !authClient.currentUser) return;
+        
+        const originalText = badge.textContent;
+        badge.textContent = '📧';
         
         try {
             const response = await fetch('https://neontypefighter-production.up.railway.app/api/auth/resend-verification', {
@@ -129,20 +132,29 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await response.json();
             
             if (response.ok) {
-                alert('✅ Verification email sent! Check your inbox.');
+                badge.textContent = '✓';
+                setTimeout(() => {
+                    badge.textContent = originalText;
+                }, 2000);
+                alert('Verification email sent! Please check your inbox.');
             } else {
-                alert('❌ ' + (data.error || 'Failed to send verification email'));
+                badge.textContent = '✗';
+                setTimeout(() => {
+                    badge.textContent = originalText;
+                }, 2000);
+                alert(data.error || 'Failed to send verification email');
             }
         } catch (error) {
-            console.error('Resend verification error:', error);
-            alert('❌ Failed to send verification email. Please try again.');
-        } finally {
-            btn.disabled = false;
-            btn.textContent = 'Resend Email';
+            console.error('Failed to resend verification:', error);
+            badge.textContent = '✗';
+            setTimeout(() => {
+                badge.textContent = originalText;
+            }, 2000);
+            alert('Failed to send verification email. Please try again.');
         }
     });
     
-    // Login form
+    // Button handlers    // Login form
     document.getElementById('login-form').addEventListener('submit', async (e) => {
         e.preventDefault();
         const username = document.getElementById('login-username').value;

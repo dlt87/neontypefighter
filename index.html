@@ -19,8 +19,24 @@
             </div>
             <div class="corner-buttons top-right">
                 <button class="icon-button" id="themes-btn" title="Themes">🎨</button>
-                <button class="icon-button" id="profile-btn" title="Profile">👤</button>
                 <button class="icon-button" id="achievements-btn" title="Achievements">🏆</button>
+                
+                <!-- User Info (when logged in) -->
+                <div class="user-info-compact hidden" id="user-info">
+                    <span class="user-name-compact" id="user-name-display"></span>
+                    <button class="verification-status-compact hidden" id="verification-status">
+                        <span class="unverified-badge-compact" id="unverified-badge" title="Click to resend verification email">⚠️</span>
+                    </button>
+                    <button class="logout-btn-compact" id="logout-btn" title="Logout">🚪</button>
+                </div>
+                
+                <!-- Auth Buttons (when logged out) -->
+                <div class="auth-buttons-compact" id="auth-buttons">
+                    <button class="icon-button" id="login-btn" title="Login">🔐</button>
+                    <button class="icon-button" id="register-btn" title="Register">📝</button>
+                </div>
+                
+                <button class="icon-button" id="profile-btn" title="Profile">👤</button>
             </div>
             
             <div class="neon-title">
@@ -77,22 +93,6 @@
                         </div>
                         <button class="leaderboard-show-more" id="leaderboard-show-more">SHOW TOP 50</button>
                     </div>
-                </div>
-            </div>
-            
-            <!-- Bottom: User Panel -->
-            <div class="user-panel" id="user-panel">
-                <div class="user-info hidden" id="user-info">
-                    <span class="user-name" id="user-name-display"></span>
-                    <span class="verification-status hidden" id="verification-status">
-                        <span class="unverified-badge" id="unverified-badge">⚠️ Email Not Verified</span>
-                        <button class="resend-verification-btn" id="resend-verification-btn">Resend Email</button>
-                    </span>
-                    <button class="logout-btn" id="logout-btn">LOGOUT</button>
-                </div>
-                <div class="auth-buttons" id="auth-buttons">
-                    <button class="neon-button small" id="login-btn">LOGIN</button>
-                    <button class="neon-button small secondary" id="register-btn">REGISTER</button>
                 </div>
             </div>
         </div>

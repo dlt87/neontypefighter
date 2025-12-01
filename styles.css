@@ -349,6 +349,7 @@ body::before {
     display: flex;
     gap: 10px;
     z-index: 100;
+    align-items: center;
 }
 
 .corner-buttons.top-left {
@@ -359,6 +360,79 @@ body::before {
 .corner-buttons.top-right {
     top: 20px;
     right: 20px;
+}
+
+/* Compact User Info for Top Right Corner */
+.user-info-compact {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: rgba(0, 0, 0, 0.7);
+    border: 2px solid var(--neon-cyan);
+    border-radius: 10px;
+    box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+    transition: all 0.3s ease;
+}
+
+.user-info-compact:hover {
+    background: rgba(0, 255, 255, 0.15);
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+}
+
+.user-name-compact {
+    color: var(--neon-cyan);
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: 0.95rem;
+    text-shadow: 0 0 10px var(--neon-cyan);
+    font-family: 'Orbitron', sans-serif;
+}
+
+.verification-status-compact {
+    display: flex;
+    align-items: center;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+}
+
+.unverified-badge-compact {
+    font-size: 1.2rem;
+    cursor: pointer;
+    animation: pulse-warning 2s ease-in-out infinite;
+    transition: transform 0.2s ease;
+}
+
+.unverified-badge-compact:hover {
+    transform: scale(1.2);
+}
+
+.logout-btn-compact {
+    font-size: 1.5rem;
+    width: 36px;
+    height: 36px;
+    background: rgba(255, 0, 0, 0.2);
+    border: 2px solid rgba(255, 0, 0, 0.5);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.logout-btn-compact:hover {
+    background: rgba(255, 0, 0, 0.4);
+    border-color: rgba(255, 0, 0, 0.8);
+    box-shadow: 0 0 15px rgba(255, 0, 0, 0.5);
+    transform: scale(1.05);
+}
+
+.auth-buttons-compact {
+    display: flex;
+    gap: 10px;
 }
 
 .icon-button {
@@ -2570,6 +2644,46 @@ body::before {
     .main-menu-container {
         flex-direction: column;
         padding: 20px 10px;
+    }
+    
+    /* Compact user info responsive */
+    .user-info-compact {
+        padding: 6px 12px;
+        gap: 6px;
+    }
+    
+    .user-name-compact {
+        font-size: 0.8rem;
+        max-width: 80px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    
+    .logout-btn-compact {
+        width: 32px;
+        height: 32px;
+        font-size: 1.3rem;
+    }
+    
+    .corner-buttons {
+        gap: 6px;
+    }
+    
+    .corner-buttons.top-right {
+        top: 10px;
+        right: 10px;
+    }
+    
+    .corner-buttons.top-left {
+        top: 10px;
+        left: 10px;
+    }
+    
+    .icon-button {
+        width: 50px;
+        height: 50px;
+        font-size: 1.6rem;
     }
     
     /* Multiplayer mode selection responsive */
