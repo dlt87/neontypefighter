@@ -99,6 +99,15 @@ const server = http.createServer((req, res) => {
     } else if (pathname.endsWith('.js')) {
         serveFile(res, pathname.substring(1), 'application/javascript');
         return;
+    } else if (pathname.endsWith('.wav')) {
+        serveFile(res, pathname.substring(1), 'audio/wav');
+        return;
+    } else if (pathname.endsWith('.mp3')) {
+        serveFile(res, pathname.substring(1), 'audio/mpeg');
+        return;
+    } else if (pathname.endsWith('.ogg')) {
+        serveFile(res, pathname.substring(1), 'audio/ogg');
+        return;
     } else if (pathname.endsWith('.png') || pathname.endsWith('.jpg') || pathname.endsWith('.gif')) {
         const ext = path.extname(pathname).substring(1);
         serveFile(res, pathname.substring(1), `image/${ext}`);
