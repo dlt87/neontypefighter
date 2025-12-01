@@ -468,9 +468,9 @@ class TechMindMap3D {
     }
     
     start() {
-        // Reinitialize scene if renderer was disposed
-        if (!this.renderer) {
-            this.setupScene();
+        // Start animation loop if not already running
+        if (this.animationId) {
+            return; // Already running
         }
         
         const animate = () => {
@@ -493,14 +493,10 @@ class TechMindMap3D {
     }
     
     stop() {
+        // Just pause the animation loop, keep renderer alive
         if (this.animationId) {
             cancelAnimationFrame(this.animationId);
             this.animationId = null;
-        }
-        if (this.renderer && this.renderer.domElement && this.renderer.domElement.parentNode === this.container) {
-            this.renderer.dispose();
-            this.container.removeChild(this.renderer.domElement);
-            this.renderer = null;
         }
     }
     

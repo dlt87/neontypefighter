@@ -256,46 +256,79 @@ class SoundManager {
             this.customMusic.onerror = null;
         }
         
-        // Load new track
-        this.customMusic = new Audio(`music/${trackName}.wav`);
-        this.customMusic.volume = this.musicVolume;
-        this.customMusic.loop = true;
+        // Load new track - prefer .mp3, fall back to .wav
+        const makeSrc = (ext) => `music/${trackName}.${ext}`;
+        let fallbackTried = false;
+
+        // Create (or reuse) Audio element but reset listeners and src
+        this.customMusic = new Audio();
         this.customMusic.preload = 'auto';
-        
-        // Add event listeners to handle playback issues
+        this.customMusic.loop = true;
+        this.customMusic.volume = this.musicVolume;
+
+        const setSrcAndLoad = (src) => {
+            this.customMusic.src = src;
+            try {
+                this.customMusic.load();
+            } catch (e) {
+                // ignore load errors in some browsers
+            }
+        };
+
+        // Attach handlers
         this.customMusic.onended = () => {
-            // Restart if it ends unexpectedly (even though loop is true)
             if (this.musicEnabled) {
                 console.log('🎵 Music ended unexpectedly, restarting...');
                 this.customMusic.currentTime = 0;
                 this.customMusic.play().catch(err => console.log('Restart failed:', err));
             }
         };
-        
+
+        this.customMusic.onstalled = () => {
+            console.log('🎵 Music stalled, attempting to resume...');
+            try { this.customMusic.load(); } catch (e) {}
+            if (this.musicEnabled && wasPlaying) {
+                this.customMusic.play().catch(err => console.log('Resume failed:', err));
+            }
+        };
+
+        // Try to load .mp3 first
+        setSrcAndLoad(makeSrc('mp3'));
+
+        // oncanplay: if it becomes playable and was playing before, resume
+        this.customMusic.oncanplay = () => {
+            if (wasPlaying && this.musicEnabled) {
+                this.customMusic.play().catch(err => console.log('Play after canplay blocked:', err));
+            }
+        };
+
+        // onerror: try .wav fallback once, otherwise retry play later
         this.customMusic.onerror = (e) => {
-            console.error('🎵 Music loading error:', e);
-            // Try to continue playing despite error
+            console.error('🎵 Music loading error for', this.customMusic.src, e);
+            if (!fallbackTried) {
+                fallbackTried = true;
+                console.log('🎵 Trying .wav fallback for', trackName);
+                setSrcAndLoad(makeSrc('wav'));
+                // attempt to play if enabled
+                if (this.musicEnabled && wasPlaying) {
+                    this.customMusic.play().catch(err => console.log('Fallback play failed:', err));
+                }
+                return;
+            }
+
+            // If both failed, attempt to resume playback periodically
             if (this.musicEnabled) {
                 setTimeout(() => {
                     this.customMusic.play().catch(err => console.log('Retry failed:', err));
                 }, 1000);
             }
         };
-        
-        // Add stalled event handler
-        this.customMusic.onstalled = () => {
-            console.log('🎵 Music stalled, attempting to resume...');
-            this.customMusic.load();
-            if (this.musicEnabled && wasPlaying) {
-                this.customMusic.play().catch(err => console.log('Resume failed:', err));
-            }
-        };
-        
-        // Resume playing if music was playing before
+
+        // Resume playing if music was playing before (best effort)
         if (wasPlaying && this.musicEnabled) {
             this.customMusic.play().catch(err => console.log('Music autoplay blocked:', err));
         }
-        
+
         console.log(`🎵 Loaded music track: ${trackName}`);
     }
     
