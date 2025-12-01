@@ -853,3 +853,7 @@ const CATEGORY_COLORS = {
     'graphics': '#aa00aa',         // Violet
     'tools': '#aaff00'             // Lime
 };
+
+// Export to window for global access
+window.TECH_GLOSSARY = TECH_GLOSSARY;
+window.CATEGORY_COLORS = CATEGORY_COLORS;

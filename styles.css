@@ -3784,12 +3784,13 @@ body::before {
 }
 
 .learn-question-card {
-    background: rgba(0, 0, 0, 0.8);
-    border: 2px solid var(--secondary-color);
-    border-radius: 10px;
+    background: var(--panel-bg);
+    border: 3px solid var(--secondary-color);
+    border-radius: 15px;
     padding: 2rem;
     margin: 2rem 0;
     box-shadow: 0 0 30px rgba(255, 0, 255, 0.3);
+    transition: all 0.3s ease;
 }
 
 .question-prompt {
