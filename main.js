@@ -357,19 +357,6 @@ document.addEventListener('DOMContentLoaded', () => {
         e.target.textContent = enabled ? '🔊 SFX' : '🔇 SFX';
     });
     
-    document.getElementById('music-toggle').addEventListener('click', (e) => {
-        const enabled = game.soundManager.toggleMusic();
-        e.target.classList.toggle('disabled', !enabled);
-        e.target.textContent = enabled ? '🎵 MUSIC' : '🎵 MUSIC';
-        
-        // Update pause button state
-        if (enabled && game.soundManager.customMusic && !game.soundManager.customMusic.paused) {
-            document.getElementById('music-pause-btn').textContent = '⏸️';
-        } else {
-            document.getElementById('music-pause-btn').textContent = '▶️';
-        }
-    });
-    
     // Now Playing Widget Controls
     document.getElementById('music-pause-btn').addEventListener('click', () => {
         if (game.soundManager.customMusic) {

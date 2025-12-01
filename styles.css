@@ -3793,12 +3793,19 @@ body::before {
     padding: 2rem;
 }
 
+.learn-container h2 {
+    text-align: center;
+    font-family: 'Orbitron', monospace;
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+}
+
 .learn-description {
     text-align: center;
     font-size: 1.2rem;
     color: var(--secondary-color);
-    margin: 1rem 0 2rem 0;
-    font-family: 'Share Tech Mono', monospace;
+    margin: 0.5rem 0 2rem 0;
+    font-family: 'Orbitron', monospace;
 }
 
 .category-title {
@@ -3913,7 +3920,7 @@ body::before {
 }
 
 .category-name {
-    color: var(--primary-color);
+    color: #ffffff;
     font-family: 'Orbitron', monospace;
     font-size: 0.75rem;
     text-align: center;
@@ -3921,7 +3928,7 @@ body::before {
     text-transform: uppercase;
     letter-spacing: 0.5px;
     line-height: 1.2;
-    text-shadow: 0 0 10px var(--primary-color);
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
 }
 
 .category-btn:hover {
