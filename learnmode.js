@@ -352,7 +352,7 @@ class LearnMode {
                 this.bestStreak = this.streakCount;
             }
             this.showFeedback('correct');
-            this.game.soundManager.playCriticalSound();
+            this.game.soundManager.play('critical');
             
             // Particle effect
             if (this.game.particleSystem) {
@@ -391,13 +391,17 @@ class LearnMode {
         
         // Show next question and explain why buttons
         const nextBtn = document.getElementById('next-question-btn');
+        console.log('Next button found:', nextBtn, 'Hidden class:', nextBtn?.classList.contains('hidden'));
         if (nextBtn) {
             nextBtn.classList.remove('hidden');
+            console.log('Removed hidden from next button');
         }
         
         const explainBtn = document.getElementById('explain-why-btn');
+        console.log('Explain button found:', explainBtn, 'Hidden class:', explainBtn?.classList.contains('hidden'));
         if (explainBtn) {
             explainBtn.classList.remove('hidden');
+            console.log('Removed hidden from explain button');
         }
     }
     
