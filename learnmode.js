@@ -278,7 +278,7 @@ class LearnMode {
             definitionEl.textContent = this.currentQuestion.definition;
         }
         
-        // Update options
+        // Update options and fully reset button states
         const optionButtons = document.querySelectorAll('.option-btn');
         optionButtons.forEach((btn, index) => {
             if (this.currentQuestion.options[index]) {
@@ -286,6 +286,8 @@ class LearnMode {
                 btn.querySelector('.option-text').textContent = word;
                 btn.classList.remove('correct', 'wrong', 'disabled');
                 btn.disabled = false;
+                btn.style.pointerEvents = 'auto';
+                btn.style.opacity = '1';
             }
         });
         
@@ -327,8 +329,14 @@ class LearnMode {
     checkAnswerByNumber(optionIndex) {
         const isCorrect = optionIndex === this.currentQuestion.correctIndex;
         
-        // Highlight the clicked option
+        // Disable all buttons immediately
         const optionButtons = document.querySelectorAll('.option-btn');
+        optionButtons.forEach(btn => {
+            btn.disabled = true;
+            btn.style.pointerEvents = 'none';
+        });
+        
+        // Highlight the clicked option
         const clickedButton = optionButtons[optionIndex];
         
         if (isCorrect) {
