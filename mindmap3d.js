@@ -20,6 +20,7 @@ class TechMindMap3D {
         this.nodeMeshes = [];
         this.connections = [];
         this.lineMeshes = [];
+        this.gridGroup = null; // Group for all grid elements
         
         // Interaction state
         this.selectedNode = null;
@@ -56,6 +57,9 @@ class TechMindMap3D {
         this.scene.background = new THREE.Color(0x0a0a1a);
         this.scene.fog = new THREE.Fog(0x0a0a1a, 500, 2000);
         
+        // Create a group for all grid elements so they rotate together with nodes
+        this.gridGroup = new THREE.Group();
+        
         // Add 3D grid box for depth perception
         const gridSize = 800;
         const gridDivisions = 16;
@@ -69,28 +73,30 @@ class TechMindMap3D {
             opacity: 0.1 
         });
         const gridBox = new THREE.LineSegments(edges, gridMaterial);
-        this.scene.add(gridBox);
+        this.gridGroup.add(gridBox);
         
         // Add additional horizontal and vertical grid planes for reference
         const gridHelper1 = new THREE.GridHelper(gridSize, gridDivisions, 0x00ffff, 0xff00ff);
         gridHelper1.material.opacity = 0.15;
         gridHelper1.material.transparent = true;
         gridHelper1.position.y = -gridSize / 2;
-        this.scene.add(gridHelper1);
+        this.gridGroup.add(gridHelper1);
         
         const gridHelper2 = new THREE.GridHelper(gridSize, gridDivisions, 0xff00ff, 0x00ffff);
         gridHelper2.rotation.z = Math.PI / 2;
         gridHelper2.material.opacity = 0.1;
         gridHelper2.material.transparent = true;
         gridHelper2.position.x = -gridSize / 2;
-        this.scene.add(gridHelper2);
+        this.gridGroup.add(gridHelper2);
         
         const gridHelper3 = new THREE.GridHelper(gridSize, gridDivisions, 0xff00ff, 0x00ffff);
         gridHelper3.rotation.x = Math.PI / 2;
         gridHelper3.material.opacity = 0.1;
         gridHelper3.material.transparent = true;
         gridHelper3.position.z = -gridSize / 2;
-        this.scene.add(gridHelper3);
+        this.gridGroup.add(gridHelper3);
+        
+        this.scene.add(this.gridGroup);
         
         // Camera
         const aspect = this.container.clientWidth / this.container.clientHeight;
@@ -268,6 +274,12 @@ class TechMindMap3D {
     }
     
     rotateScene(deltaX, deltaY) {
+        // Rotate the grid group
+        if (this.gridGroup) {
+            this.gridGroup.rotation.y += deltaX;
+            this.gridGroup.rotation.x += deltaY;
+        }
+        
         // Rotate all nodes around origin
         this.nodes.forEach((node, index) => {
             const mesh = this.nodeMeshes[index];
@@ -480,9 +492,8 @@ class TechMindMap3D {
     }
     
     start() {
-        // Don't start if renderer is null (already disposed)
+        // Reinitialize scene if renderer was disposed
         if (!this.renderer) {
-            console.warn('Cannot start - renderer is null. Reinitializing scene.');
             this.setupScene();
         }
         
