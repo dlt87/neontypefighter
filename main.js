@@ -160,11 +160,6 @@ document.addEventListener('DOMContentLoaded', () => {
         game.startSoloGame(difficulty);
     });
     
-    // Game start back button
-    document.getElementById('game-start-back-btn').addEventListener('click', () => {
-        showScreen('menu');
-    });
-    
     document.getElementById('timed-mode-btn').addEventListener('click', () => {
         showScreen('timed');
         setupTimedMode();
@@ -240,11 +235,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (game.endlessMode) {
             game.endlessMode.startGame();
         }
-    });
-    
-    // Endless mode start back button
-    document.getElementById('endless-start-back-btn').addEventListener('click', () => {
-        showScreen('menu');
     });
     
     document.getElementById('multiplayer-mode-btn').addEventListener('click', () => {
@@ -393,14 +383,14 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
     
-    document.getElementById('back-to-menu-btn').addEventListener('click', () => {
+    document.getElementById('multiplayer-home-btn').addEventListener('click', () => {
         if (multiplayerClient) {
             multiplayerClient.disconnect();
         }
         showScreen('menu');
     });
     
-    document.getElementById('back-from-themes-btn').addEventListener('click', () => {
+    document.getElementById('themes-home-btn').addEventListener('click', () => {
         showScreen('menu');
     });
     
@@ -1234,22 +1224,22 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('reduce-particles').addEventListener('change', saveSettings);
     document.getElementById('screen-shake').addEventListener('change', saveSettings);
 
-    document.getElementById('back-from-settings-btn').addEventListener('click', () => {
+    document.getElementById('settings-home-btn').addEventListener('click', () => {
         showScreen('menu');
         loadMainMenuLeaderboard();
     });
     
-    document.getElementById('back-from-achievements-btn').addEventListener('click', () => {
+    document.getElementById('achievements-home-btn').addEventListener('click', () => {
         showScreen('menu');
         loadMainMenuLeaderboard();
     });
     
-    document.getElementById('back-from-profile-btn').addEventListener('click', () => {
+    document.getElementById('profile-home-btn').addEventListener('click', () => {
         showScreen('menu');
         loadMainMenuLeaderboard();
     });
     
-    document.getElementById('back-from-glossary-btn').addEventListener('click', () => {
+    document.getElementById('glossary-home-btn').addEventListener('click', () => {
         showScreen('menu');
         loadMainMenuLeaderboard();
     });

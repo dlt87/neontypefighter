@@ -168,7 +168,6 @@
                         <div class="rule-item">🔥 Difficulty increases every 5 words</div>
                     </div>
                     <button class="neon-button" id="timed-start-game-btn">START GAME</button>
-                    <button class="neon-button secondary" id="timed-start-back-btn">BACK TO MENU</button>
                 </div>
             </div>
             
@@ -255,7 +254,6 @@
                         </select>
                     </div>
                     <button class="neon-button" id="game-start-btn">START GAME</button>
-                    <button class="neon-button secondary" id="game-start-back-btn">BACK TO MENU</button>
                 </div>
             </div>
             
@@ -338,6 +336,10 @@
 
         <!-- Multiplayer Lobby (Combined PvP and Co-op) -->
         <div id="multiplayer-lobby" class="menu-screen hidden">
+            <button class="home-button" id="multiplayer-home-btn" title="Return to Menu">
+                <span class="home-icon">🏠</span>
+            </button>
+            
             <h2 class="neon-text">ONLINE MULTIPLAYER</h2>
             
             <!-- Mode Selection -->
@@ -377,7 +379,6 @@
                 
                 <button class="neon-button" id="find-match-btn">FIND MATCH</button>
                 <button class="neon-button secondary" id="cancel-match-btn" style="display:none;">CANCEL</button>
-                <button class="neon-button secondary" id="back-to-menu-btn">BACK TO MENU</button>
                 
                 <div class="waiting-message hidden" id="waiting-message">
                     <div class="searching-animation">
@@ -392,17 +393,24 @@
 
         <!-- Theme Selector -->
         <div id="theme-selector" class="menu-screen hidden">
+            <button class="home-button" id="themes-home-btn" title="Return to Menu">
+                <span class="home-icon">🏠</span>
+            </button>
+            
             <h2 class="neon-text">SELECT YOUR THEME</h2>
             <div class="theme-selector-content">
                 <div class="theme-grid" id="theme-grid">
                     <!-- Theme cards will be inserted here -->
                 </div>
-                <button class="neon-button secondary" id="back-from-themes-btn">BACK</button>
             </div>
         </div>
 
         <!-- Settings Menu -->
         <div id="settings-menu" class="menu-screen hidden">
+            <button class="home-button" id="settings-home-btn" title="Return to Menu">
+                <span class="home-icon">🏠</span>
+            </button>
+            
             <h2 class="neon-text">SETTINGS</h2>
             <div class="settings-content">
                 <div class="settings-section">
@@ -466,13 +474,15 @@
                         </label>
                     </div>
                 </div>
-
-                <button class="neon-button secondary" id="back-from-settings-btn">BACK</button>
             </div>
         </div>
 
         <!-- Achievements Screen -->
         <div id="achievements-screen" class="menu-screen hidden">
+            <button class="home-button" id="achievements-home-btn" title="Return to Menu">
+                <span class="home-icon">🏠</span>
+            </button>
+            
             <h2 class="neon-text">ACHIEVEMENTS</h2>
             <div class="achievements-content">
                 <div class="achievements-stats">
@@ -488,12 +498,15 @@
                 <div class="achievements-grid" id="achievements-grid">
                     <!-- Achievement cards will be inserted here -->
                 </div>
-                <button class="neon-button secondary" id="back-from-achievements-btn">BACK</button>
             </div>
         </div>
 
         <!-- Profile Screen -->
         <div id="profile-screen" class="menu-screen hidden">
+            <button class="home-button" id="profile-home-btn" title="Return to Menu">
+                <span class="home-icon">🏠</span>
+            </button>
+            
             <h2 class="neon-text">PLAYER PROFILE</h2>
             <div class="profile-content">
                 <div class="profile-header" id="profile-header">
@@ -520,13 +533,15 @@
                         <div class="highscore-label">Best ELO</div>
                     </div>
                 </div>
-                
-                <button class="neon-button secondary" id="back-from-profile-btn">BACK</button>
             </div>
         </div>
 
         <!-- Tech Glossary Screen -->
         <div id="glossary-screen" class="menu-screen hidden">
+            <button class="home-button" id="glossary-home-btn" title="Return to Menu">
+                <span class="home-icon">🏠</span>
+            </button>
+            
             <h2 class="neon-text">TECH GLOSSARY</h2>
             <div class="glossary-content">
                 <div class="glossary-header">
@@ -810,15 +825,11 @@
                         <ul class="terms-list learned" id="learned-terms-list">
                             <li>Start answering questions!</li>
                         </ul>
+                        </div>
                     </div>
                 </div>
-                
-                <button class="neon-button secondary" id="learn-back-btn">BACK TO MENU</button>
             </div>
-        </div>
-    </div>
-
-    <!-- Achievement Unlock Toast -->
+        </div>    <!-- Achievement Unlock Toast -->
     <div id="achievement-toast" class="achievement-toast hidden">
         <div class="achievement-toast-content">
             <div class="achievement-toast-icon"></div>
