@@ -56,18 +56,41 @@ class TechMindMap3D {
         this.scene.background = new THREE.Color(0x0a0a1a);
         this.scene.fog = new THREE.Fog(0x0a0a1a, 500, 2000);
         
-        // Add grid helper for depth perception
-        const gridHelper = new THREE.GridHelper(1000, 20, 0x00ffff, 0xff00ff);
-        gridHelper.material.opacity = 0.2;
-        gridHelper.material.transparent = true;
-        this.scene.add(gridHelper);
+        // Add 3D grid box for depth perception
+        const gridSize = 800;
+        const gridDivisions = 16;
         
-        // Add vertical grid plane
-        const gridHelperVertical = new THREE.GridHelper(1000, 20, 0x00ffff, 0xff00ff);
-        gridHelperVertical.rotation.x = Math.PI / 2;
-        gridHelperVertical.material.opacity = 0.15;
-        gridHelperVertical.material.transparent = true;
-        this.scene.add(gridHelperVertical);
+        // Create a box wireframe grid
+        const boxGeometry = new THREE.BoxGeometry(gridSize, gridSize, gridSize, gridDivisions, gridDivisions, gridDivisions);
+        const edges = new THREE.EdgesGeometry(boxGeometry);
+        const gridMaterial = new THREE.LineBasicMaterial({ 
+            color: 0x00ffff, 
+            transparent: true, 
+            opacity: 0.1 
+        });
+        const gridBox = new THREE.LineSegments(edges, gridMaterial);
+        this.scene.add(gridBox);
+        
+        // Add additional horizontal and vertical grid planes for reference
+        const gridHelper1 = new THREE.GridHelper(gridSize, gridDivisions, 0x00ffff, 0xff00ff);
+        gridHelper1.material.opacity = 0.15;
+        gridHelper1.material.transparent = true;
+        gridHelper1.position.y = -gridSize / 2;
+        this.scene.add(gridHelper1);
+        
+        const gridHelper2 = new THREE.GridHelper(gridSize, gridDivisions, 0xff00ff, 0x00ffff);
+        gridHelper2.rotation.z = Math.PI / 2;
+        gridHelper2.material.opacity = 0.1;
+        gridHelper2.material.transparent = true;
+        gridHelper2.position.x = -gridSize / 2;
+        this.scene.add(gridHelper2);
+        
+        const gridHelper3 = new THREE.GridHelper(gridSize, gridDivisions, 0xff00ff, 0x00ffff);
+        gridHelper3.rotation.x = Math.PI / 2;
+        gridHelper3.material.opacity = 0.1;
+        gridHelper3.material.transparent = true;
+        gridHelper3.position.z = -gridSize / 2;
+        this.scene.add(gridHelper3);
         
         // Camera
         const aspect = this.container.clientWidth / this.container.clientHeight;
@@ -457,7 +480,18 @@ class TechMindMap3D {
     }
     
     start() {
+        // Don't start if renderer is null (already disposed)
+        if (!this.renderer) {
+            console.warn('Cannot start - renderer is null. Reinitializing scene.');
+            this.setupScene();
+        }
+        
         const animate = () => {
+            if (!this.renderer) {
+                // Stop animation if renderer was disposed
+                return;
+            }
+            
             this.applyPhysics();
             
             // Auto-rotate if enabled
