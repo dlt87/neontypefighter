@@ -14,6 +14,8 @@ class LearnMode {
         this.isActive = false;
         this.streakCount = 0;
         this.bestStreak = 0;
+        this.learnedTerms = [];
+        this.availableTerms = [];
         
         // Track category-specific progress
         this.categoryStats = {};
@@ -65,6 +67,15 @@ class LearnMode {
             });
         }
         
+        // Next question button
+        const nextQuestionBtn = document.getElementById('next-question-btn');
+        if (nextQuestionBtn) {
+            nextQuestionBtn.addEventListener('click', () => {
+                nextQuestionBtn.classList.add('hidden');
+                this.generateQuestion();
+            });
+        }
+        
         // Back button
         const backBtn = document.getElementById('learn-back-btn');
         if (backBtn) {
@@ -87,9 +98,18 @@ class LearnMode {
         this.resetStats();
         this.isActive = true;
         
+        // Initialize available terms for this category
+        const glossary = window.TECH_GLOSSARY || {};
+        this.availableTerms = Object.keys(glossary)
+            .filter(word => category === 'all' || glossary[word].category === category);
+        this.learnedTerms = [];
+        
         // Show question area, hide category selection
         document.getElementById('learn-category-select').classList.add('hidden');
         document.getElementById('learn-question-area').classList.remove('hidden');
+        
+        // Update sidebars
+        this.updateTermsSidebar();
         
         // Update header to show selected category
         const categoryNames = {
@@ -129,6 +149,7 @@ class LearnMode {
         this.correctAnswers = 0;
         this.usedWords = [];
         this.streakCount = 0;
+        this.learnedTerms = [];
         this.updateStatsDisplay();
     }
     
@@ -357,14 +378,20 @@ class LearnMode {
         this.categoryStats[category].total++;
         if (isCorrect) {
             this.categoryStats[category].correct++;
+            // Add to learned terms
+            if (!this.learnedTerms.includes(this.currentQuestion.correctWord)) {
+                this.learnedTerms.push(this.currentQuestion.correctWord);
+                this.updateTermsSidebar();
+            }
         }
         
         this.updateStatsDisplay();
         
-        // Generate next question after delay
-        setTimeout(() => {
-            this.generateQuestion();
-        }, 2500);
+        // Show next question button
+        const nextBtn = document.getElementById('next-question-btn');
+        if (nextBtn) {
+            nextBtn.classList.remove('hidden');
+        }
     }
     
     showFeedback(type, correctWord = null) {
@@ -403,6 +430,41 @@ class LearnMode {
         // Update question count
         const countEl = document.getElementById('learn-questions-count');
         if (countEl) countEl.textContent = this.questionsAnswered;
+    }
+    
+    updateTermsSidebar() {
+        // Update learned terms list
+        const learnedList = document.getElementById('learned-terms-list');
+        if (learnedList) {
+            if (this.learnedTerms.length === 0) {
+                learnedList.innerHTML = '<li>Start answering questions!</li>';
+            } else {
+                learnedList.innerHTML = this.learnedTerms
+                    .map(term => `<li>${term}</li>`)
+                    .join('');
+            }
+        }
+        
+        // Update unlearned terms list
+        const unlearnedList = document.getElementById('unlearned-terms-list');
+        if (unlearnedList) {
+            const unlearnedTerms = this.availableTerms.filter(
+                term => !this.learnedTerms.includes(term)
+            );
+            
+            if (unlearnedTerms.length === 0) {
+                unlearnedList.innerHTML = '<li>🎉 All terms learned!</li>';
+            } else {
+                unlearnedList.innerHTML = unlearnedTerms
+                    .slice(0, 50) // Limit to first 50 to avoid performance issues
+                    .map(term => `<li>${term}</li>`)
+                    .join('');
+                
+                if (unlearnedTerms.length > 50) {
+                    unlearnedList.innerHTML += `<li style="color: var(--accent-color); font-style: italic;">...and ${unlearnedTerms.length - 50} more</li>`;
+                }
+            }
+        }
     }
     
     viewInGlossary() {

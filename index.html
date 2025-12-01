@@ -716,60 +716,84 @@
                 
                 <!-- Question Area -->
                 <div class="learn-question-area hidden" id="learn-question-area">
-                    <div class="learn-stats">
-                        <div class="stat-box">
-                            <div class="stat-label">Score</div>
-                            <div class="stat-value" id="learn-score">0</div>
+                    <!-- Unlearned Terms Sidebar (left side) -->
+                    <div class="learn-terms-sidebar" id="unlearned-sidebar">
+                        <h4>📚 TO LEARN</h4>
+                        <ul class="terms-list unlearned" id="unlearned-terms-list">
+                            <li>Loading...</li>
+                        </ul>
+                    </div>
+                    
+                    <!-- Main Question Content (center) -->
+                    <div class="learn-question-content">
+                        <div class="learn-stats">
+                            <div class="stat-box">
+                                <div class="stat-label">Score</div>
+                                <div class="stat-value" id="learn-score">0</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-label">Accuracy</div>
+                                <div class="stat-value" id="learn-accuracy">0%</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-label">Questions</div>
+                                <div class="stat-value" id="learn-questions-count">0</div>
+                            </div>
                         </div>
-                        <div class="stat-box">
-                            <div class="stat-label">Accuracy</div>
-                            <div class="stat-value" id="learn-accuracy">0%</div>
+                        
+                        <div class="learn-question-card">
+                            <h3 class="question-prompt">What is this?</h3>
+                            <div class="question-definition" id="learn-definition">
+                                Loading question...
+                            </div>
+                            
+                            <div class="question-options" id="learn-options">
+                                <button class="option-btn" data-option="0">
+                                    <span class="option-number">1</span>
+                                    <span class="option-text">Option 1</span>
+                                </button>
+                                <button class="option-btn" data-option="1">
+                                    <span class="option-number">2</span>
+                                    <span class="option-text">Option 2</span>
+                                </button>
+                                <button class="option-btn" data-option="2">
+                                    <span class="option-number">3</span>
+                                    <span class="option-text">Option 3</span>
+                                </button>
+                                <button class="option-btn" data-option="3">
+                                    <span class="option-number">4</span>
+                                    <span class="option-text">Option 4</span>
+                                </button>
+                            </div>
+                            
+                            <div class="learn-input-area">
+                                <input type="text" id="learn-input" class="learn-input" 
+                                       placeholder="Type answer or press 1-4..." 
+                                       autocomplete="off" spellcheck="false">
+                            </div>
+                            
+                            <div class="learn-actions">
+                                <button class="neon-button small secondary" id="view-glossary-btn">
+                                    📚 View in Glossary
+                                </button>
+                                <button class="neon-button small hidden" id="next-question-btn">
+                                    Next Question ➜
+                                </button>
+                            </div>
                         </div>
-                        <div class="stat-box">
-                            <div class="stat-label">Questions</div>
-                            <div class="stat-value" id="learn-questions-count">0</div>
+                        
+                        <div class="learn-feedback hidden" id="learn-feedback">
+                            <div class="feedback-icon"></div>
+                            <div class="feedback-text"></div>
                         </div>
                     </div>
                     
-                    <div class="learn-question-card">
-                        <h3 class="question-prompt">What is this?</h3>
-                        <div class="question-definition" id="learn-definition">
-                            Loading question...
-                        </div>
-                        
-                        <div class="question-options" id="learn-options">
-                            <button class="option-btn" data-option="0">
-                                <span class="option-number">1</span>
-                                <span class="option-text">Option 1</span>
-                            </button>
-                            <button class="option-btn" data-option="1">
-                                <span class="option-number">2</span>
-                                <span class="option-text">Option 2</span>
-                            </button>
-                            <button class="option-btn" data-option="2">
-                                <span class="option-number">3</span>
-                                <span class="option-text">Option 3</span>
-                            </button>
-                            <button class="option-btn" data-option="3">
-                                <span class="option-number">4</span>
-                                <span class="option-text">Option 4</span>
-                            </button>
-                        </div>
-                        
-                        <div class="learn-input-area">
-                            <input type="text" id="learn-input" class="learn-input" 
-                                   placeholder="Type answer or press 1-4..." 
-                                   autocomplete="off" spellcheck="false">
-                        </div>
-                        
-                        <button class="neon-button small secondary" id="view-glossary-btn">
-                            📚 View in Glossary
-                        </button>
-                    </div>
-                    
-                    <div class="learn-feedback hidden" id="learn-feedback">
-                        <div class="feedback-icon"></div>
-                        <div class="feedback-text"></div>
+                    <!-- Learned Terms Sidebar (right side) -->
+                    <div class="learn-terms-sidebar">
+                        <h4>✓ LEARNED</h4>
+                        <ul class="terms-list learned" id="learned-terms-list">
+                            <li>Start answering questions!</li>
+                        </ul>
                     </div>
                 </div>
                 

@@ -74,11 +74,16 @@ class TechMindMap {
     
     generateConnections() {
         this.connections = [];
+        const maxConnectionsPerNode = 3; // Limit connections to reduce tangles
         
         // Create connections based on related words
         this.nodes.forEach(node => {
             const related = node.data.related || [];
-            related.forEach(relatedWord => {
+            let connectionsAdded = 0;
+            
+            for (const relatedWord of related) {
+                if (connectionsAdded >= maxConnectionsPerNode) break;
+                
                 const targetNode = this.nodes.find(n => n.word === relatedWord);
                 if (targetNode) {
                     // Check if connection already exists
@@ -87,14 +92,20 @@ class TechMindMap {
                                 (conn.from === targetNode && conn.to === node)
                     );
                     
-                    if (!exists) {
+                    // Check if target node has room for more connections
+                    const targetConnections = this.connections.filter(
+                        conn => conn.from === targetNode || conn.to === targetNode
+                    ).length;
+                    
+                    if (!exists && targetConnections < maxConnectionsPerNode) {
                         this.connections.push({
                             from: node,
                             to: targetNode
                         });
+                        connectionsAdded++;
                     }
                 }
-            });
+            }
         });
         
         // Ensure all nodes have at least 2 connections to prevent isolation
