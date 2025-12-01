@@ -178,7 +178,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // Home button handlers
     document.getElementById('game-home-btn').addEventListener('click', () => {
         if (confirm('Are you sure you want to quit and return to the menu?')) {
-            game.endGame();
+            // Only call endGame if a game is actually active
+            if (game.isActive) {
+                game.endGame();
+            }
+            // Hide the start overlay if it's showing
+            document.getElementById('game-start-overlay').style.display = 'none';
             showScreen('menu');
         }
     });
@@ -199,9 +204,12 @@ document.addEventListener('DOMContentLoaded', () => {
     
     document.getElementById('endless-home-btn').addEventListener('click', () => {
         if (confirm('Are you sure you want to quit and return to the menu?')) {
-            if (game.endlessMode) {
+            // Check if endless mode game is actually active
+            if (game.endlessMode && game.endlessMode.isActive) {
                 game.endlessMode.gameOver();
             }
+            // Hide the start overlay if it's showing
+            document.getElementById('endless-start-overlay').style.display = 'none';
             showScreen('menu');
         }
     });
