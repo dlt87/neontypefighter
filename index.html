@@ -323,6 +323,9 @@
 
             <!-- Particle Effects Container -->
             <div id="particles-container"></div>
+            
+            <!-- FPS Counter -->
+            <div id="fps-counter" style="position: fixed; top: 60px; left: 20px; color: var(--neon-cyan); font-family: 'Orbitron', monospace; font-size: 14px; z-index: 1000; display: none; background: rgba(0, 0, 0, 0.7); padding: 5px 10px; border-radius: 5px; border: 1px solid var(--neon-cyan);">FPS: 0</div>
 
             <!-- Game Over Overlay -->
             <div id="game-over-overlay" class="hidden">
@@ -456,14 +459,6 @@
 
                 <div class="settings-section">
                     <h3 class="setting-category">Gameplay</h3>
-                    <div class="setting-item">
-                        <label for="difficulty">AI Difficulty</label>
-                        <select id="difficulty" class="neon-select">
-                            <option value="easy">Easy</option>
-                            <option value="medium" selected>Medium</option>
-                            <option value="hard">Hard</option>
-                        </select>
-                    </div>
                     <div class="setting-item">
                         <label for="word-bank-select">Word Bank</label>
                         <select id="word-bank-select" class="neon-select">

@@ -322,6 +322,10 @@ class Game {
         if (player === 1) {
             this.elements.player1Health.style.width = percentage + '%';
             this.elements.player1HealthText.textContent = Math.max(0, health);
+            // Screen shake when player takes damage
+            if (health < this.player1Health && window.applyScreenShake) {
+                window.applyScreenShake(8, 200);
+            }
         } else {
             this.elements.player2Health.style.width = percentage + '%';
             this.elements.player2HealthText.textContent = Math.max(0, health);

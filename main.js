@@ -1185,7 +1185,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const soundVolume = localStorage.getItem('soundVolume') || '50';
         const musicVolume = localStorage.getItem('musicVolume') || '30';
         const muteSounds = localStorage.getItem('muteSounds') === 'true';
-        const difficulty = localStorage.getItem('difficulty') || 'medium';
         const showFps = localStorage.getItem('showFps') === 'true';
         const reduceParticles = localStorage.getItem('reduceParticles') === 'true';
         const screenShake = localStorage.getItem('screenShake') === 'true';
@@ -1195,7 +1194,88 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('sound-volume-value').textContent = soundVolume + '%';
         document.getElementById('music-volume').value = musicVolume;
         document.getElementById('music-volume-value').textContent = musicVolume + '%';
+        
+        // Start FPS counter if enabled
+        if (showFps) {
+            startFPSCounter();
+        }
 
+        document.getElementById('mute-sounds').checked = muteSounds;
+        document.getElementById('show-fps').checked = showFps;
+        document.getElementById('reduce-particles').checked = reduceParticles;
+        document.getElementById('screen-shake').checked = screenShake;
+        document.getElementById('music-track').value = musicTrack;
+
+        applySettings();
+        updateNowPlaying(); // Update now playing widget
+    }
+    
+    // FPS Counter
+    let fpsInterval = null;
+    let lastFrameTime = performance.now();
+    let fps = 0;
+    
+    function startFPSCounter() {
+        const fpsElement = document.getElementById('fps-counter');
+        if (!fpsElement) return;
+        
+        fpsElement.style.display = 'block';
+        
+        if (fpsInterval) return; // Already running
+        
+        function updateFPS() {
+            const now = performance.now();
+            const delta = now - lastFrameTime;
+            lastFrameTime = now;
+            fps = Math.round(1000 / delta);
+            
+            fpsElement.textContent = `FPS: ${fps}`;
+            fpsInterval = requestAnimationFrame(updateFPS);
+        }
+        
+        updateFPS();
+    }
+    
+    function stopFPSCounter() {
+        const fpsElement = document.getElementById('fps-counter');
+        if (fpsElement) {
+            fpsElement.style.display = 'none';
+        }
+        if (fpsInterval) {
+            cancelAnimationFrame(fpsInterval);
+            fpsInterval = null;
+        }
+    }
+    
+    // Screen Shake Effect
+    window.applyScreenShake = function(intensity = 10, duration = 300) {
+        const screenShakeEnabled = localStorage.getItem('screenShake') === 'true';
+        if (!screenShakeEnabled) return;
+        
+        const gameContainer = document.getElementById('game-container');
+        if (!gameContainer) return;
+        
+        const startTime = Date.now();
+        const originalTransform = gameContainer.style.transform;
+        
+        function shake() {
+            const elapsed = Date.now() - startTime;
+            if (elapsed >= duration) {
+                gameContainer.style.transform = originalTransform || '';
+                return;
+            }
+            
+            const progress = 1 - (elapsed / duration);
+            const x = (Math.random() - 0.5) * intensity * progress;
+            const y = (Math.random() - 0.5) * intensity * progress;
+            
+            gameContainer.style.transform = `translate(${x}px, ${y}px)`;
+            requestAnimationFrame(shake);
+        }
+        
+        shake();
+    };
+    
     // Achievements Management
     window.loadAchievements = async function() {
         const achievementsGrid = document.getElementById('achievements-grid');
@@ -1270,26 +1350,22 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 5000);
     };
 
-        document.getElementById('mute-sounds').checked = muteSounds;
-        document.getElementById('difficulty').value = difficulty;
-        document.getElementById('show-fps').checked = showFps;
-        document.getElementById('reduce-particles').checked = reduceParticles;
-        document.getElementById('screen-shake').checked = screenShake;
-        document.getElementById('music-track').value = musicTrack;
-
-        applySettings();
-        updateNowPlaying(); // Update now playing widget
-    }
-
     function saveSettings() {
         localStorage.setItem('soundVolume', document.getElementById('sound-volume').value);
         localStorage.setItem('musicVolume', document.getElementById('music-volume').value);
         localStorage.setItem('muteSounds', document.getElementById('mute-sounds').checked);
-        localStorage.setItem('difficulty', document.getElementById('difficulty').value);
         localStorage.setItem('showFps', document.getElementById('show-fps').checked);
         localStorage.setItem('reduceParticles', document.getElementById('reduce-particles').checked);
         localStorage.setItem('screenShake', document.getElementById('screen-shake').checked);
         localStorage.setItem('musicTrack', document.getElementById('music-track').value);
+        
+        // Toggle FPS counter
+        if (document.getElementById('show-fps').checked) {
+            startFPSCounter();
+        } else {
+            stopFPSCounter();
+        }
+        
         applySettings();
     }
 
@@ -1297,7 +1373,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const soundVolume = parseInt(document.getElementById('sound-volume').value);
         const musicVolume = parseInt(document.getElementById('music-volume').value);
         const muteSounds = document.getElementById('mute-sounds').checked;
-        const difficulty = document.getElementById('difficulty').value;
         const musicTrack = document.getElementById('music-track').value;
         
         // Apply sound volume
@@ -1309,12 +1384,7 @@ document.addEventListener('DOMContentLoaded', () => {
             updateNowPlaying(); // Update now playing widget when track changes
         }
 
-        // Apply AI difficulty
-        if (game && difficulty) {
-            game.aiDifficulty = difficulty;
-        }
-
-        console.log('⚙️ Settings applied:', { soundVolume, musicVolume, muteSounds, difficulty, musicTrack });
+        console.log('⚙️ Settings applied:', { soundVolume, musicVolume, muteSounds, musicTrack });
     }
 
     // Settings event listeners
@@ -1329,7 +1399,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     document.getElementById('mute-sounds').addEventListener('change', saveSettings);
-    document.getElementById('difficulty').addEventListener('change', saveSettings);
     document.getElementById('show-fps').addEventListener('change', saveSettings);
     document.getElementById('reduce-particles').addEventListener('change', saveSettings);
     document.getElementById('screen-shake').addEventListener('change', saveSettings);
