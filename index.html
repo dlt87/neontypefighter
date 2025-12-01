@@ -348,7 +348,15 @@
                     <p class="mode-description">Battle against another player! First to zero health loses.</p>
                     <button class="neon-button" id="select-pvp-btn">START MATCHMAKING</button>
                 </div>
+                <div class="mode-card disabled" id="coop-mode-card">
+                    <div class="mode-icon">🤝</div>
+                    <h3 class="mode-title">CO-OP MODE</h3>
+                    <p class="mode-description">Team up with another player to defeat a powerful boss!</p>
+                    <button class="neon-button secondary" disabled>COMING SOON</button>
+                </div>
             </div>
+            
+            <button class="neon-button secondary" id="multiplayer-back-btn">BACK TO MENU</button>
             
             <!-- Matchmaking Area (Hidden until mode selected) -->
             <div class="lobby-content hidden" id="lobby-matchmaking">
@@ -783,8 +791,8 @@
                             </div>
                             
                             <div class="learn-actions">
-                                <button class="neon-button small secondary" id="view-glossary-btn">
-                                    📚 View in Glossary
+                                <button class="neon-button small secondary hidden" id="explain-why-btn">
+                                    💡 Explain Why
                                 </button>
                                 <button class="neon-button small hidden" id="next-question-btn">
                                     Next Question ➜

@@ -194,8 +194,11 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     
     document.getElementById('timed-home-btn').addEventListener('click', () => {
-        if (confirm('Are you sure you want to quit and return to the menu?')) {
-            if (game.timedMode) {
+        if (confirm('Are you sure you want to quit and return to the menu? Your score will be saved.')) {
+            if (game.timedMode && game.timedMode.isActive) {
+                // Stop the timer and end the game properly
+                game.timedMode.endGame();
+            } else if (game.timedMode) {
                 game.timedMode.reset();
                 // Hide results overlay if visible
                 document.getElementById('timed-results-overlay').classList.add('hidden');
@@ -257,6 +260,10 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     
     // Mode selection handlers
+    document.getElementById('multiplayer-back-btn').addEventListener('click', () => {
+        showScreen('menu');
+    });
+    
     document.getElementById('select-pvp-btn').addEventListener('click', () => {
         // Show matchmaking lobby directly
         document.getElementById('multiplayer-mode-selection').classList.add('hidden');

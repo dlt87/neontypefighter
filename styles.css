@@ -1287,6 +1287,23 @@ body::before {
     border-color: var(--neon-cyan);
 }
 
+.mode-card.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    filter: grayscale(0.5);
+}
+
+.mode-card.disabled:hover {
+    transform: none;
+    box-shadow: 0 0 20px rgba(255, 0, 255, 0.3);
+    border-color: var(--neon-magenta);
+}
+
+.mode-card.disabled button {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
 .mode-icon {
     font-size: 5rem;
     margin-bottom: 1.5rem;
