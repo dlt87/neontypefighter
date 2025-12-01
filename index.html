@@ -529,7 +529,10 @@
             <h2 class="neon-text">TECH GLOSSARY</h2>
             <div class="glossary-content">
                 <div class="glossary-header">
-                    <input type="text" id="glossary-search" class="glossary-search" placeholder="Search words...">
+                    <div style="flex: 1; position: relative;">
+                        <input type="text" id="glossary-search" class="glossary-search" placeholder="Search words..." autocomplete="off">
+                        <div id="search-suggestions" class="search-suggestions hidden"></div>
+                    </div>
                     <button class="neon-button small" id="reset-view-btn">Reset View</button>
                     <button class="neon-button small" id="toggle-physics-btn">Physics: ON</button>
                 </div>

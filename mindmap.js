@@ -16,8 +16,10 @@ class TechMindMap {
         // Interaction state
         this.selectedNode = null;
         this.hoveredNode = null;
-        this.isDragging = false;
+        this.isDraggingNode = false;
+        this.isPanning = false;
         this.dragOffset = { x: 0, y: 0 };
+        this.panStart = { x: 0, y: 0 };
         
         // View state
         this.camera = { x: 0, y: 0, zoom: 1 };
@@ -100,33 +102,51 @@ class TechMindMap {
         
         const clickedNode = this.getNodeAt(mouseX, mouseY);
         if (clickedNode) {
-            this.isDragging = true;
+            this.isDraggingNode = true;
             this.selectedNode = clickedNode;
             this.dragOffset = {
                 x: mouseX - clickedNode.x,
                 y: mouseY - clickedNode.y
             };
+        } else {
+            // Start panning if not clicking on a node
+            this.isPanning = true;
+            this.panStart = {
+                x: e.clientX - this.camera.x,
+                y: e.clientY - this.camera.y
+            };
+            this.canvas.style.cursor = 'grabbing';
         }
     }
     
     handleMouseMove(e) {
         const rect = this.canvas.getBoundingClientRect();
-        const mouseX = (e.clientX - rect.left - this.camera.x) / this.camera.zoom;
-        const mouseY = (e.clientY - rect.top - this.camera.y) / this.camera.zoom;
         
-        if (this.isDragging && this.selectedNode) {
+        if (this.isPanning) {
+            // Pan the canvas
+            this.camera.x = e.clientX - this.panStart.x;
+            this.camera.y = e.clientY - this.panStart.y;
+        } else if (this.isDraggingNode && this.selectedNode) {
+            // Drag node
+            const mouseX = (e.clientX - rect.left - this.camera.x) / this.camera.zoom;
+            const mouseY = (e.clientY - rect.top - this.camera.y) / this.camera.zoom;
             this.selectedNode.x = mouseX - this.dragOffset.x;
             this.selectedNode.y = mouseY - this.dragOffset.y;
             this.selectedNode.vx = 0;
             this.selectedNode.vy = 0;
         } else {
+            // Check for hover
+            const mouseX = (e.clientX - rect.left - this.camera.x) / this.camera.zoom;
+            const mouseY = (e.clientY - rect.top - this.camera.y) / this.camera.zoom;
             this.hoveredNode = this.getNodeAt(mouseX, mouseY);
-            this.canvas.style.cursor = this.hoveredNode ? 'pointer' : 'default';
+            this.canvas.style.cursor = this.hoveredNode ? 'pointer' : 'grab';
         }
     }
     
     handleMouseUp(e) {
-        this.isDragging = false;
+        this.isDraggingNode = false;
+        this.isPanning = false;
+        this.canvas.style.cursor = 'grab';
     }
     
     handleWheel(e) {
@@ -374,12 +394,24 @@ class TechMindMap {
     
     searchWord(query) {
         const lowerQuery = query.toLowerCase();
-        const node = this.nodes.find(n => n.word.toLowerCase().includes(lowerQuery));
-        if (node) {
-            this.focusNode(node);
-            this.showDefinition(node);
-            return true;
+        const matches = this.nodes.filter(n => n.word.toLowerCase().includes(lowerQuery));
+        
+        if (matches.length > 0) {
+            // Focus on first match
+            this.focusNode(matches[0]);
+            this.showDefinition(matches[0]);
+            return matches;
         }
-        return false;
+        return [];
+    }
+    
+    getSuggestions(query) {
+        if (!query) return [];
+        const lowerQuery = query.toLowerCase();
+        return this.nodes
+            .filter(n => n.word.toLowerCase().includes(lowerQuery))
+            .map(n => n.word)
+            .sort()
+            .slice(0, 10);
     }
 }

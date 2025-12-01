@@ -110,6 +110,13 @@ class Game {
         this.mode = 'multiplayer';
         this.player1Name = playerName;
         this.player2Name = opponentName;
+        
+        // Hide solo game overlay if visible
+        const overlay = document.getElementById('game-start-overlay');
+        if (overlay) {
+            overlay.style.display = 'none';
+        }
+        
         this.initGame();
     }
     

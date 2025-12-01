@@ -1244,8 +1244,43 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     
     document.getElementById('glossary-search').addEventListener('input', (e) => {
-        if (window.techMindMap && e.target.value.trim()) {
-            window.techMindMap.searchWord(e.target.value.trim());
+        const query = e.target.value.trim();
+        const suggestionsContainer = document.getElementById('search-suggestions');
+        
+        if (window.techMindMap && query) {
+            // Get suggestions
+            const suggestions = window.techMindMap.getSuggestions(query);
+            
+            if (suggestions.length > 0) {
+                suggestionsContainer.innerHTML = suggestions.map(word => 
+                    `<div class="search-suggestion-item" data-word="${word}">${word}</div>`
+                ).join('');
+                suggestionsContainer.classList.remove('hidden');
+            } else {
+                suggestionsContainer.classList.add('hidden');
+            }
+        } else {
+            suggestionsContainer.classList.add('hidden');
+        }
+    });
+    
+    // Handle suggestion clicks
+    document.addEventListener('click', (e) => {
+        if (e.target.classList.contains('search-suggestion-item')) {
+            const word = e.target.dataset.word;
+            document.getElementById('glossary-search').value = word;
+            document.getElementById('search-suggestions').classList.add('hidden');
+            if (window.techMindMap) {
+                window.techMindMap.searchWord(word);
+            }
+        }
+    });
+    
+    // Close suggestions when clicking outside
+    document.addEventListener('click', (e) => {
+        const searchContainer = e.target.closest('.glossary-header');
+        if (!searchContainer) {
+            document.getElementById('search-suggestions')?.classList.add('hidden');
         }
     });
     
