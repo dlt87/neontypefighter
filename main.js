@@ -309,6 +309,14 @@ document.addEventListener('DOMContentLoaded', () => {
         window.loadAchievements();
     });
     
+    // Glossary button
+    document.getElementById('glossary-btn').addEventListener('click', () => {
+        showScreen('glossary');
+        if (!window.techMindMap) {
+            window.techMindMap = new TechMindMap('mindmap-canvas', TECH_GLOSSARY, CATEGORY_COLORS);
+        }
+    });
+    
     // FAQ button
     document.getElementById('faq-btn').addEventListener('click', () => {
         document.getElementById('faq-modal').classList.remove('hidden');
@@ -413,6 +421,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const settingsMenu = document.getElementById('settings-menu');
         const achievementsScreen = document.getElementById('achievements-screen');
         const profileScreen = document.getElementById('profile-screen');
+        const glossaryScreen = document.getElementById('glossary-screen');
         const coopGameScreen = document.getElementById('coop-game-screen');
         const endlessModeScreen = document.getElementById('endless-mode-screen');
         
@@ -430,6 +439,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (profileScreen) {
             profileScreen.classList.add('hidden');
             profileScreen.classList.remove('active');
+        }
+        if (glossaryScreen) {
+            glossaryScreen.classList.add('hidden');
+            glossaryScreen.classList.remove('active');
         }
         if (coopGameScreen) {
             coopGameScreen.classList.add('hidden');
@@ -468,6 +481,11 @@ document.addEventListener('DOMContentLoaded', () => {
             if (profileScreen) {
                 profileScreen.classList.remove('hidden');
                 profileScreen.classList.add('active');
+            }
+        } else if (screen === 'glossary') {
+            if (glossaryScreen) {
+                glossaryScreen.classList.remove('hidden');
+                glossaryScreen.classList.add('active');
             }
         } else if (screen === 'coop') {
             if (coopGameScreen) {
@@ -1176,6 +1194,38 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('back-from-profile-btn').addEventListener('click', () => {
         showScreen('menu');
         loadMainMenuLeaderboard();
+    });
+    
+    document.getElementById('back-from-glossary-btn').addEventListener('click', () => {
+        showScreen('menu');
+        loadMainMenuLeaderboard();
+    });
+    
+    // Glossary controls
+    document.getElementById('close-definition-btn').addEventListener('click', () => {
+        document.getElementById('word-definition-panel').classList.add('hidden');
+        if (window.techMindMap) {
+            window.techMindMap.selectedNode = null;
+        }
+    });
+    
+    document.getElementById('reset-view-btn').addEventListener('click', () => {
+        if (window.techMindMap) {
+            window.techMindMap.reset();
+        }
+    });
+    
+    document.getElementById('toggle-physics-btn').addEventListener('click', (e) => {
+        if (window.techMindMap) {
+            window.techMindMap.physicsEnabled = !window.techMindMap.physicsEnabled;
+            e.target.textContent = `Physics: ${window.techMindMap.physicsEnabled ? 'ON' : 'OFF'}`;
+        }
+    });
+    
+    document.getElementById('glossary-search').addEventListener('input', (e) => {
+        if (window.techMindMap && e.target.value.trim()) {
+            window.techMindMap.searchWord(e.target.value.trim());
+        }
     });
     
     // Profile loading function - shows only high scores

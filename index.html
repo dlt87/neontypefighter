@@ -16,6 +16,7 @@
             <div class="corner-buttons top-left">
                 <button class="icon-button" id="settings-btn" title="Settings">⚙️</button>
                 <button class="icon-button" id="faq-btn" title="FAQ">❓</button>
+                <button class="icon-button" id="glossary-btn" title="Tech Glossary">📚</button>
             </div>
             <div class="corner-buttons top-right">
                 <button class="icon-button" id="themes-btn" title="Themes">🎨</button>
@@ -523,6 +524,49 @@
             </div>
         </div>
 
+        <!-- Tech Glossary Screen -->
+        <div id="glossary-screen" class="menu-screen hidden">
+            <h2 class="neon-text">TECH GLOSSARY</h2>
+            <div class="glossary-content">
+                <div class="glossary-header">
+                    <input type="text" id="glossary-search" class="glossary-search" placeholder="Search words...">
+                    <button class="neon-button small" id="reset-view-btn">Reset View</button>
+                    <button class="neon-button small" id="toggle-physics-btn">Physics: ON</button>
+                </div>
+                
+                <div class="glossary-container">
+                    <canvas id="mindmap-canvas"></canvas>
+                    
+                    <div id="word-definition-panel" class="definition-panel hidden">
+                        <button class="close-btn" id="close-definition-btn">✕</button>
+                        <h3 id="definition-word">WORD</h3>
+                        <div class="definition-category" id="definition-category">Category</div>
+                        <p id="definition-text">Definition will appear here</p>
+                        <div class="related-words">
+                            <h4>Related Concepts:</h4>
+                            <ul id="definition-related"></ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="glossary-legend">
+                    <h4>Categories:</h4>
+                    <div class="legend-items">
+                        <span class="legend-item"><span class="legend-dot" style="background: #00ffff;"></span> Fundamentals</span>
+                        <span class="legend-item"><span class="legend-dot" style="background: #ff00ff;"></span> Hardware</span>
+                        <span class="legend-item"><span class="legend-dot" style="background: #ffff00;"></span> Data Structures</span>
+                        <span class="legend-item"><span class="legend-dot" style="background: #00ff00;"></span> Networking</span>
+                        <span class="legend-item"><span class="legend-dot" style="background: #ff0000;"></span> Security</span>
+                        <span class="legend-item"><span class="legend-dot" style="background: #ff00aa;"></span> AI/ML</span>
+                        <span class="legend-item"><span class="legend-dot" style="background: #00aaff;"></span> Web Dev</span>
+                        <span class="legend-item"><span class="legend-dot" style="background: #aa00ff;"></span> Cyberpunk</span>
+                    </div>
+                </div>
+                
+                <button class="neon-button secondary" id="back-from-glossary-btn">BACK</button>
+            </div>
+        </div>
+
         <!-- Endless Mode Screen -->
         <div id="endless-mode-screen" class="menu-screen hidden">
             <!-- Home Button -->
@@ -727,6 +771,8 @@
     <script src="config.js"></script>
     <script src="themes.js"></script>
     <script src="words.js"></script>
+    <script src="glossary-data.js"></script>
+    <script src="mindmap.js"></script>
     <script src="particle.js"></script>
     <script src="sounds.js"></script>
     <script src="auth.js"></script>
