@@ -136,6 +136,13 @@ class LearnMode {
         // Get glossary data
         const glossary = window.TECH_GLOSSARY || {};
         
+        // Safety check
+        if (Object.keys(glossary).length === 0) {
+            console.error('❌ TECH_GLOSSARY is empty or not loaded!');
+            alert('Error: Tech glossary data not loaded. Please refresh the page.');
+            return;
+        }
+        
         // Convert to array format
         let pool = Object.keys(glossary).map(word => ({
             word: word,
@@ -144,9 +151,12 @@ class LearnMode {
             related: glossary[word].related || []
         }));
         
+        console.log(`📚 Total words in glossary: ${pool.length}`);
+        
         // Filter by category if not 'all'
         if (this.currentCategory !== 'all') {
             pool = pool.filter(item => item.category === this.currentCategory);
+            console.log(`📂 Words in category '${this.currentCategory}': ${pool.length}`);
         }
         
         // Remove already used words
@@ -154,6 +164,7 @@ class LearnMode {
         
         // Reset if all words used
         if (pool.length === 0) {
+            console.log('🔄 Resetting used words - all questions answered!');
             this.usedWords = [];
             pool = Object.keys(glossary).map(word => ({
                 word: word,
@@ -167,9 +178,18 @@ class LearnMode {
             }
         }
         
+        // Safety check for empty pool
+        if (pool.length === 0) {
+            console.error(`❌ No words found for category: ${this.currentCategory}`);
+            alert(`No words found in category: ${this.currentCategory}. Try selecting a different category.`);
+            this.exitLearnMode();
+            return;
+        }
+        
         // Pick random word as correct answer
         const correct = pool[Math.floor(Math.random() * pool.length)];
         this.usedWords.push(correct.word);
+        console.log(`❓ Question: ${correct.word} (${correct.category})`);
         
         // Generate 3 wrong answers
         const wrongAnswers = this.generateWrongAnswers(correct, pool, 3);

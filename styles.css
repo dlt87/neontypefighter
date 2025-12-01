@@ -3711,14 +3711,17 @@ body::before {
 }
 
 .category-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
     gap: 1rem;
     margin: 2rem 0;
 }
 
 .category-btn {
     padding: 1.5rem;
+    min-width: 200px;
+    flex: 0 1 auto;
     background: rgba(0, 255, 255, 0.05);
     border: 2px solid var(--primary-color);
     color: var(--primary-color);
@@ -3975,12 +3978,12 @@ body::before {
 /* Mobile responsive adjustments for Learn Mode */
 @media (max-width: 768px) {
     .category-grid {
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
         gap: 0.8rem;
     }
     
     .category-btn {
         padding: 1rem;
+        min-width: 150px;
         font-size: 0.9rem;
     }
     
