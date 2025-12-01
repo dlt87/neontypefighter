@@ -60,40 +60,71 @@ class TechMindMap3D {
         // Create a group for all grid elements so they rotate together with nodes
         this.gridGroup = new THREE.Group();
         
-        // Add 3D grid box for depth perception
+        // Create a solid cube frame (12 edges) for depth perception
         const gridSize = 800;
+        const half = gridSize / 2;
+        
+        // Define the 12 edges of a cube
+        const cubeEdges = [
+            // Bottom face (4 edges)
+            [[-half, -half, -half], [half, -half, -half]],
+            [[half, -half, -half], [half, -half, half]],
+            [[half, -half, half], [-half, -half, half]],
+            [[-half, -half, half], [-half, -half, -half]],
+            // Top face (4 edges)
+            [[-half, half, -half], [half, half, -half]],
+            [[half, half, -half], [half, half, half]],
+            [[half, half, half], [-half, half, half]],
+            [[-half, half, half], [-half, half, -half]],
+            // Vertical edges (4 edges)
+            [[-half, -half, -half], [-half, half, -half]],
+            [[half, -half, -half], [half, half, -half]],
+            [[half, -half, half], [half, half, half]],
+            [[-half, -half, half], [-half, half, half]]
+        ];
+        
+        // Create line segments for each edge
+        cubeEdges.forEach(([start, end]) => {
+            const geometry = new THREE.BufferGeometry();
+            const vertices = new Float32Array([
+                start[0], start[1], start[2],
+                end[0], end[1], end[2]
+            ]);
+            geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
+            
+            const material = new THREE.LineBasicMaterial({ 
+                color: 0x00ffff, 
+                transparent: true, 
+                opacity: 0.3,
+                linewidth: 2
+            });
+            
+            const line = new THREE.Line(geometry, material);
+            this.gridGroup.add(line);
+        });
+        
+        // Add grid planes inside the cube for better depth perception
         const gridDivisions = 16;
         
-        // Create a box wireframe grid
-        const boxGeometry = new THREE.BoxGeometry(gridSize, gridSize, gridSize, gridDivisions, gridDivisions, gridDivisions);
-        const edges = new THREE.EdgesGeometry(boxGeometry);
-        const gridMaterial = new THREE.LineBasicMaterial({ 
-            color: 0x00ffff, 
-            transparent: true, 
-            opacity: 0.1 
-        });
-        const gridBox = new THREE.LineSegments(edges, gridMaterial);
-        this.gridGroup.add(gridBox);
-        
-        // Add additional horizontal and vertical grid planes for reference
+        // Bottom grid
         const gridHelper1 = new THREE.GridHelper(gridSize, gridDivisions, 0x00ffff, 0xff00ff);
-        gridHelper1.material.opacity = 0.15;
+        gridHelper1.material.opacity = 0.1;
         gridHelper1.material.transparent = true;
-        gridHelper1.position.y = -gridSize / 2;
+        gridHelper1.position.y = -half;
         this.gridGroup.add(gridHelper1);
         
+        // Middle grid (horizontal)
         const gridHelper2 = new THREE.GridHelper(gridSize, gridDivisions, 0xff00ff, 0x00ffff);
-        gridHelper2.rotation.z = Math.PI / 2;
-        gridHelper2.material.opacity = 0.1;
+        gridHelper2.material.opacity = 0.05;
         gridHelper2.material.transparent = true;
-        gridHelper2.position.x = -gridSize / 2;
         this.gridGroup.add(gridHelper2);
         
+        // Back grid (vertical)
         const gridHelper3 = new THREE.GridHelper(gridSize, gridDivisions, 0xff00ff, 0x00ffff);
         gridHelper3.rotation.x = Math.PI / 2;
-        gridHelper3.material.opacity = 0.1;
+        gridHelper3.material.opacity = 0.08;
         gridHelper3.material.transparent = true;
-        gridHelper3.position.z = -gridSize / 2;
+        gridHelper3.position.z = -half;
         this.gridGroup.add(gridHelper3);
         
         this.scene.add(this.gridGroup);
@@ -274,13 +305,10 @@ class TechMindMap3D {
     }
     
     rotateScene(deltaX, deltaY) {
-        // Rotate the grid group
-        if (this.gridGroup) {
-            this.gridGroup.rotation.y += deltaX;
-            this.gridGroup.rotation.x += deltaY;
-        }
+        // Store initial grid state
+        const gridChildren = this.gridGroup ? [...this.gridGroup.children] : [];
         
-        // Rotate all nodes around origin
+        // Rotate all nodes and grid elements using the same transformation
         this.nodes.forEach((node, index) => {
             const mesh = this.nodeMeshes[index];
             const pos = mesh.position;
@@ -294,9 +322,9 @@ class TechMindMap3D {
             pos.x = newX;
             pos.z = newZ;
             
-            // Rotate around X axis
-            const cosX = Math.cos(deltaY);
-            const sinX = Math.sin(deltaY);
+            // Rotate around X axis (inverted for vertical drag)
+            const cosX = Math.cos(-deltaY);
+            const sinX = Math.sin(-deltaY);
             const newY = pos.y * cosX - pos.z * sinX;
             const newZ2 = pos.y * sinX + pos.z * cosX;
             
@@ -308,6 +336,59 @@ class TechMindMap3D {
             node.y = pos.y;
             node.z = pos.z;
         });
+        
+        // Rotate the entire grid group to match node rotation
+        if (this.gridGroup) {
+            // Apply Y rotation
+            gridChildren.forEach(child => {
+                const pos = child.position;
+                const cosY = Math.cos(deltaX);
+                const sinY = Math.sin(deltaX);
+                const newX = pos.x * cosY - pos.z * sinY;
+                const newZ = pos.x * sinY + pos.z * cosY;
+                pos.x = newX;
+                pos.z = newZ;
+                
+                // Rotate vertices if it's a line or mesh with geometry
+                if (child.geometry && child.geometry.attributes.position) {
+                    const positions = child.geometry.attributes.position;
+                    for (let i = 0; i < positions.count; i++) {
+                        const x = positions.getX(i);
+                        const z = positions.getZ(i);
+                        const rotX = x * cosY - z * sinY;
+                        const rotZ = x * sinY + z * cosY;
+                        positions.setX(i, rotX);
+                        positions.setZ(i, rotZ);
+                    }
+                    positions.needsUpdate = true;
+                }
+            });
+            
+            // Apply X rotation (inverted)
+            gridChildren.forEach(child => {
+                const pos = child.position;
+                const cosX = Math.cos(-deltaY);
+                const sinX = Math.sin(-deltaY);
+                const newY = pos.y * cosX - pos.z * sinX;
+                const newZ = pos.y * sinX + pos.z * cosX;
+                pos.y = newY;
+                pos.z = newZ;
+                
+                // Rotate vertices if it's a line or mesh with geometry
+                if (child.geometry && child.geometry.attributes.position) {
+                    const positions = child.geometry.attributes.position;
+                    for (let i = 0; i < positions.count; i++) {
+                        const y = positions.getY(i);
+                        const z = positions.getZ(i);
+                        const rotY = y * cosX - z * sinX;
+                        const rotZ = y * sinX + z * cosX;
+                        positions.setY(i, rotY);
+                        positions.setZ(i, rotZ);
+                    }
+                    positions.needsUpdate = true;
+                }
+            });
+        }
         
         // Update connections
         this.updateConnections();
