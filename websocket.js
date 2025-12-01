@@ -137,6 +137,20 @@ class MultiplayerClient {
                 }
                 break;
                 
+            case 'coopMatchFound':
+                this.inMatch = true;
+                this.inQueue = false;
+                this.opponentName = data.teammateName;
+                // Treat coop match found same as regular match found
+                if (this.callbacks.onMatchFound) {
+                    // Convert teammateName to opponentName for consistency
+                    this.callbacks.onMatchFound({
+                        ...data,
+                        opponentName: data.teammateName
+                    });
+                }
+                break;
+                
             case 'opponentAction':
                 if (this.callbacks.onOpponentAction) {
                     this.callbacks.onOpponentAction(data);
@@ -184,21 +198,39 @@ class MultiplayerClient {
         }
     }
     
-    findMatch(playerName) {
+    findMatch(playerName, mode = 'pvp') {
         this.playerName = playerName;
         this.inQueue = true;
-        this.send({
-            type: 'findMatch',
-            playerName: playerName
-        });
+        this.currentMode = mode;
+        
+        // Send different message type based on mode
+        if (mode === 'coop') {
+            this.send({
+                type: 'findCoopMatch',
+                playerName: playerName
+            });
+        } else {
+            this.send({
+                type: 'findMatch',
+                playerName: playerName
+            });
+        }
     }
     
     cancelMatch() {
         this.inQueue = false;
         this.queuePosition = 0;
-        this.send({
-            type: 'cancelMatch'
-        });
+        
+        // Send appropriate cancel message based on current mode
+        if (this.currentMode === 'coop') {
+            this.send({
+                type: 'cancelCoopMatch'
+            });
+        } else {
+            this.send({
+                type: 'cancelMatch'
+            });
+        }
     }
     
     sendAction(word, isCritical, damage) {

@@ -397,9 +397,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // Multiplayer lobby
     document.getElementById('find-match-btn').addEventListener('click', () => {
         const playerName = authClient.currentUser ? authClient.currentUser.username : 'Guest';
+        const mode = multiplayerClient.matchmakingMode || 'pvp';
         
         if (multiplayerClient && multiplayerClient.connected) {
-            multiplayerClient.findMatch(playerName);
+            multiplayerClient.findMatch(playerName, mode);
             document.getElementById('waiting-message').classList.remove('hidden');
             document.getElementById('find-match-btn').style.display = 'none';
             document.getElementById('cancel-match-btn').style.display = '';
@@ -717,16 +718,24 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 // Use authenticated username or fallback to account username
                 const playerName = multiplayerClient.playerName || (authClient.currentUser ? authClient.currentUser.username : 'Player');
-                console.log('🎮 Match found - Player:', playerName, 'Opponent:', data.opponentName);
+                const mode = multiplayerClient.currentMode || 'pvp';
+                console.log('🎮 Match found - Mode:', mode, 'Player:', playerName, 'Opponent:', data.opponentName);
                 
                 // Show countdown overlay
+                const partnerLabel = mode === 'coop' ? 'teammate' : 'opponent';
                 showMatchCountdown(data.opponentName, () => {
-                    showScreen('game');
-                    game.startMultiplayerGame(
-                        playerName,
-                        data.opponentName
-                    );
-                });
+                    if (mode === 'coop') {
+                        // Start co-op game
+                        showScreen('coop');
+                        if (game.coopMode) {
+                            game.coopMode.startMultiplayerGame(playerName, data.opponentName);
+                        }
+                    } else {
+                        // Start PvP game
+                        showScreen('game');
+                        game.startMultiplayerGame(playerName, data.opponentName);
+                    }
+                }, partnerLabel);
             });
             
             multiplayerClient.on('onOpponentAction', (data) => {
@@ -780,10 +789,18 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log('🎮 Find Match button disabled state:', findMatchBtn.disabled);
     }
     
-    function showMatchCountdown(opponentName, onComplete) {
+    function showMatchCountdown(opponentName, onComplete, partnerType = 'opponent') {
         const overlay = document.getElementById('match-countdown-overlay');
+        const opponentFoundText = document.querySelector('.opponent-found-text');
         const opponentDisplay = document.getElementById('opponent-name-display');
         const countdownNumber = document.getElementById('countdown-number');
+        
+        // Update text based on partner type
+        if (partnerType === 'teammate') {
+            opponentFoundText.textContent = 'TEAMMATE FOUND!';
+        } else {
+            opponentFoundText.textContent = 'OPPONENT FOUND!';
+        }
         
         opponentDisplay.textContent = opponentName;
         overlay.classList.remove('hidden');
@@ -803,6 +820,10 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 clearInterval(countdownInterval);
                 overlay.classList.add('hidden');
+                
+                // Reset text for next time
+                opponentFoundText.textContent = 'OPPONENT FOUND!';
+                
                 onComplete();
             }
         }, 1000);
