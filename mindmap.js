@@ -286,6 +286,25 @@ class TechMindMap {
         this.camera.y = this.canvas.height / 2 - node.y * this.camera.zoom;
     }
     
+    // Focus on a word by name (called from Learn Mode)
+    focusWord(word) {
+        const node = this.nodes.find(n => n.word.toLowerCase() === word.toLowerCase());
+        if (node) {
+            // Pan camera to node
+            this.camera.x = this.canvas.width / 2 - node.x * this.camera.zoom;
+            this.camera.y = this.canvas.height / 2 - node.y * this.camera.zoom;
+            
+            // Show definition
+            this.showDefinition(node);
+            
+            // Highlight node temporarily
+            node.highlighted = true;
+            setTimeout(() => {
+                node.highlighted = false;
+            }, 3000);
+        }
+    }
+    
     applyPhysics() {
         if (!this.physicsEnabled) return;
         
@@ -381,39 +400,45 @@ class TechMindMap {
         this.nodes.forEach(node => {
             const isSelected = node === this.selectedNode;
             const isHovered = node === this.hoveredNode;
+            const isHighlighted = node.highlighted || false;
             const color = this.categoryColors[node.data.category] || '#00ffff';
             
-            // Node glow
-            if (isSelected || isHovered) {
-                const gradient = this.ctx.createRadialGradient(node.x, node.y, 0, node.x, node.y, 30);
-                gradient.addColorStop(0, color + '40');
+            // Node glow (extra strong for highlighted nodes)
+            if (isSelected || isHovered || isHighlighted) {
+                const glowSize = isHighlighted ? 40 : 30;
+                const gradient = this.ctx.createRadialGradient(node.x, node.y, 0, node.x, node.y, glowSize);
+                gradient.addColorStop(0, color + (isHighlighted ? '80' : '40'));
                 gradient.addColorStop(1, 'transparent');
                 this.ctx.fillStyle = gradient;
-                this.ctx.fillRect(node.x - 30, node.y - 30, 60, 60);
+                this.ctx.fillRect(node.x - glowSize, node.y - glowSize, glowSize * 2, glowSize * 2);
             }
             
+            // Pulsing effect for highlighted nodes
+            const pulseScale = isHighlighted ? 1 + Math.sin(Date.now() / 300) * 0.1 : 1;
+            const displayRadius = node.radius * pulseScale;
+            
             // Node circle
-            this.ctx.fillStyle = isSelected ? color : (isHovered ? color + 'dd' : color + '99');
+            this.ctx.fillStyle = isSelected ? color : (isHovered || isHighlighted ? color + 'dd' : color + '99');
             this.ctx.beginPath();
-            this.ctx.arc(node.x, node.y, node.radius, 0, Math.PI * 2);
+            this.ctx.arc(node.x, node.y, displayRadius, 0, Math.PI * 2);
             this.ctx.fill();
             
             // Node border
             this.ctx.strokeStyle = color;
-            this.ctx.lineWidth = isSelected ? 3 : (isHovered ? 2 : 1);
+            this.ctx.lineWidth = isSelected || isHighlighted ? 3 : (isHovered ? 2 : 1);
             this.ctx.stroke();
             
-            // Label (only for selected, hovered, or zoomed in)
-            if (isSelected || isHovered || this.camera.zoom > 0.8) {
+            // Label (only for selected, hovered, highlighted, or zoomed in)
+            if (isSelected || isHovered || isHighlighted || this.camera.zoom > 0.8) {
                 this.ctx.fillStyle = color;
-                this.ctx.font = `${16 + (isSelected ? 3 : 0)}px Orbitron, monospace`;
+                this.ctx.font = `${16 + (isSelected || isHighlighted ? 3 : 0)}px Orbitron, monospace`;
                 this.ctx.textAlign = 'center';
                 this.ctx.textBaseline = 'middle';
                 
                 // Text shadow
                 this.ctx.shadowColor = color;
-                this.ctx.shadowBlur = isSelected ? 15 : 10;
-                this.ctx.fillText(node.word, node.x, node.y + node.radius + 20);
+                this.ctx.shadowBlur = isSelected || isHighlighted ? 15 : 10;
+                this.ctx.fillText(node.word, node.x, node.y + displayRadius + 20);
                 this.ctx.shadowBlur = 0;
             }
         });

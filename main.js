@@ -222,6 +222,15 @@ document.addEventListener('DOMContentLoaded', () => {
         game.endlessMode.show();
     });
     
+    // Learn Mode button
+    document.getElementById('learn-mode-btn').addEventListener('click', () => {
+        showScreen('learn-mode');
+        if (!game.learnMode) {
+            game.learnMode = new LearnMode(game);
+            game.learnMode.setupUI();
+        }
+    });
+    
     // Endless mode start button
     document.getElementById('endless-start-game-btn').addEventListener('click', () => {
         document.getElementById('endless-start-overlay').style.display = 'none';
@@ -425,6 +434,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const glossaryScreen = document.getElementById('glossary-screen');
         const coopGameScreen = document.getElementById('coop-game-screen');
         const endlessModeScreen = document.getElementById('endless-mode-screen');
+        const learnModeScreen = document.getElementById('learn-mode-screen');
         
         mainMenu.classList.remove('active');
         mainMenu.classList.add('hidden');
@@ -452,6 +462,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (endlessModeScreen) {
             endlessModeScreen.classList.add('hidden');
             endlessModeScreen.classList.remove('active');
+        }
+        if (learnModeScreen) {
+            learnModeScreen.classList.add('hidden');
+            learnModeScreen.classList.remove('active');
         }
         
         if (screen === 'menu') {
@@ -492,6 +506,11 @@ document.addEventListener('DOMContentLoaded', () => {
             if (coopGameScreen) {
                 coopGameScreen.classList.remove('hidden');
                 coopGameScreen.classList.add('active');
+            }
+        } else if (screen === 'learn-mode') {
+            if (learnModeScreen) {
+                learnModeScreen.classList.remove('hidden');
+                learnModeScreen.classList.add('active');
             }
         }
     }

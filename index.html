@@ -36,6 +36,7 @@
                         <button class="neon-button" id="timed-mode-btn">TIMED</button>
                         <button class="neon-button" id="endless-mode-btn">ENDLESS</button>
                         <button class="neon-button" id="multiplayer-mode-btn">MULTIPLAYER</button>
+                        <button class="neon-button" id="learn-mode-btn">🎓 LEARN MODE</button>
                         <button class="neon-button" id="glossary-btn">📚 TECH GLOSSARY</button>
                     </div>
                     
@@ -682,6 +683,100 @@
             </div>
         </div>
 
+        <!-- Learn Mode Screen -->
+        <div id="learn-mode-screen" class="menu-screen hidden">
+            <button class="home-button" id="learn-home-btn" title="Return to Menu">
+                <span class="home-icon">🏠</span>
+            </button>
+            
+            <div class="learn-container">
+                <h2 class="neon-text">LEARN MODE</h2>
+                <p class="learn-description">Master tech concepts at your own pace</p>
+                
+                <!-- Category Selection -->
+                <div class="learn-category-select" id="learn-category-select">
+                    <h3 class="category-title">Choose a Category:</h3>
+                    <div class="category-grid">
+                        <button class="category-btn" data-category="all">🌐 All Categories</button>
+                        <button class="category-btn" data-category="fundamentals">🔵 Fundamentals</button>
+                        <button class="category-btn" data-category="hardware">💜 Hardware</button>
+                        <button class="category-btn" data-category="datastructures">💛 Data Structures</button>
+                        <button class="category-btn" data-category="networking">💚 Networking</button>
+                        <button class="category-btn" data-category="security">🔴 Security</button>
+                        <button class="category-btn" data-category="ai">💗 AI/ML</button>
+                        <button class="category-btn" data-category="web">🔷 Web Dev</button>
+                        <button class="category-btn" data-category="cyberpunk">🟣 Cyberpunk</button>
+                        <button class="category-btn" data-category="system">🟠 System</button>
+                        <button class="category-btn" data-category="programming">🟢 Programming</button>
+                        <button class="category-btn" data-category="data">🟡 Data</button>
+                        <button class="category-btn" data-category="graphics">🟪 Graphics</button>
+                        <button class="category-btn" data-category="tools">🔧 Tools</button>
+                    </div>
+                </div>
+                
+                <!-- Question Area -->
+                <div class="learn-question-area hidden" id="learn-question-area">
+                    <div class="learn-stats">
+                        <div class="stat-box">
+                            <div class="stat-label">Score</div>
+                            <div class="stat-value" id="learn-score">0</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-label">Accuracy</div>
+                            <div class="stat-value" id="learn-accuracy">0%</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-label">Questions</div>
+                            <div class="stat-value" id="learn-questions-count">0</div>
+                        </div>
+                    </div>
+                    
+                    <div class="learn-question-card">
+                        <h3 class="question-prompt">What is this?</h3>
+                        <div class="question-definition" id="learn-definition">
+                            Loading question...
+                        </div>
+                        
+                        <div class="question-options" id="learn-options">
+                            <button class="option-btn" data-option="0">
+                                <span class="option-number">1</span>
+                                <span class="option-text">Option 1</span>
+                            </button>
+                            <button class="option-btn" data-option="1">
+                                <span class="option-number">2</span>
+                                <span class="option-text">Option 2</span>
+                            </button>
+                            <button class="option-btn" data-option="2">
+                                <span class="option-number">3</span>
+                                <span class="option-text">Option 3</span>
+                            </button>
+                            <button class="option-btn" data-option="3">
+                                <span class="option-number">4</span>
+                                <span class="option-text">Option 4</span>
+                            </button>
+                        </div>
+                        
+                        <div class="learn-input-area">
+                            <input type="text" id="learn-input" class="learn-input" 
+                                   placeholder="Type answer or press 1-4..." 
+                                   autocomplete="off" spellcheck="false">
+                        </div>
+                        
+                        <button class="neon-button small secondary" id="view-glossary-btn">
+                            📚 View in Glossary
+                        </button>
+                    </div>
+                    
+                    <div class="learn-feedback hidden" id="learn-feedback">
+                        <div class="feedback-icon"></div>
+                        <div class="feedback-text"></div>
+                    </div>
+                </div>
+                
+                <button class="neon-button secondary" id="learn-back-btn">BACK TO MENU</button>
+            </div>
+        </div>
+
         <!-- Co-op Game Screen (Separate from lobby) -->
         <div id="coop-game-screen" class="hidden">
             <!-- Countdown Overlay -->
@@ -785,6 +880,7 @@
     <script src="game.js"></script>
     <script src="timedmode.js"></script>
     <script src="endlessmode.js"></script>
+    <script src="learnmode.js"></script>
     <script src="coopmode.js"></script>
     <script src="main.js"></script>
 </body>
