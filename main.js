@@ -1335,9 +1335,13 @@ document.addEventListener('DOMContentLoaded', () => {
         if (game && game.soundManager) {
             game.soundManager.setVolume(muteSounds ? 0 : soundVolume / 100);
             game.soundManager.setMusicVolume(muteSounds ? 0 : musicVolume / 100);
-            game.soundManager.currentTrack = musicTrack;
-            game.soundManager.loadMusicTrack(musicTrack);
-            updateNowPlaying(); // Update now playing widget when track changes
+            
+            // Only reload track if it actually changed
+            if (game.soundManager.currentTrack !== musicTrack) {
+                game.soundManager.currentTrack = musicTrack;
+                game.soundManager.loadMusicTrack(musicTrack);
+                updateNowPlaying(); // Update now playing widget when track changes
+            }
         }
 
         console.log('⚙️ Settings applied:', { soundVolume, musicVolume, muteSounds, musicTrack });
@@ -1390,6 +1394,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('word-definition-panel').classList.add('hidden');
         if (window.is3DMode && window.techMindMap3D) {
             window.techMindMap3D.selectedNode = null;
+            window.techMindMap3D.resetCamera();
         } else if (window.techMindMap) {
             window.techMindMap.selectedNode = null;
         }

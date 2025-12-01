@@ -375,6 +375,32 @@ class TechMindMap3D {
         animate();
     }
     
+    resetCamera() {
+        // Smoothly reset camera to default position
+        const targetX = 0;
+        const targetY = 0;
+        const targetZ = 600;
+        
+        const animate = () => {
+            this.camera.position.x += (targetX - this.camera.position.x) * 0.1;
+            this.camera.position.y += (targetY - this.camera.position.y) * 0.1;
+            this.camera.position.z += (targetZ - this.camera.position.z) * 0.1;
+            
+            this.camera.lookAt(0, 0, 0);
+            
+            const distance = Math.sqrt(
+                Math.pow(this.camera.position.x - targetX, 2) +
+                Math.pow(this.camera.position.y - targetY, 2) +
+                Math.pow(this.camera.position.z - targetZ, 2)
+            );
+            
+            if (distance > 1) {
+                requestAnimationFrame(animate);
+            }
+        };
+        animate();
+    }
+    
     applyPhysics() {
         if (!this.physicsEnabled) return;
         
