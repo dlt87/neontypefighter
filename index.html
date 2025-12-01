@@ -142,10 +142,10 @@
                     
                     <h3>Game Modes</h3>
                     <p><strong>Solo:</strong> Fight an AI opponent<br>
-                    <strong>Co-op:</strong> Team up to defeat a boss<br>
                     <strong>Timed:</strong> 15-second typing challenge<br>
                     <strong>Endless:</strong> Survive infinite waves<br>
-                    <strong>Multiplayer:</strong> Compete against other players</p>
+                    <strong>Multiplayer:</strong> Battle against other players in PvP<br>
+                    <strong>Learn:</strong> Master tech concepts at your own pace</p>
                 </div>
                 <button class="neon-button" id="faq-close">CLOSE</button>
             </div>
@@ -346,13 +346,7 @@
                     <div class="mode-icon">⚔️</div>
                     <h3 class="mode-title">PLAYER VS PLAYER</h3>
                     <p class="mode-description">Battle against another player! First to zero health loses.</p>
-                    <button class="neon-button" id="select-pvp-btn">SELECT PvP</button>
-                </div>
-                <div class="mode-card" id="coop-mode-card">
-                    <div class="mode-icon">🤝</div>
-                    <h3 class="mode-title">CO-OP MODE</h3>
-                    <p class="mode-description">Team up with another player to defeat a powerful boss!</p>
-                    <button class="neon-button" id="select-coop-btn">SELECT CO-OP</button>
+                    <button class="neon-button" id="select-pvp-btn">START MATCHMAKING</button>
                 </div>
             </div>
             
@@ -534,6 +528,22 @@
                         <input type="text" id="glossary-search" class="glossary-search" placeholder="Search words..." autocomplete="off">
                         <div id="search-suggestions" class="search-suggestions hidden"></div>
                     </div>
+                    <select id="glossary-category-filter" class="neon-select glossary-filter">
+                        <option value="all">All Categories</option>
+                        <option value="fundamentals">Fundamentals</option>
+                        <option value="hardware">Hardware</option>
+                        <option value="datastructures">Data Structures</option>
+                        <option value="networking">Networking</option>
+                        <option value="security">Security</option>
+                        <option value="ai">AI/ML</option>
+                        <option value="web">Web Dev</option>
+                        <option value="cyberpunk">Cyberpunk</option>
+                        <option value="system">System</option>
+                        <option value="programming">Programming</option>
+                        <option value="data">Data</option>
+                        <option value="graphics">Graphics</option>
+                        <option value="tools">Tools</option>
+                    </select>
                     <button class="neon-button small" id="reset-view-btn">Reset View</button>
                     <button class="neon-button small" id="toggle-physics-btn">Physics: ON</button>
                 </div>
@@ -798,83 +808,6 @@
                 </div>
                 
                 <button class="neon-button secondary" id="learn-back-btn">BACK TO MENU</button>
-            </div>
-        </div>
-
-        <!-- Co-op Game Screen (Separate from lobby) -->
-        <div id="coop-game-screen" class="hidden">
-            <!-- Countdown Overlay -->
-            <div id="coop-countdown-overlay" class="countdown-overlay hidden">
-                <div class="countdown-content">
-                    <div id="coop-teammate-found-text" class="opponent-found-text">TEAMMATE FOUND!</div>
-                    <div id="coop-teammate-name-display" class="opponent-name-display"></div>
-                    <div id="coop-countdown-number" class="countdown-number">3</div>
-                </div>
-            </div>
-            
-            <div class="coop-game-area" id="coop-game-area">
-                <!-- Boss Section -->
-                <div class="boss-section">
-                    <div class="boss-info">
-                        <h3 class="boss-name" id="coop-boss-name">MEGA BOSS</h3>
-                        <div class="boss-status" id="coop-boss-status">WAITING</div>
-                    </div>
-                    <div class="health-bar-container boss-health-container">
-                        <div class="health-bar boss-health-bar" id="coop-boss-health"></div>
-                        <div class="health-text" id="coop-boss-health-text">300 / 300</div>
-                    </div>
-                </div>
-
-                <!-- Team Section -->
-                <div class="team-section">
-                    <div class="team-info">
-                        <h3 class="neon-text">TEAM HEALTH</h3>
-                    </div>
-                    <div class="health-bar-container team-health-container">
-                        <div class="health-bar team-health-bar" id="coop-team-health"></div>
-                        <div class="health-text" id="coop-team-health-text">200 / 200</div>
-                    </div>
-                </div>
-
-                <!-- Shared Typing Area -->
-                <div class="coop-shared-typing">
-                    <div class="word-display">
-                        <div class="current-word" id="coop-current-word">cyber</div>
-                    </div>
-                    <div class="turn-indicator" id="coop-turn-indicator">
-                        <span id="coop-turn-text">Player 1's Turn</span>
-                    </div>
-                    <div class="typing-area">
-                        <input type="text" 
-                               class="neon-input" 
-                               id="coop-shared-input" 
-                               placeholder="Type here..."
-                               autocomplete="off"
-                               spellcheck="false"
-                               disabled>
-                        <div class="typing-feedback" id="coop-typing-feedback"></div>
-                    </div>
-                    <div class="players-info">
-                        <div class="player-info">
-                            <span class="player-label">PLAYER 1</span>
-                            <span id="coop-player1-name">Player 1</span>
-                        </div>
-                        <div class="player-info">
-                            <span class="player-label">PLAYER 2</span>
-                            <span id="coop-player2-name">Player 2</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Game Over Stats -->
-                <div class="coop-game-over hidden" id="coop-game-over">
-                    <h3 id="coop-game-over-title">VICTORY!</h3>
-                    <div id="coop-game-over-stats"></div>
-                    <div class="coop-game-over-buttons">
-                        <button class="neon-button" id="coop-play-again-btn">PLAY AGAIN</button>
-                        <button class="neon-button secondary" id="coop-menu-btn">MAIN MENU</button>
-                    </div>
-                </div>
             </div>
         </div>
     </div>

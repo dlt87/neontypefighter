@@ -258,11 +258,25 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Mode selection handlers
     document.getElementById('select-pvp-btn').addEventListener('click', () => {
-        selectMultiplayerMode('pvp');
-    });
-    
-    document.getElementById('select-coop-btn').addEventListener('click', () => {
-        selectMultiplayerMode('coop');
+        // Show matchmaking lobby directly
+        document.getElementById('multiplayer-mode-selection').classList.add('hidden');
+        document.getElementById('lobby-matchmaking').classList.remove('hidden');
+        
+        // Set title
+        const titleEl = document.getElementById('selected-mode-title');
+        if (titleEl) titleEl.textContent = 'PLAYER VS PLAYER';
+        
+        // Initialize multiplayer client
+        if (!window.multiplayerClient) {
+            window.multiplayerClient = new MultiplayerClient();
+            game.multiplayerClient = window.multiplayerClient;
+            window.multiplayerClient.connect();
+        }
+        
+        // Set matchmaking mode
+        if (window.multiplayerClient) {
+            window.multiplayerClient.matchmakingMode = 'pvp';
+        }
     });
     
     document.getElementById('change-mode-btn').addEventListener('click', () => {
@@ -406,30 +420,17 @@ document.addEventListener('DOMContentLoaded', () => {
     // Multiplayer lobby
     document.getElementById('find-match-btn').addEventListener('click', () => {
         const playerName = authClient.currentUser ? authClient.currentUser.username : 'Guest';
-        const mode = multiplayerClient.matchmakingMode || 'pvp';
         
-        console.log('🔍 Find match clicked - Mode:', mode);
+        console.log('🔍 Finding PvP match for:', playerName);
         
-        if (mode === 'coop') {
-            // Use CoopMode's matchmaking system
-            if (game.coopMode) {
-                game.coopMode.startMatchmaking();
-                document.getElementById('waiting-message').classList.remove('hidden');
-                document.getElementById('find-match-btn').style.display = 'none';
-                document.getElementById('cancel-match-btn').style.display = '';
-            } else {
-                alert('Co-op mode not initialized. Please try again.');
-            }
+        // Use regular multiplayer client for PvP
+        if (multiplayerClient && multiplayerClient.connected) {
+            multiplayerClient.findMatch(playerName, 'pvp');
+            document.getElementById('waiting-message').classList.remove('hidden');
+            document.getElementById('find-match-btn').style.display = 'none';
+            document.getElementById('cancel-match-btn').style.display = '';
         } else {
-            // Use regular multiplayer client for PvP
-            if (multiplayerClient && multiplayerClient.connected) {
-                multiplayerClient.findMatch(playerName, mode);
-                document.getElementById('waiting-message').classList.remove('hidden');
-                document.getElementById('find-match-btn').style.display = 'none';
-                document.getElementById('cancel-match-btn').style.display = '';
-            } else {
-                alert('Not connected to server. Please check your connection.');
-            }
+            alert('Not connected to server. Please check your connection.');
         }
     });
     
@@ -452,7 +453,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const achievementsScreen = document.getElementById('achievements-screen');
         const profileScreen = document.getElementById('profile-screen');
         const glossaryScreen = document.getElementById('glossary-screen');
-        const coopGameScreen = document.getElementById('coop-game-screen');
         const endlessModeScreen = document.getElementById('endless-mode-screen');
         const learnModeScreen = document.getElementById('learn-mode-screen');
         
@@ -474,10 +474,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (glossaryScreen) {
             glossaryScreen.classList.add('hidden');
             glossaryScreen.classList.remove('active');
-        }
-        if (coopGameScreen) {
-            coopGameScreen.classList.add('hidden');
-            coopGameScreen.classList.remove('active');
         }
         if (endlessModeScreen) {
             endlessModeScreen.classList.add('hidden');
@@ -521,11 +517,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (glossaryScreen) {
                 glossaryScreen.classList.remove('hidden');
                 glossaryScreen.classList.add('active');
-            }
-        } else if (screen === 'coop') {
-            if (coopGameScreen) {
-                coopGameScreen.classList.remove('hidden');
-                coopGameScreen.classList.add('active');
             }
         } else if (screen === 'learn-mode') {
             if (learnModeScreen) {
@@ -1301,6 +1292,16 @@ document.addEventListener('DOMContentLoaded', () => {
             suggestionsContainer.classList.add('hidden');
         }
     });
+    
+    // Category filter for glossary
+    const categoryFilter = document.getElementById('glossary-category-filter');
+    if (categoryFilter) {
+        categoryFilter.addEventListener('change', (e) => {
+            if (window.techMindMap) {
+                window.techMindMap.setCategory(e.target.value);
+            }
+        });
+    }
     
     // Handle suggestion clicks
     document.addEventListener('click', (e) => {

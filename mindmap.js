@@ -8,6 +8,7 @@ class TechMindMap {
         this.ctx = this.canvas.getContext('2d');
         this.glossary = glossaryData;
         this.categoryColors = categoryColors;
+        this.categoryFilter = 'all';
         
         // Node storage
         this.nodes = [];
@@ -51,7 +52,13 @@ class TechMindMap {
     }
     
     generateNodes() {
-        const words = Object.keys(this.glossary);
+        let words = Object.keys(this.glossary);
+        
+        // Filter by category if not 'all'
+        if (this.categoryFilter !== 'all') {
+            words = words.filter(word => this.glossary[word].category === this.categoryFilter);
+        }
+        
         const centerX = this.canvas.width / 2;
         const centerY = this.canvas.height / 2;
         const radius = Math.min(this.canvas.width, this.canvas.height) * 0.35;
@@ -255,6 +262,15 @@ class TechMindMap {
             }
         }
         return null;
+    }
+    
+    setCategory(category) {
+        this.categoryFilter = category;
+        this.nodes = [];
+        this.connections = [];
+        this.generateNodes();
+        this.generateConnections();
+        this.resetView();
     }
     
     showDefinition(node) {

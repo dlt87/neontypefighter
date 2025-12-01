@@ -59,11 +59,11 @@ class LearnMode {
             });
         });
         
-        // View in glossary button
-        const glossaryBtn = document.getElementById('view-glossary-btn');
-        if (glossaryBtn) {
-            glossaryBtn.addEventListener('click', () => {
-                this.viewInGlossary();
+        // Explain why button
+        const explainBtn = document.getElementById('explain-why-btn');
+        if (explainBtn) {
+            explainBtn.addEventListener('click', () => {
+                this.showExplanation();
             });
         }
         
@@ -72,6 +72,8 @@ class LearnMode {
         if (nextQuestionBtn) {
             nextQuestionBtn.addEventListener('click', () => {
                 nextQuestionBtn.classList.add('hidden');
+                const explainBtn = document.getElementById('explain-why-btn');
+                if (explainBtn) explainBtn.classList.add('hidden');
                 this.generateQuestion();
             });
         }
@@ -387,10 +389,15 @@ class LearnMode {
         
         this.updateStatsDisplay();
         
-        // Show next question button
+        // Show next question and explain why buttons
         const nextBtn = document.getElementById('next-question-btn');
         if (nextBtn) {
             nextBtn.classList.remove('hidden');
+        }
+        
+        const explainBtn = document.getElementById('explain-why-btn');
+        if (explainBtn) {
+            explainBtn.classList.remove('hidden');
         }
     }
     
@@ -464,6 +471,37 @@ class LearnMode {
                     unlearnedList.innerHTML += `<li style="color: var(--accent-color); font-style: italic;">...and ${unlearnedTerms.length - 50} more</li>`;
                 }
             }
+        }
+    }
+    
+    showExplanation() {
+        if (!this.currentQuestion) return;
+        
+        const word = this.currentQuestion.correctWord;
+        const definition = this.currentQuestion.definition;
+        const glossary = window.TECH_GLOSSARY || {};
+        const relatedTerms = glossary[word]?.related || [];
+        
+        // Create explanation text
+        let explanation = `✓ The correct answer is "${word}".\n\n`;
+        explanation += `📖 Definition: ${definition}\n\n`;
+        
+        if (relatedTerms.length > 0) {
+            explanation += `🔗 Related concepts: ${relatedTerms.join(', ')}\n\n`;
+        }
+        
+        explanation += `💡 This term is in the "${this.currentQuestion.category}" category.`;
+        
+        // Show in feedback area
+        const feedback = document.getElementById('learn-feedback');
+        const text = feedback.querySelector('.feedback-text');
+        const icon = feedback.querySelector('.feedback-icon');
+        
+        if (feedback && text && icon) {
+            feedback.classList.remove('hidden', 'correct', 'wrong');
+            feedback.classList.add('correct');
+            icon.textContent = '💡';
+            text.innerHTML = explanation.replace(/\n/g, '<br>');
         }
     }
     

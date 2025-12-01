@@ -3464,6 +3464,11 @@ body::before {
     color: rgba(0, 255, 255, 0.5);
 }
 
+.glossary-filter {
+    min-width: 180px;
+    margin: 0 0.5rem;
+}
+
 .search-suggestions {
     position: absolute;
     top: 100%;

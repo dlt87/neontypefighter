@@ -262,39 +262,65 @@ class SoundManager {
     }
     
     createSynthwaveLoop(ctx) {
-        // Create a simple synthwave-style chord progression
+        // Create a smooth jazz fusion progression with rich harmonies
         const chordProgression = [
-            [261.63, 329.63, 392.00], // C major
-            [293.66, 369.99, 440.00], // D minor
-            [246.94, 329.63, 369.99], // G major
-            [220.00, 277.18, 329.63]  // A minor
+            [130.81, 164.81, 196.00, 246.94], // Cmaj7 (C E G B)
+            [146.83, 174.61, 220.00, 277.18], // Dm9 (D F A C)
+            [196.00, 246.94, 293.66, 349.23], // G13 (G B D F)
+            [110.00, 138.59, 164.81, 207.65]  // Am7 (A C E G)
         ];
         
-        const loopDuration = 8; // 8 seconds loop
+        const loopDuration = 12; // 12 seconds loop for more relaxed feel
         const chordDuration = loopDuration / chordProgression.length;
         
         const scheduleLoop = (startTime) => {
+            // Add walking bass line
+            const bassLine = [130.81, 146.83, 164.81, 110.00]; // Root notes
+            
             chordProgression.forEach((chord, chordIndex) => {
+                const chordStartTime = startTime + (chordIndex * chordDuration);
+                
+                // Walking bass (deep, smooth)
+                const bass = ctx.createOscillator();
+                const bassGain = ctx.createGain();
+                const bassFilter = ctx.createBiquadFilter();
+                
+                bass.connect(bassFilter);
+                bassFilter.connect(bassGain);
+                bassGain.connect(ctx.destination);
+                
+                bass.type = 'sine';
+                bass.frequency.value = bassLine[chordIndex];
+                bassFilter.type = 'lowpass';
+                bassFilter.frequency.value = 200;
+                
+                bassGain.gain.setValueAtTime(this.musicVolume * 0.5, chordStartTime);
+                bassGain.gain.exponentialRampToValueAtTime(0.01, chordStartTime + chordDuration);
+                
+                bass.start(chordStartTime);
+                bass.stop(chordStartTime + chordDuration);
+                
+                // Smooth chord pads
                 chord.forEach((freq, noteIndex) => {
                     const oscillator = ctx.createOscillator();
                     const gainNode = ctx.createGain();
-                    const filter = ctx.createBiquadFilter();
+                    const chordFilter = ctx.createBiquadFilter();
                     
-                    oscillator.connect(filter);
-                    filter.connect(gainNode);
+                    oscillator.connect(chordFilter);
+                    chordFilter.connect(gainNode);
                     gainNode.connect(ctx.destination);
                     
-                    oscillator.type = 'sawtooth';
-                    oscillator.frequency.value = freq * 0.5; // Lower octave for ambient feel
+                    oscillator.type = 'triangle';
+                    oscillator.frequency.value = freq;
                     
-                    filter.type = 'lowpass';
-                    filter.frequency.value = 800;
-                    filter.Q.value = 1;
+                    chordFilter.type = 'lowpass';
+                    chordFilter.frequency.value = 1200;
+                    chordFilter.Q.value = 0.7;
                     
                     const chordStart = startTime + chordIndex * chordDuration;
                     gainNode.gain.setValueAtTime(0, chordStart);
-                    gainNode.gain.linearRampToValueAtTime(this.musicVolume * 0.1, chordStart + 0.5);
-                    gainNode.gain.setValueAtTime(this.musicVolume * 0.1, chordStart + chordDuration - 0.5);
+                    gainNode.gain.linearRampToValueAtTime(this.musicVolume * 0.08, chordStart + 0.3);
+                    gainNode.gain.setValueAtTime(this.musicVolume * 0.08, chordStart + chordDuration - 0.3);
                     gainNode.gain.linearRampToValueAtTime(0, chordStart + chordDuration);
                     
                     oscillator.start(chordStart);
