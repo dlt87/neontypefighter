@@ -408,23 +408,43 @@ document.addEventListener('DOMContentLoaded', () => {
         const playerName = authClient.currentUser ? authClient.currentUser.username : 'Guest';
         const mode = multiplayerClient.matchmakingMode || 'pvp';
         
-        if (multiplayerClient && multiplayerClient.connected) {
-            multiplayerClient.findMatch(playerName, mode);
-            document.getElementById('waiting-message').classList.remove('hidden');
-            document.getElementById('find-match-btn').style.display = 'none';
-            document.getElementById('cancel-match-btn').style.display = '';
+        console.log('🔍 Find match clicked - Mode:', mode);
+        
+        if (mode === 'coop') {
+            // Use CoopMode's matchmaking system
+            if (game.coopMode) {
+                game.coopMode.startMatchmaking();
+                document.getElementById('waiting-message').classList.remove('hidden');
+                document.getElementById('find-match-btn').style.display = 'none';
+                document.getElementById('cancel-match-btn').style.display = '';
+            } else {
+                alert('Co-op mode not initialized. Please try again.');
+            }
         } else {
-            alert('Not connected to server. Please check your connection.');
+            // Use regular multiplayer client for PvP
+            if (multiplayerClient && multiplayerClient.connected) {
+                multiplayerClient.findMatch(playerName, mode);
+                document.getElementById('waiting-message').classList.remove('hidden');
+                document.getElementById('find-match-btn').style.display = 'none';
+                document.getElementById('cancel-match-btn').style.display = '';
+            } else {
+                alert('Not connected to server. Please check your connection.');
+            }
         }
     });
     
     document.getElementById('cancel-match-btn').addEventListener('click', () => {
-        if (multiplayerClient) {
+        const mode = multiplayerClient.matchmakingMode || 'pvp';
+        
+        if (mode === 'coop' && game.coopMode) {
+            game.coopMode.cancelMatchmaking();
+        } else if (multiplayerClient) {
             multiplayerClient.cancelMatch();
-            document.getElementById('waiting-message').classList.add('hidden');
-            document.getElementById('find-match-btn').style.display = '';
-            document.getElementById('cancel-match-btn').style.display = 'none';
         }
+        
+        document.getElementById('waiting-message').classList.add('hidden');
+        document.getElementById('find-match-btn').style.display = '';
+        document.getElementById('cancel-match-btn').style.display = 'none';
     });
     
     function showScreen(screen) {
@@ -686,14 +706,13 @@ document.addEventListener('DOMContentLoaded', () => {
             searchingTextEl.textContent = 'Searching for teammate...';
             findMatchBtn.textContent = 'FIND TEAMMATE';
             
-            // Initialize co-op mode if not already
+            // Initialize co-op mode immediately if not already
             if (!game.coopMode) {
-                setTimeout(() => {
-                    game.coopMode = new CoopMode(game);
-                }, 50);
+                console.log('🤝 Initializing CoopMode...');
+                game.coopMode = new CoopMode(game);
             }
             
-            // Set matchmaking mode for WebSocket
+            // Set matchmaking mode
             if (window.multiplayerClient) {
                 window.multiplayerClient.matchmakingMode = 'coop';
             }
@@ -1358,13 +1377,14 @@ document.addEventListener('DOMContentLoaded', () => {
             if (response.ok) {
                 const data = await response.json();
                 console.log('📊 ELO Stats received:', data);
-                const currentElo = data.eloRating || data.elo || data.rating || 1000;
+                // Use eloRating from database (defaults to 1200 if not set)
+                const currentElo = data.eloRating || 1200;
                 const bestElo = data.peak_rating || data.peakRating || currentElo;
                 document.getElementById('profile-elo').textContent = `Current ELO: ${currentElo}`;
                 document.getElementById('pvp-highscore').textContent = bestElo;
             } else {
-                document.getElementById('profile-elo').textContent = 'ELO: 1000';
-                document.getElementById('pvp-highscore').textContent = '1000';
+                document.getElementById('profile-elo').textContent = 'ELO: 1200';
+                document.getElementById('pvp-highscore').textContent = '1200';
             }
         } catch (error) {
             console.error('Failed to load ELO:', error);
