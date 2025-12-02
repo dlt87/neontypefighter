@@ -674,9 +674,27 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         
         // Disable Enter key - auto-complete handles everything
+        // Add Shift+Tab for fast restart
         newInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {
                 e.preventDefault(); // Do nothing on Enter
+            }
+            
+            // Fast restart with Shift+Tab
+            if (e.key === 'Tab' && e.shiftKey) {
+                e.preventDefault();
+                
+                // Only restart if game is active or results are showing
+                if (game.timedMode && (game.timedMode.isActive || !document.getElementById('timed-results-overlay').classList.contains('hidden'))) {
+                    // Hide results overlay if showing
+                    document.getElementById('timed-results-overlay').classList.add('hidden');
+                    
+                    // Restart the game
+                    game.timedMode.start();
+                    
+                    // Play sound feedback
+                    game.soundManager.play('typing');
+                }
             }
         });
         
