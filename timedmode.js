@@ -12,6 +12,7 @@ class TimedMode {
         this.perfectWords = 0;
         this.isActive = false;
         this.timerInterval = null;
+        this.timerStarted = false; // Track if timer has started
         this.difficultyLevel = 1;
         
         // Scoring
@@ -43,6 +44,7 @@ class TimedMode {
         this.perfectWords = 0;
         this.difficultyLevel = 1;
         this.difficultyMultiplier = 1;
+        this.timerStarted = false; // Reset timer started flag
         
         // Reset game state
         this.game.wordManager.reset();
@@ -59,8 +61,7 @@ class TimedMode {
             this.elements.typingFeedback.textContent = '';
         }
         
-        // Start timer
-        this.startTimer();
+        // Don't start timer yet - wait for first input
         
         // Display first word and preview
         const firstWord = this.game.wordManager.getNextWord();
@@ -85,6 +86,9 @@ class TimedMode {
     }
     
     startTimer() {
+        if (this.timerStarted) return; // Prevent multiple timer starts
+        
+        this.timerStarted = true;
         this.timerInterval = setInterval(() => {
             this.timeRemaining -= 0.01; // Update every 10ms for smooth display
             
@@ -131,19 +135,25 @@ class TimedMode {
     
     updateUI() {
         // Update timer display
-        const seconds = Math.max(0, this.timeRemaining).toFixed(2);
-        this.elements.timer.textContent = seconds;
-        
-        // Change color based on time remaining
-        if (this.timeRemaining <= 3) {
-            this.elements.timer.style.color = 'var(--neon-orange)';
-            this.elements.timer.style.animation = 'pulse 0.5s ease-in-out infinite';
-        } else if (this.timeRemaining <= 5) {
-            this.elements.timer.style.color = 'var(--neon-yellow)';
-            this.elements.timer.style.animation = 'none';
-        } else {
+        if (!this.timerStarted) {
+            this.elements.timer.textContent = 'START';
             this.elements.timer.style.color = 'var(--neon-cyan)';
-            this.elements.timer.style.animation = 'none';
+            this.elements.timer.style.animation = 'pulse 1s ease-in-out infinite';
+        } else {
+            const seconds = Math.max(0, this.timeRemaining).toFixed(2);
+            this.elements.timer.textContent = seconds;
+            
+            // Change color based on time remaining
+            if (this.timeRemaining <= 3) {
+                this.elements.timer.style.color = 'var(--neon-orange)';
+                this.elements.timer.style.animation = 'pulse 0.5s ease-in-out infinite';
+            } else if (this.timeRemaining <= 5) {
+                this.elements.timer.style.color = 'var(--neon-yellow)';
+                this.elements.timer.style.animation = 'none';
+            } else {
+                this.elements.timer.style.color = 'var(--neon-cyan)';
+                this.elements.timer.style.animation = 'none';
+            }
         }
         
         // Update score
@@ -315,6 +325,7 @@ class TimedMode {
     reset() {
         this.stopTimer();
         this.isActive = false;
+        this.timerStarted = false;
         this.timeRemaining = this.timeLimit;
         this.score = 0;
         this.wordsCompleted = 0;

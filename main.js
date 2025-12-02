@@ -605,6 +605,11 @@ document.addEventListener('DOMContentLoaded', () => {
         newInput.addEventListener('input', (e) => {
             if (!game.timedMode || !game.timedMode.isActive) return;
             
+            // Start timer on first input
+            if (!game.timedMode.timerStarted && e.target.value.length > 0) {
+                game.timedMode.startTimer();
+            }
+            
             const value = e.target.value.toLowerCase();
             const targetWord = game.wordManager.getCurrentWord();
             
