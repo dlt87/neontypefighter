@@ -601,7 +601,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const newInput = timedInput.cloneNode(true);
         timedInput.parentNode.replaceChild(newInput, timedInput);
         
-        // Set up timed mode typing with auto-complete
+        // Set up timed mode typing with auto-complete or space-required mode
         newInput.addEventListener('input', (e) => {
             if (!game.timedMode || !game.timedMode.isActive) return;
             
@@ -612,9 +612,14 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const value = e.target.value.toLowerCase();
             const targetWord = game.wordManager.getCurrentWord();
+            const completionMode = localStorage.getItem('timedCompletionMode') || 'auto';
             
-            // Auto-complete when word is fully typed correctly
-            if (value === targetWord) {
+            // Check for word completion based on mode
+            const isWordComplete = completionMode === 'auto' 
+                ? value === targetWord 
+                : value === targetWord + ' ';
+            
+            if (isWordComplete) {
                 const isPerfect = game.isCritical;
                 
                 // Play sound
@@ -662,7 +667,18 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             
             // Check if input is on the right track
-            if (targetWord.startsWith(value)) {
+            const completionMode = localStorage.getItem('timedCompletionMode') || 'auto';
+            let isCorrectPath;
+            
+            if (completionMode === 'space') {
+                // In space mode, allow the word + space
+                isCorrectPath = (targetWord + ' ').startsWith(value);
+            } else {
+                // In auto mode, just check if word matches so far
+                isCorrectPath = targetWord.startsWith(value);
+            }
+            
+            if (isCorrectPath) {
                 newInput.classList.remove('error');
                 newInput.classList.add('correct');
                 if (value.length > 0) {
@@ -1168,6 +1184,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const reduceParticles = localStorage.getItem('reduceParticles') === 'true';
         const screenShake = localStorage.getItem('screenShake') === 'true';
         const musicTrack = localStorage.getItem('musicTrack') || 'NEON1';
+        const timedCompletionMode = localStorage.getItem('timedCompletionMode') || 'auto';
 
         document.getElementById('sound-volume').value = soundVolume;
         document.getElementById('sound-volume-value').textContent = soundVolume + '%';
@@ -1184,6 +1201,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('reduce-particles').checked = reduceParticles;
         document.getElementById('screen-shake').checked = screenShake;
         document.getElementById('music-track').value = musicTrack;
+        document.getElementById('timed-completion-mode').value = timedCompletionMode;
 
         applySettings();
         updateNowPlaying(); // Update now playing widget
@@ -1337,6 +1355,7 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem('reduceParticles', document.getElementById('reduce-particles').checked);
         localStorage.setItem('screenShake', document.getElementById('screen-shake').checked);
         localStorage.setItem('musicTrack', document.getElementById('music-track').value);
+        localStorage.setItem('timedCompletionMode', document.getElementById('timed-completion-mode').value);
         
         // Toggle FPS counter
         if (document.getElementById('show-fps').checked) {
@@ -1385,6 +1404,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('show-fps').addEventListener('change', saveSettings);
     document.getElementById('reduce-particles').addEventListener('change', saveSettings);
     document.getElementById('screen-shake').addEventListener('change', saveSettings);
+    document.getElementById('timed-completion-mode').addEventListener('change', saveSettings);
     
     document.getElementById('music-track').addEventListener('change', (e) => {
         const trackName = e.target.value;
