@@ -693,28 +693,39 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
         
-        // Disable Enter key - auto-complete handles everything
-        // Add Shift+Tab for fast restart
+        // Add Tab+Enter for fast restart
+        let tabPressed = false;
         newInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault(); // Do nothing on Enter
+            if (e.key === 'Tab') {
+                tabPressed = true;
+                e.preventDefault(); // Prevent default tab behavior
+                return;
             }
             
-            // Fast restart with Shift+Tab
-            if (e.key === 'Tab' && e.shiftKey) {
+            if (e.key === 'Enter') {
                 e.preventDefault();
                 
-                // Only restart if game is active or results are showing
-                if (game.timedMode && (game.timedMode.isActive || !document.getElementById('timed-results-overlay').classList.contains('hidden'))) {
-                    // Hide results overlay if showing
-                    document.getElementById('timed-results-overlay').classList.add('hidden');
-                    
-                    // Restart the game
-                    game.timedMode.start();
-                    
-                    // Play sound feedback
-                    game.soundManager.play('typing');
+                // Fast restart with Tab+Enter
+                if (tabPressed) {
+                    // Only restart if game is active or results are showing
+                    if (game.timedMode && (game.timedMode.isActive || !document.getElementById('timed-results-overlay').classList.contains('hidden'))) {
+                        // Hide results overlay if showing
+                        document.getElementById('timed-results-overlay').classList.add('hidden');
+                        
+                        // Restart the game
+                        game.timedMode.start();
+                        
+                        // Play sound feedback
+                        game.soundManager.play('typing');
+                    }
+                    tabPressed = false;
                 }
+            }
+        });
+        
+        newInput.addEventListener('keyup', (e) => {
+            if (e.key === 'Tab') {
+                tabPressed = false;
             }
         });
         
