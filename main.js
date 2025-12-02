@@ -667,7 +667,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             
             // Check if input is on the right track
-            const completionMode = localStorage.getItem('timedCompletionMode') || 'auto';
             let isCorrectPath;
             
             if (completionMode === 'space') {
